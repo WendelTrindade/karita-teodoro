@@ -536,7 +536,7 @@ function telaEntradaPortal(msg){
     } catch (err) {
       tent.n++; if (tent.n >= 5) { tent.ate = Date.now() + 60000; tent.n = 0; }
       try { localStorage.setItem('kt_tentativas', JSON.stringify(tent)); } catch (e2) {}
-      erro.textContent = err.message === 'rede' ? 'Não foi possível conectar. Verifique sua internet e tente de novo.' : 'Não encontramos laudos com esse CPF e código, ou o prazo de acesso já terminou. Confira os dados ou fale com a Kárita.';
+      erro.textContent = err.message === 'rede' ? 'Não foi possível conectar. Verifique sua internet e tente de novo.' : 'Ainda não há laudos liberados para este CPF e código, ou o prazo de acesso já terminou. Confira os dados digitados. Se acabou de ser atendido(a), o laudo aparece assim que for liberado.';
       botao.disabled = false; botao.textContent = '🔓 Ver meus laudos';
     }
   });

@@ -235,6 +235,55 @@ body.bloqueado>*:not(#telaBloqueio){display:none!important}
 .bq-dica{font-size:12px;color:var(--cinza);text-align:center;margin-top:12px}
 .bq-corpo>input{padding:14px;font-size:17px;border-radius:14px}
 @media (max-width:520px){.topo h1{font-size:15px}.topo small#topoSub{display:none}.chip-usuario{font-size:12px;padding:3px 8px}}
+.msg-previa{white-space:pre-wrap;background:#e7f8ec;border:1px solid #bfe6cb;border-radius:12px 12px 12px 2px;padding:10px 12px;font-size:13.5px;line-height:1.5;max-height:260px;overflow:auto;color:#20352a}
+/* Alertas de vencimento */
+.parc.v-vencido{background:#fde4e2;border-color:#e57373;border-left:5px solid #d32f2f}
+.parc.v-hoje{background:#ffecd6;border-color:#f0a04b;border-left:5px solid #ef6c00}
+.parc.v-breve{background:#fff5cc;border-color:#e6c200;border-left:5px solid #e0a800}
+.parc.v-semana{background:#fffbea;border-color:#efdf9a;border-left:5px solid #e6cf6a}
+.parc.v-futuro{background:#fff}
+.parc.v-pago{background:#f1faf4;border-color:#bfe6cb;border-left:5px solid #2e7d32}
+.parc.v-bloq{background:#fff1f1;border-color:#f3c4c0}
+.selo.sv-vencido{background:#d32f2f;color:#fff;border-color:#b71c1c}
+.selo.sv-hoje{background:#ef6c00;color:#fff;border-color:#e65100}
+.selo.sv-breve{background:#ffd54f;color:#5d4300;border-color:#e0a800}
+.selo.sv-semana{background:#fff3c4;color:#7a5c00;border-color:#efdf9a}
+.selo.sv-futuro{background:#f4f1f3;color:#6b5560;border-color:#e6dde2}
+.selo.sv-pago{background:#e6f6ec;color:#1e7a3c;border-color:#bfe6cb}
+.item.iv-vencido{border-left-color:#d32f2f;background:#fffafa}
+.item.iv-hoje{border-left-color:#ef6c00}
+.item.iv-breve{border-left-color:#e0a800}
+.cartao-alertas{border:2px solid #f3c4c0;background:#fffafa}
+.alertas-tit{font-weight:700;color:var(--vinho);margin:4px 0 6px;font-size:14px}
+.alertas{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px}
+.alerta-box{border:none;border-radius:12px;padding:10px;text-align:left;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;gap:2px}
+.alerta-box b{font-size:13.5px}.alerta-box span{font-size:16px;font-weight:700;font-family:Georgia,serif}
+.av-vencido{background:#d32f2f;color:#fff}.av-hoje{background:#ef6c00;color:#fff}.av-breve{background:#ffd54f;color:#5d4300}
+@media (max-width:520px){.alertas{grid-template-columns:1fr}}
+.filtros-venc{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.filtros-venc button{border:1px solid var(--borda);background:#fff;border-radius:999px;padding:7px 12px;font-family:inherit;font-weight:600;color:var(--rosa-esc);cursor:pointer;font-size:13px}
+.filtros-venc button.ativo{background:linear-gradient(135deg,#f0d168,var(--ouro));color:#4a3505;border-color:var(--ouro)}
+.badge{position:absolute;top:-6px;right:-12px;background:#d32f2f;color:#fff;font-style:normal;font-size:10.5px;font-weight:700;border-radius:999px;padding:1px 6px;border:2px solid #fff;line-height:1.3}
+.ico-nav{position:relative;display:inline-block}
+.nav button{position:relative}.nav .badge{top:-6px;right:-4px}
+/* Horários livres e bloqueios */
+.dias-livres{display:flex;gap:8px;overflow-x:auto;padding:6px 2px 10px;scroll-snap-type:x mandatory}
+.dia-chip{flex:0 0 auto;scroll-snap-align:start;min-width:78px;border:1.5px solid var(--borda);background:#fff;border-radius:12px;padding:8px 6px;display:flex;flex-direction:column;align-items:center;cursor:pointer;font-family:inherit;color:var(--vinho)}
+.dia-chip b{font-size:16px;font-family:Georgia,serif}.dia-chip small{font-size:11px;color:var(--cinza)}
+.dia-chip.sel{background:linear-gradient(135deg,var(--rosa),var(--rosa-medio));border-color:var(--ouro);box-shadow:0 0 0 2px var(--ouro)}
+.dia-chip.cheio,.dia-chip.bloq{opacity:.55;cursor:not-allowed;background:#f6f1f3}
+.dia-chip.bloq small{color:#b3261e}
+.horas-livres{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.hora-chip{border:1.5px solid var(--borda);background:#fff;border-radius:10px;padding:9px 12px;font-weight:700;font-size:15px;cursor:pointer;color:var(--vinho);font-family:inherit;min-width:70px}
+.hora-chip.sel{background:linear-gradient(135deg,#f0d168,var(--ouro));border-color:var(--ouro-esc);color:#4a3505}
+.aviso-bloq{background:#fff1f1;border:1px solid #f3c4c0;color:#9b1c1c;border-radius:10px;padding:8px 12px;font-size:13.5px;margin:6px 0;font-weight:600}
+.ag-mini.bloq{background:#fff1f1;border-left-color:#d32f2f;color:#9b1c1c}
+.ag-dia.bloq{background:#fff6f6}
+.ag-cel.bloq{background:#fde4e2}.ag-cel.bloqp{background:linear-gradient(135deg,#fff 50%,#fde4e2 50%)}.ag-cel.fechado{background:#f6f3f4}
+.linha-hor{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr 1fr;gap:6px;align-items:center;margin-bottom:6px}
+.linha-hor input{padding:7px 6px;font-size:13.5px}
+.linha-hor.cab span{font-size:11.5px;font-weight:700;color:var(--ouro-esc)}
+@media (max-width:520px){.linha-hor{grid-template-columns:1.2fr 1fr 1fr;}.linha-hor>*:nth-child(4),.linha-hor>*:nth-child(5){grid-column:auto}.linha-hor.cab{display:none}}
 /* Faixa de teste */
 .faixa-teste{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#fffbea;border:2px dashed var(--ouro);border-radius:14px;padding:12px 14px;margin-bottom:14px;color:#6b4e06}
 /* Agenda */
@@ -467,14 +516,14 @@ const NOME_DB = 'relatorio_atendimento_paciente';
 let db = null;
 function abrirDB(){
   return new Promise((res, rej) => {
-    const r = indexedDB.open(NOME_DB, 4);
+    const r = indexedDB.open(NOME_DB, 5);
     r.onupgradeneeded = () => {
       const d = r.result;
       if (!d.objectStoreNames.contains('pacientes')) d.createObjectStore('pacientes', {keyPath:'id'});
       if (!d.objectStoreNames.contains('atendimentos')) d.createObjectStore('atendimentos', {keyPath:'id'});
       if (!d.objectStoreNames.contains('financeiro')) d.createObjectStore('financeiro', {keyPath:'id'});
       if (!d.objectStoreNames.contains('midias')) d.createObjectStore('midias', {keyPath:'id'});
-      ['usuarios', 'ponto', 'fotos'].forEach(n => { if (!d.objectStoreNames.contains(n)) d.createObjectStore(n, {keyPath:'id'}); });
+      ['usuarios', 'ponto', 'fotos', 'bloqueios'].forEach(n => { if (!d.objectStoreNames.contains(n)) d.createObjectStore(n, {keyPath:'id'}); });
       if (!d.objectStoreNames.contains('config')) d.createObjectStore('config', {keyPath:'chave'});
     };
     r.onsuccess = () => { db = r.result; res(db); };
@@ -499,9 +548,9 @@ const DOMINIO_EQUIPE = 'equipe.karitateodoro.app';
 const emNuvem = () => !!(NUVEM.projectId && NUVEM.apiKey && NUVEM.adminEmail);
 const SO_LOCAL = new Set(['midias', 'fotos']);
 const COLECOES = {pacientes:'karita_pacientes', agenda:'karita_agenda', prontuario:'karita_prontuario', financeiro:'karita_financeiro',
-  usuarios:'karita_usuarios', ponto:'karita_ponto', arquivos:'karita_arquivos', config:'karita_config', contadores:'karita_contadores'};
+  usuarios:'karita_usuarios', ponto:'karita_ponto', arquivos:'karita_arquivos', config:'karita_config', contadores:'karita_contadores', bloqueios:'karita_bloqueios'};
 const CAMPOS_AGENDA = ['id','numero','pacienteId','data','hora','horaFim','tipo','local','profissional','registro','status','retorno','obsAgenda','criadoEm','atualizadoEm','teste','criadoPor'];
-const CAMPOS_CONFIG_EQUIPE = ['nome','subtitulo','endereco','telefone','email','logo','profissional','registro','local','rodape','testeRemovido','exemploCarregado'];
+const CAMPOS_CONFIG_EQUIPE = ['agendaCfg','consultorio','nome','subtitulo','endereco','telefone','email','logo','profissional','registro','local','rodape','testeRemovido','exemploCarregado'];
 const idbLerTodos = s => operar(s, 'readonly', st => st.getAll());
 const idbGravar = (s, v) => operar(s, 'readwrite', st => st.put(v));
 const idbApagar = (s, id) => operar(s, 'readwrite', st => st.delete(id));
@@ -642,6 +691,8 @@ async function nuvemGravar(store, o){
     await nuvemPut(COLECOES.financeiro, o.id, {json:JSON.stringify(Object.assign({}, o, {comprovantes:semSrc(o.comprovantes)})), tipo:o.tipo});
   } else if (store === 'usuarios') {
     await nuvemPut(COLECOES.usuarios, o.id, {json:JSON.stringify(o), papel:o.papel || 'secretaria', ativo:o.ativo !== false});
+  } else if (store === 'bloqueios') {
+    await nuvemPut(COLECOES.bloqueios, o.id, {json:JSON.stringify(o)});
   } else if (store === 'ponto') {
     const campos = {json:JSON.stringify(o), uid:o.uid, saida:o.saida || ''};
     await nuvemPut(COLECOES.ponto, o.id, campos, o.saida ? ['horaServidorSaida'] : ['horaServidorEntrada']);
@@ -670,6 +721,7 @@ async function nuvemLerTodos(store){
   }
   if (store === 'financeiro') return (await nuvemListar(COLECOES.financeiro, adm ? null : ['tipo', 'receita'])).map(doJson).map(o => marcar(store, o));
   if (store === 'usuarios') return adm ? (await nuvemListar(COLECOES.usuarios)).map(doJson) : [];
+  if (store === 'bloqueios') return (await nuvemListar(COLECOES.bloqueios)).map(doJson);
   if (store === 'ponto') return (await nuvemListar(COLECOES.ponto, adm ? null : ['uid', sessaoNuvem.uid])).map(x => Object.assign(doJson(x), {servEntrada:x.horaServidorEntrada || '', servSaida:x.horaServidorSaida || ''}));
   return [];
 }
@@ -700,7 +752,7 @@ const CONFIG_PADRAO = {
   local:'', rodape:'Documento de uso restrito. As informações deste relatório são confidenciais.',
   contador:0
 };
-const estado = { usuario:null, usuarios:[], ponto:[], pacientes:[], atendimentos:[], financeiro:[], fin:{mes:'', aba:'resumo'}, config:copia(CONFIG_PADRAO), tela:'inicio', voltar:'atendimentos', agenda:{data:'', modo:'dia'} };
+const estado = { usuario:null, usuarios:[], ponto:[], bloqueios:[], pacientes:[], atendimentos:[], financeiro:[], fin:{mes:'', aba:'resumo'}, config:copia(CONFIG_PADRAO), tela:'inicio', voltar:'atendimentos', agenda:{data:'', modo:'dia'} };
 const TIPOS = ['Consulta','Retorno','Urgência / Emergência','Visita domiciliar','Procedimento','Curativo','Aplicação de medicação','Teleatendimento','Avaliação','Outro'];
 const STATUS = ['Concluído','Agendado','Em acompanhamento','Retorno agendado','Encaminhado','Cancelado'];
 const pacientePorId = id => estado.pacientes.find(p => p.id === id);
@@ -720,6 +772,7 @@ async function carregar(){
   estado.financeiro = await lerTodos('financeiro');
   estado.usuarios = await lerTodos('usuarios');
   estado.ponto = await lerTodos('ponto');
+  estado.bloqueios = await lerTodos('bloqueios');
   estado.pacientes.forEach(migrarPaciente);
   ordenar();
 }
@@ -1071,8 +1124,9 @@ function montarMenus(){
   MENU.filter(m => !m.admin || adm).forEach(m => {
     const ativo = estado.tela === m.id || (m.id === 'novo' && estado.tela === 'form');
     const nome = m.mais ? (adm ? 'Novo' : 'Agendar') : (m.id === 'ponto' && !adm ? 'Meu ponto' : m.nome);
-    topo.appendChild(h('button', {class: ativo ? 'ativo' : '', onclick:() => ir(m.id)}, m.mais ? (adm ? '＋ Novo atendimento' : '＋ Agendar') : m.ico + ' ' + nome));
-    if (!m.soTopo) baixo.appendChild(h('button', {class:(ativo ? 'ativo ' : '') + (m.mais ? 'mais' : ''), onclick:() => ir(m.id)}, h('span', null, m.ico), m.curto || nome));
+    topo.appendChild(h('button', {class: ativo ? 'ativo' : '', onclick:() => ir(m.id)}, m.mais ? (adm ? '＋ Novo atendimento' : '＋ Agendar') : m.ico + ' ' + nome, m.id === 'financeiro' && estado.usuario && contagemAlertas() ? h('i', {class:'badge'}, contagemAlertas()) : null));
+    const nAl = m.id === 'financeiro' && estado.usuario ? contagemAlertas() : 0;
+    if (!m.soTopo) baixo.appendChild(h('button', {class:(ativo ? 'ativo ' : '') + (m.mais ? 'mais' : ''), onclick:() => ir(m.id)}, h('span', {class:'ico-nav'}, m.ico, nAl ? h('i', {class:'badge'}, nAl) : null), m.curto || nome));
   });
 }
 function atualizarTopo(){
@@ -1100,7 +1154,7 @@ function ir(tela, param){
 }
 
 /* ---------- Tela: Início ---------- */
-function telaInicioSecretaria(area){
+function telaInicioSecretaria(area, alertas){
   const hoje = hojeISO(), ats = estado.atendimentos.filter(a => a.status !== 'Cancelado');
   let id = null; try { id = sessionStorage.getItem('kt_ponto'); } catch (e) {}
   const reg = (estado.ponto || []).find(p => p.id === id);
@@ -1114,6 +1168,7 @@ function telaInicioSecretaria(area){
     h('div', {class:'numero'}, h('b', null, prox.length), h('span', null, 'Próximos 7 dias')),
     h('div', {class:'numero'}, h('b', null, estado.pacientes.length), h('span', null, 'Pacientes')),
     h('div', {class:'numero'}, h('b', null, atrasados), h('span', null, 'Parcelas em atraso'))));
+  if (alertas) area.appendChild(alertas);
   area.appendChild(h('div', {class:'cartao'}, h('div', {class:'acoes', style:'margin:0'},
     h('button', {class:'btn rosa grande', style:'flex:1', onclick:() => editarAgendamento(null, {})}, '📅 Novo agendamento'),
     h('button', {class:'btn ouro grande', style:'flex:1', onclick:() => editarPaciente(null).then(p => { if (p) recarregar(); })}, '👤 Novo paciente'))));
@@ -1123,8 +1178,10 @@ function telaInicioSecretaria(area){
       : h('div', {class:'meta', style:'color:var(--cinza)'}, 'Nenhum agendamento nos próximos 7 dias.')));
 }
 function telaInicio(area){
-  if (!ehAdmin()) { telaInicioSecretaria(area); return; }
+  const alertas = painelAlertasPagamento();
+  if (!ehAdmin()) { telaInicioSecretaria(area, alertas); return; }
   const faixa = faixaTeste(); if (faixa) area.appendChild(faixa);
+  if (alertas) area.appendChild(alertas);
   const hoje = hojeISO(), mes = hoje.slice(0, 7);
   const ats = estado.atendimentos;
   area.appendChild(h('div', {class:'numeros'},
@@ -1134,7 +1191,9 @@ function telaInicio(area){
     h('div', {class:'numero'}, h('b', null, ats.length), h('span', null, 'Total de relatórios'))
   ));
   area.appendChild(h('div', {class:'cartao'},
-    h('button', {class:'btn rosa grande', onclick:() => ir('novo')}, '＋ Registrar novo atendimento')
+    h('div', {class:'acoes', style:'margin:0'},
+      h('button', {class:'btn rosa grande', style:'flex:1', onclick:() => ir('novo')}, '＋ Registrar atendimento'),
+      h('button', {class:'btn ouro grande', style:'flex:1', onclick:() => editarAgendamento(null, {})}, '📅 Agendar'))
   ));
   const ult = h('div', {class:'cartao'}, h('h2', null, '🕑 Últimos atendimentos'));
   if (!ats.length) {
@@ -1462,14 +1521,17 @@ async function editarPaciente(id){
   if (!ok) return null;
   p.nome = p.nome.trim();
   p.atualizadoEm = Date.now();
+  const codigoNovo = garantirCodigoPortal(p);
   try { await gravar('pacientes', p); }
   catch (e) { await aviso('Não foi possível salvar. O armazenamento pode estar cheio — tente usar menos fotos de documentos.', 'Erro'); return null; }
   const i = estado.pacientes.findIndex(x => x.id === p.id);
   if (i >= 0) estado.pacientes[i] = p; else estado.pacientes.push(p);
   ordenar();
   toast('Paciente salvo');
-  if (estado.tela !== 'form') limparVideosSoltos();
+  if (estado.tela !== 'form' && ehAdmin()) limparVideosSoltos();
   if (estado.atendimentos.some(x => x.pacienteId === p.id && x.portal && (x.portal.liberado || x.portal.docId))) publicarComAviso(p.id);
+  if (codigoNovo) await mostrarCodigoPortal(p.id, '✅ Paciente cadastrado — código de acesso', 'boasvindas');
+  else if (!orig && !cpfValido(p.cpf)) toast('Sem CPF válido: o código de acesso será criado quando o CPF for cadastrado');
   return p;
 }
 async function excluirPaciente(id){
@@ -1526,7 +1588,8 @@ async function fichaPaciente(id){
       h('div', {class:'ok'}, h('small', null, 'Pago'), moeda(r.pago)),
       h('div', {class: r.atrasado > 0 ? 'atr' : ''}, h('small', null, r.atrasado > 0 ? 'Em aberto (há atraso)' : 'Em aberto'), moeda(r.aberto))),
     fins.length ? fins.map(l => cartaoLancamento(l, true)) : h('div', {class:'meta', style:'color:var(--cinza)'}, 'Nenhum lançamento financeiro.'),
-    ehAdmin() ? [h('h4', {class:'sub-form'}, '🌐 Portal do paciente (laudos no site)'), blocoPortalPaciente(id)] : null,
+    h('h4', {class:'sub-form'}, '🌐 Portal do paciente (laudos no site)'),
+    ehAdmin() ? blocoPortalPaciente(id) : blocoAcessoSecretaria(id),
     h('h4', {class:'sub-form'}, `📋 Atendimentos (${ats.length})`),
     ats.length ? ats.map(a => h('div', {class:'item'},
       h('div', {class:'item-topo'}, h('div', null, h('b', null, `${fmtData(a.data)} ${a.hora || ''}`), h('div', {class:'meta'}, `Nº ${a.numero} · ${a.tipo}`)), seloStatus(a.status)),
@@ -1952,6 +2015,7 @@ async function acoesAgenda(a, retorno){
   const botoes = [{texto:'Fechar', valor:null}];
   if (retorno) botoes.push({texto:'＋ Registrar o retorno', valor:'ret', classe:'rosa'});
   botoes.push({texto:'📄 Relatório', valor:'rel', classe:'ouro'});
+  if (!retorno) botoes.push({texto:'📅 Remarcar', valor:'rem'});
   botoes.push({texto:'✏️ Editar', valor:'ed', classe: retorno ? '' : 'rosa'});
   const corpo = h('div', null,
     h('div', {class:'resumo-pac'},
@@ -1964,11 +2028,13 @@ async function acoesAgenda(a, retorno){
   const r = await modal(p.nome || 'Atendimento', corpo, botoes);
   if (r === 'rel') abrirRelatorio(a.id);
   else if (r === 'ed') editarAtendimento(a.id);
-  else if (r === 'ret') novoOuAgendar({pacienteId:a.pacienteId, data:a.retorno, tipo:'Retorno'});
+  else if (r === 'rem') editarAgendamento(a.id);
+  else if (r === 'ret') editarAgendamento(null, {pacienteId:a.pacienteId, data:a.retorno >= hojeISO() ? a.retorno : hojeISO(), tipo:'Retorno'});
 }
 function cartaoAgendaHoje(){
   const evs = eventosDoDia(hojeISO());
   return h('div', {class:'cartao'}, h('h2', null, '📅 Agenda de hoje'),
+    avisosBloqueioDia(hojeISO()),
     evs.length ? evs.map(linhaAgenda) : h('div', {class:'meta', style:'color:var(--cinza)'}, 'Nenhum atendimento marcado para hoje.'),
     h('div', {class:'acoes'}, h('button', {class:'btn ouro peq', onclick:() => { estado.agenda.data = hojeISO(); estado.agenda.modo = 'dia'; ir('agenda'); }}, 'Ver agenda completa')));
 }
@@ -1990,7 +2056,9 @@ function telaAgenda(area){
   else rotulo = MESES[d.getMonth()].charAt(0).toUpperCase() + MESES[d.getMonth()].slice(1) + ' de ' + d.getFullYear();
 
   area.appendChild(h('div', {class:'titulo-pag'}, h('h2', null, '📅 Agenda'),
-    h('button', {class:'btn rosa', onclick:() => novoOuAgendar({data:ag.data})}, '＋ Agendar atendimento')));
+    h('div', {class:'acoes', style:'margin:0'},
+      h('button', {class:'btn', onclick:gerenciarBloqueios}, '🚫 Dias sem atendimento'),
+      h('button', {class:'btn rosa', onclick:() => editarAgendamento(null, {data:ag.data >= hojeISO() ? ag.data : hojeISO()})}, '＋ Agendar'))));
 
   const pular = h('input', {type:'date', value:ag.data, style:'max-width:170px'});
   pular.addEventListener('change', () => { if (pular.value) { ag.data = pular.value; ir('agenda'); } });
@@ -2007,9 +2075,10 @@ function telaAgenda(area){
 
   const listaDoDia = iso => {
     const evs = eventosDoDia(iso);
-    if (!evs.length) return h('div', {class:'vazio'}, h('span', {class:'ico'}, '🗓️'), 'Nenhum atendimento neste dia.',
-      h('div', {style:'margin-top:10px'}, h('button', {class:'btn rosa', onclick:() => novoOuAgendar({data:iso})}, '＋ Agendar neste dia')));
-    return h('div', null,
+    const avisos = avisosBloqueioDia(iso).concat(!diaAtende(iso) ? [h('div', {class:'aviso-bloq'}, '🕘 Dia sem expediente nos horários de atendimento.')] : []);
+    if (!evs.length) return h('div', null, avisos, h('div', {class:'vazio'}, h('span', {class:'ico'}, '🗓️'), 'Nenhum atendimento neste dia.',
+      h('div', {style:'margin-top:10px'}, h('button', {class:'btn rosa', onclick:() => editarAgendamento(null, {data:iso >= hojeISO() ? iso : hojeISO()})}, '＋ Agendar neste dia'))));
+    return h('div', null, avisos,
       h('div', {class:'meta', style:'margin-bottom:8px;color:var(--cinza)'}, `${evs.length} compromisso(s)`),
       evs.map(linhaAgenda));
   };
@@ -2021,8 +2090,9 @@ function telaAgenda(area){
     for (let i = 0; i < 7; i++) {
       const iso = somarDias(iniSemana, i);
       const evs = eventosDoDia(iso);
-      grade.appendChild(h('div', {class:'ag-dia' + (iso === hoje ? ' hoje' : '')},
+      grade.appendChild(h('div', {class:'ag-dia' + (iso === hoje ? ' hoje' : '') + (diaBloqueadoInteiro(iso) ? ' bloq' : '')},
         h('h5', {onclick:() => irDia(iso), title:'Abrir o dia'}, `${DIAS_SEM[i]} ${fmtData(iso).slice(0, 5)}${evs.length ? ' · ' + evs.length : ''}`),
+        bloqueiosDoDia(iso).map(b => h('div', {class:'ag-mini bloq'}, '🚫 ' + (b.diaInteiro === false ? b.horaIni + '–' + b.horaFim + ' ' : '') + (b.motivo || ''))),
         evs.length ? evs.map(ev => {
           const p = pacientePorId(ev.at.pacienteId) || {};
           return h('div', {class:'ag-mini' + (ev.retorno ? ' retorno' : ''), title:p.nome || '', onclick:() => acoesAgenda(ev.at, ev.retorno)},
@@ -2041,7 +2111,7 @@ function telaAgenda(area){
       const dd = dataDe(iso);
       const evs = eventosDoDia(iso);
       const nAt = evs.filter(e => !e.retorno).length, nRet = evs.length - nAt;
-      const cls = 'ag-cel' + (dd.getMonth() !== d.getMonth() ? ' fora' : '') + (iso === hoje ? ' hoje' : '') + (iso === ag.data ? ' sel' : '');
+      const cls = 'ag-cel' + (dd.getMonth() !== d.getMonth() ? ' fora' : '') + (iso === hoje ? ' hoje' : '') + (iso === ag.data ? ' sel' : '') + (diaBloqueadoInteiro(iso) ? ' bloq' : bloqueiosDoDia(iso).length ? ' bloqp' : '') + (!diaAtende(iso) ? ' fechado' : '');
       grade.appendChild(h('div', {class:cls, onclick:() => { ag.data = iso; ir('agenda'); }},
         h('div', {class:'n'}, dd.getDate()),
         nAt ? h('span', {class:'qtd', title:'Atendimentos'}, nAt) : null,
@@ -2051,6 +2121,7 @@ function telaAgenda(area){
       h('div', {class:'legenda'},
         h('span', null, h('i', {style:'background:var(--rosa)'}), 'Atendimentos'),
         h('span', null, h('i', {style:'background:var(--ouro)'}), 'Retornos'),
+        h('span', null, h('i', {style:'background:#f3c4c0'}), 'Sem atendimento'),
         h('span', null, 'Toque em um dia para ver a lista abaixo'))));
     area.appendChild(h('div', {class:'cartao'},
       h('h2', null, `${DIAS_LONGO[d.getDay()]}, ${fmtData(ag.data)}`),
@@ -2178,13 +2249,15 @@ function cartaoLancamento(l, compacto){
   const pago = ps.filter(p => p.pago).reduce((s, p) => s + p.valor, 0);
   const pc = tot ? Math.min(100, Math.round(pago / tot * 100)) : 0;
   const acao = fn => () => { if (compacto) fecharModais(); fn(); };
-  return h('div', {class:'item' + (rec ? '' : ' desp')},
+  const prox = proximaPendente(l), evp = prox ? estadoVenc(prox) : null;
+  return h('div', {class:'item' + (rec ? '' : ' desp') + (evp ? ' iv-' + evp.cls : '')},
     h('div', {class:'item-topo'},
       h('div', {style:'min-width:0'},
         h('h4', null, rec ? nomeLanc(l) : (l.descricao || l.categoria)),
         h('div', {class:'meta'}, [fmtData(l.data), rec ? l.descricao : l.fornecedor, l.categoria].filter(Boolean).join(' · '))),
       h('div', {style:'text-align:right'}, h('div', {class:'valor ' + (rec ? 'pos' : 'neg')}, (rec ? '' : '− ') + moeda(tot)), seloSituacao(l))),
     h('div', {class:'meta'}, `${l.forma}${ps.length > 1 ? ` · ${ps.length}x de ${moeda(ps[0].valor)}` : ''} · ${ps.filter(p => p.pago).length}/${ps.length} ${rec ? 'recebida(s)' : 'paga(s)'} · ${moeda(pago)} ${rec ? 'recebido' : 'pago'}`),
+    prox ? h('div', {style:'margin-top:6px'}, h('span', {class:'meta'}, `Próxima: ${moeda(prox.valor)} · `), seloVenc(prox)) : null,
     h('div', {class:'barra-prog'}, h('i', {style:`width:${pc}%`})),
     h('div', {class:'acoes'},
       h('button', {class:'btn ouro peq', onclick:acao(() => detalhesLancamento(l.id))}, '🔎 Parcelas'),
@@ -2356,10 +2429,11 @@ async function detalhesLancamento(id){
     limpar(lista);
     l.parcelas.forEach((p, i) => {
       const atr = !p.pago && p.vencimento < hojeISO();
-      lista.appendChild(h('div', {class:'parc' + (p.pago ? ' ok' : atr ? ' atr' : '')},
+      lista.appendChild(h('div', {class:'parc v-' + estadoVenc(p).cls},
         h('div', {class:'pn'}, `${i + 1}/${l.parcelas.length}`),
         h('div', {style:'flex:1;min-width:0'}, h('b', null, moeda(p.valor)),
-          h('div', {class:'meta'}, 'Vence ' + fmtData(p.vencimento) + (p.pago ? ` · ${rec ? 'recebida' : 'paga'} em ${fmtData(p.dataPagamento)}` : atr ? ' · ATRASADA' : ''))),
+          h('div', {class:'meta'}, 'Vence ' + fmtData(p.vencimento) + (p.pago ? ` · ${rec ? 'recebida' : 'paga'} em ${fmtData(p.dataPagamento)}` : '')),
+          p.pago ? null : h('div', {style:'margin-top:3px'}, seloVenc(p))),
         p.pago
           ? h('button', {class:'btn peq', onclick: async () => { p.pago = false; p.dataPagamento = ''; await gravar('financeiro', l); desenhar(); }}, 'Desfazer')
           : h('button', {class:'btn rosa peq', onclick: async () => { if (await baixarParcela(l, i)) desenhar(); }}, rec ? '✓ Recebi' : '✓ Paguei')));
@@ -2393,11 +2467,13 @@ function telaFinanceiro(area){
   const nomeMes = MESES[m - 1].charAt(0).toUpperCase() + MESES[m - 1].slice(1) + ' de ' + ano;
   const moverMes = n => { f.mes = isoDe(new Date(ano, m - 1 + n, 1, 12)).slice(0, 7); ir('financeiro'); };
   const hoje = hojeISO();
+  if (f.aba !== 'receber') f.filtro = 'todas';
 
   area.appendChild(h('div', {class:'titulo-pag'}, h('h2', null, '💰 Financeiro'),
     h('div', {class:'acoes', style:'margin:0'},
       h('button', {class:'btn rosa', onclick:() => editarLancamento(null, {tipo:'receita'})}, '＋ Recebimento'),
       adm ? h('button', {class:'btn ouro', onclick:() => editarLancamento(null, {tipo:'despesa'})}, '＋ Despesa') : null)));
+  const alertasFin = painelAlertasPagamento(); if (alertasFin) area.appendChild(alertasFin);
   area.appendChild(h('div', {class:'cartao'},
     h('div', {class:'ag-topo'},
       h('button', {class:'btn peq', onclick:() => moverMes(-1)}, '◀'),
@@ -2448,18 +2524,25 @@ function telaFinanceiro(area){
   else if (f.aba === 'receber') {
     const linha = x => {
       const rec = x.l.tipo === 'receita';
-      const atr = x.p.vencimento < hoje;
-      return h('div', {class:'parc' + (atr ? ' atr' : '')},
+      const ev = estadoVenc(x.p);
+      const pac = rec ? pacientePorId(x.l.pacienteId) : null;
+      return h('div', {class:'parc v-' + ev.cls},
         h('div', {class:'pn'}, `${x.i + 1}/${x.l.parcelas.length}`),
         h('div', {style:'flex:1;min-width:0;cursor:pointer', onclick:() => detalhesLancamento(x.l.id)},
           h('b', null, nomeLanc(x.l)),
           h('div', {class:'meta'}, [rec ? x.l.descricao : x.l.fornecedor, x.l.forma].filter(Boolean).join(' · ')),
-          h('div', {class:'meta'}, 'Vence ' + fmtData(x.p.vencimento) + (atr ? ' · ATRASADA' : x.p.vencimento === hoje ? ' · VENCE HOJE' : ''))),
+          h('div', {style:'margin-top:4px'}, seloVenc(x.p), ev.cls !== 'futuro' ? h('span', {class:'meta'}, '  ' + fmtData(x.p.vencimento)) : null),
+          x.p.lembreteEm ? h('div', {class:'meta'}, '💬 Lembrete enviado em ' + new Date(x.p.lembreteEm).toLocaleDateString('pt-BR')) : null),
         h('div', {style:'text-align:right'}, h('div', {class:'valor ' + (rec ? 'pos' : 'neg')}, moeda(x.p.valor)),
-          h('button', {class:'btn rosa peq', style:'margin-top:4px', onclick: async () => { if (await baixarParcela(x.l, x.i)) ir('financeiro'); }}, rec ? '✓ Recebi' : '✓ Paguei')));
+          h('button', {class:'btn rosa peq', style:'margin-top:4px', onclick: async () => { if (await baixarParcela(x.l, x.i)) ir('financeiro'); }}, rec ? '✓ Recebi' : '✓ Paguei'),
+          rec && pac && ['vencido', 'hoje', 'breve', 'semana'].includes(ev.cls) ? h('button', {class:'btn peq', style:'margin-top:4px;display:block;margin-left:auto', title:'Lembrar o paciente pelo WhatsApp', onclick:() => cobrarWhats(x.l, x.i)}, '💬 Lembrar') : null));
     };
-    const pend = arr => arr.filter(x => !x.p.pago).sort((a, b) => a.p.vencimento.localeCompare(b.p.vencimento));
+    const filtro = f.filtro || 'todas';
+    const passa = x => { const c = estadoVenc(x.p).cls; return filtro === 'todas' || c === filtro || (filtro === 'breve' && (c === 'breve' || c === 'semana')); };
+    const pend = arr => arr.filter(x => !x.p.pago).filter(passa).sort((a, b) => a.p.vencimento.localeCompare(b.p.vencimento));
     const pr = pend(R), pd = pend(D);
+    area.appendChild(h('div', {class:'filtros-venc'}, [['todas', 'Todas'], ['vencido', '🔴 Vencidas'], ['hoje', '🟠 Hoje'], ['breve', '🟡 Próx. 7 dias'], ['futuro', '⚪ Depois']].map(([k, t]) =>
+      h('button', {class: filtro === k ? 'ativo' : '', onclick:() => { f.filtro = k; ir('financeiro'); }}, t))));
     area.appendChild(h('div', {class:'cartao'}, h('h2', null, `📥 Contas a receber (${pr.length})`),
       h('div', {class:'meta', style:'margin-bottom:8px;color:var(--cinza)'}, `Total pendente: ${moeda(somaP(pr))} · em atraso: ${moeda(atrasado)}`),
       pr.length ? pr.map(linha) : h('div', {class:'meta', style:'color:var(--cinza)'}, 'Nada a receber. 🎉')));
@@ -2730,24 +2813,71 @@ function msgAcessoPortal(p){
     (site ? `Acesse: ${site}\n` : '') + `Toque em "Meus laudos" e informe:\n• Seu CPF\n• Código de acesso: *${fmtCodigo(p.codigoPortal)}*\n` +
     (ate ? `\nO laudo fica disponível até ${fmtData(ate)}.` : '') + `\n\nGuarde este código, ele é pessoal.`;
 }
-function enviarAcessoWhats(pid){
+function msgBoasVindasPortal(p){
+  const site = siteDoPortal();
+  const clinica = estado.config.nome || 'a clínica';
+  return `Olá, ${p.nome.split(' ')[0]}! 🌸\n\n` +
+    `Seja bem-vindo(a) ao atendimento de *${clinica}*.\n\n` +
+    `Você já tem acesso à sua *Área do Paciente*, onde ficarão disponíveis os laudos e relatórios dos seus atendimentos.\n\n` +
+    `📲 *Como acessar:*\n` +
+    `1. Entre no site: ${site || '(endereço do site da clínica)'}\n` +
+    `2. Toque em *"Meus laudos"*\n` +
+    `3. Digite o seu *CPF*\n` +
+    `4. Digite o seu código de acesso: *${fmtCodigo(p.codigoPortal)}*\n\n` +
+    `📄 Os laudos aparecem lá depois de cada atendimento, assim que forem liberados, e ficam disponíveis por um período. ` +
+    `Para guardar uma cópia, use o botão *"Imprimir / Salvar PDF"*.\n\n` +
+    `🔒 Este código é pessoal. Não compartilhe com outras pessoas.\n\n` +
+    `Qualquer dúvida, é só responder esta mensagem.`;
+}
+function temLaudoAtivo(pid){
+  const hoje = hojeISO();
+  return estado.atendimentos.some(a => a.pacienteId === pid && a.portal && a.portal.liberado && a.portal.validade >= hoje);
+}
+function mensagemAcesso(p, tipo){ return (tipo === 'laudo' || (!tipo && temLaudoAtivo(p.id))) ? msgAcessoPortal(p) : msgBoasVindasPortal(p); }
+async function marcarAcessoEnviado(pid){
+  const p = pacientePorId(pid); if (!p) return;
+  p.acessoEnviadoEm = new Date().toISOString();
+  try { await gravar('pacientes', p); } catch (e) {}
+}
+function enviarAcessoWhats(pid, tipo){
   const p = pacientePorId(pid);
   if (!p || !p.codigoPortal) return;
   let tel = soDigitos(p.telefone);
   if (tel && tel.length <= 11) tel = '55' + tel;
-  window.open('https://wa.me/' + (tel || '') + '?text=' + encodeURIComponent(msgAcessoPortal(p)), '_blank');
+  window.open('https://wa.me/' + (tel || '') + '?text=' + encodeURIComponent(mensagemAcesso(p, tipo)), '_blank');
+  marcarAcessoEnviado(pid);
 }
-async function mostrarCodigoPortal(pid, titulo){
+function garantirCodigoPortal(p){
+  if (p && !p.codigoPortal && cpfValido(p.cpf)) { p.codigoPortal = gerarCodigoPortal(); return true; }
+  return false;
+}
+async function mostrarCodigoPortal(pid, titulo, tipo){
   const p = pacientePorId(pid);
   if (!p || !p.codigoPortal) return;
+  const msg = mensagemAcesso(p, tipo);
   const r = await modal(titulo || '🔑 Acesso do paciente aos laudos', h('div', null,
-    h('p', {style:'margin-top:0'}, 'Entregue ao paciente ', h('b', null, p.nome), ' o código abaixo. Ele vai usar junto com o CPF dele em "Meus laudos", no site.'),
+    h('p', {style:'margin-top:0'}, 'Código de acesso de ', h('b', null, p.nome), '. O paciente usa este código junto com o CPF dele em "Meus laudos", no site.'),
     h('div', {class:'codigo-grande'}, fmtCodigo(p.codigoPortal)),
-    h('div', {class:'meta', style:'text-align:center;color:var(--cinza)'}, 'CPF do paciente: ' + mascaraCPF(p.cpf)),
-    portalModo() === 'teste' ? h('div', {class:'alerta', style:'margin-top:10px'}, '🧪 Modo de teste: o laudo só abre no site aberto neste mesmo aparelho. Para valer para os pacientes, conecte o portal em ⚙️ Ajustes.') : null),
-    [{texto:'Fechar', valor:null}, {texto:'📋 Copiar mensagem', valor:'copiar'}, {texto:'💬 Enviar pelo WhatsApp', valor:'zap', classe:'rosa'}]);
-  if (r === 'zap') enviarAcessoWhats(pid);
-  else if (r === 'copiar') { try { await navigator.clipboard.writeText(msgAcessoPortal(p)); toast('Mensagem copiada'); } catch (e) { toast('Não foi possível copiar'); } }
+    h('div', {class:'meta', style:'text-align:center;color:var(--cinza)'}, 'CPF: ' + mascaraCPF(p.cpf) + (p.telefone ? ' · WhatsApp: ' + p.telefone : ' · sem telefone no cadastro')),
+    h('div', {class:'sub-form', style:'margin:14px 0 6px'}, '💬 Mensagem que será enviada'),
+    h('div', {class:'msg-previa'}, msg),
+    !siteDoPortal() ? h('div', {class:'alerta', style:'margin-top:8px'}, '⚠️ O endereço do site ainda não foi configurado. ' + (ehAdmin() ? 'Preencha em ⚙️ Ajustes › Portal do paciente.' : 'Peça à Kárita para configurar.')) : null,
+    p.acessoEnviadoEm ? h('div', {class:'meta', style:'margin-top:6px;color:var(--cinza)'}, '✔ Último envio: ' + new Date(p.acessoEnviadoEm).toLocaleString('pt-BR')) : null,
+    portalModo() === 'teste' ? h('div', {class:'alerta', style:'margin-top:10px'}, '🧪 Modo de teste: os laudos só abrem no site aberto neste mesmo aparelho. Para valer para os pacientes, ligue o portal à nuvem.') : null),
+    [{texto:'Depois', valor:null}, {texto:'📋 Copiar', valor:'copiar'}, {texto:'💬 Enviar pelo WhatsApp', valor:'zap', classe:'rosa'}], 640);
+  if (r === 'zap') enviarAcessoWhats(pid, tipo);
+  else if (r === 'copiar') { try { await navigator.clipboard.writeText(msg); toast('Mensagem copiada'); marcarAcessoEnviado(pid); } catch (e) { toast('Não foi possível copiar'); } }
+}
+function blocoAcessoSecretaria(pid){
+  const p = pacientePorId(pid);
+  const cpfOk = cpfValido(p.cpf);
+  return h('div', {class:'portal-box'},
+    h('div', {class:'portal-cod'}, h('small', null, 'Código de acesso aos laudos'),
+      p.codigoPortal ? h('b', null, fmtCodigo(p.codigoPortal)) : h('span', {class:'meta'}, cpfOk ? 'Ainda não gerado' : 'Cadastre o CPF para gerar')),
+    p.acessoEnviadoEm ? h('div', {class:'meta', style:'margin-top:4px'}, '✔ Orientações enviadas em ' + new Date(p.acessoEnviadoEm).toLocaleDateString('pt-BR')) : null,
+    h('div', {class:'acoes'},
+      p.codigoPortal ? h('button', {class:'btn ouro peq', onclick:() => { fecharModais(); mostrarCodigoPortal(pid, '🔑 Acesso do paciente'); }}, '💬 Enviar acesso') : null,
+      !p.codigoPortal && cpfOk ? h('button', {class:'btn ouro peq', onclick: async () => { fecharModais(); garantirCodigoPortal(p); await gravar('pacientes', p); mostrarCodigoPortal(pid, '🔑 Código de acesso criado', 'boasvindas'); }}, '🔑 Gerar código') : null));
 }
 function camposPortalAtendimento(pt, pacienteId){
   /* pt = {liberado:boolean, validade:'aaaa-mm-dd'} */
@@ -2804,13 +2934,15 @@ function blocoPortalPaciente(pid){
   const cpfOk = cpfValido(p.cpf);
   return h('div', {class:'portal-box'},
     h('div', {class:'portal-cod'}, h('small', null, 'Código de acesso aos laudos'),
-      p.codigoPortal ? h('b', null, fmtCodigo(p.codigoPortal)) : h('span', {class:'meta'}, 'Será criado ao liberar o primeiro laudo')),
+      p.codigoPortal ? h('b', null, fmtCodigo(p.codigoPortal)) : h('span', {class:'meta'}, cpfOk ? 'Ainda não gerado' : 'Cadastre o CPF para gerar')),
     !cpfOk ? h('div', {class:'alerta'}, '⚠️ Cadastre um CPF válido para este paciente poder ver os laudos no site.') : null,
+    p.acessoEnviadoEm ? h('div', {class:'meta', style:'margin-top:4px'}, '✔ Orientações enviadas em ' + new Date(p.acessoEnviadoEm).toLocaleDateString('pt-BR')) : null,
     ats.length ? ats.map(a => h('div', {class:'meta', style:'margin-top:4px'},
       `📄 Nº ${a.numero} (${fmtData(a.data)}) — ` + (a.portal.validade >= hoje ? `disponível até ${fmtData(a.portal.validade)}` : `expirou em ${fmtData(a.portal.validade)}`)))
       : h('div', {class:'meta', style:'margin-top:4px;color:var(--cinza)'}, 'Nenhum laudo liberado. Libere pelo atendimento (botão 🌐 Portal no relatório).'),
     h('div', {class:'acoes'},
       p.codigoPortal && cpfOk ? h('button', {class:'btn ouro peq', onclick:() => { fecharModais(); mostrarCodigoPortal(pid); }}, '💬 Enviar acesso') : null,
+      !p.codigoPortal && cpfOk ? h('button', {class:'btn ouro peq', onclick: async () => { fecharModais(); garantirCodigoPortal(p); await gravar('pacientes', p); mostrarCodigoPortal(pid, '🔑 Código de acesso criado', 'boasvindas'); }}, '🔑 Gerar código') : null,
       cpfOk && p.codigoPortal ? h('button', {class:'btn peq', onclick: async () => {
         if (!await confirmar('Trocar o código de acesso? O código antigo deixa de funcionar e você precisará enviar o novo ao paciente.', 'Trocar código', 'Trocar')) return;
         fecharModais();
@@ -2930,6 +3062,288 @@ function cartaoPortalAjustes(){
       h('button', {class:'btn peq', style:'margin-top:6px', onclick: async () => { try { await navigator.clipboard.writeText(txtRegras.value); toast('Regras copiadas'); } catch (e) { txtRegras.select(); } }}, '📋 Copiar regras')));
 }
 
+/* =========================================================
+   ALERTAS DE PAGAMENTO (cores por vencimento)
+   ========================================================= */
+function estadoVenc(p){
+  if (p.pago) return {cls:'pago', txt:'Pago', ico:'✅', ord:5, d:0};
+  const d = Math.round((dataDe(p.vencimento) - dataDe(hojeISO())) / 86400000);
+  if (d < 0) return {cls:'vencido', txt:`Vencida há ${-d} dia${d === -1 ? '' : 's'}`, ico:'🔴', ord:0, d};
+  if (d === 0) return {cls:'hoje', txt:'Vence HOJE', ico:'🟠', ord:1, d};
+  if (d <= 3) return {cls:'breve', txt: d === 1 ? 'Vence amanhã' : `Vence em ${d} dias`, ico:'🟡', ord:2, d};
+  if (d <= 7) return {cls:'semana', txt:`Vence em ${d} dias`, ico:'🟨', ord:3, d};
+  return {cls:'futuro', txt:'Vence em ' + fmtData(p.vencimento), ico:'⚪', ord:4, d};
+}
+const seloVenc = p => { const e = estadoVenc(p); return h('span', {class:'selo sv-' + e.cls}, e.ico + ' ' + e.txt); };
+function proximaPendente(l){ return (l.parcelas || []).filter(p => !p.pago).sort((a, b) => a.vencimento.localeCompare(b.vencimento))[0] || null; }
+function resumoAlertas(tipo){
+  const lista = todasParcelas(tipo).filter(x => !x.p.pago).map(x => Object.assign(x, {ev:estadoVenc(x.p)}));
+  const grupo = cls => lista.filter(x => cls.includes(x.ev.cls));
+  return {vencidas:grupo(['vencido']), hoje:grupo(['hoje']), breve:grupo(['breve', 'semana'])};
+}
+function contagemAlertas(){
+  const r = resumoAlertas('receita');
+  let n = r.vencidas.length + r.hoje.length;
+  if (ehAdmin()) { const d = resumoAlertas('despesa'); n += d.vencidas.length + d.hoje.length; }
+  return n;
+}
+function painelAlertasPagamento(){
+  const blocos = [];
+  const montar = (tipo, titulo) => {
+    const r = resumoAlertas(tipo);
+    if (!r.vencidas.length && !r.hoje.length && !r.breve.length) return;
+    const ir_ = filtro => { estado.fin.aba = 'receber'; estado.fin.filtro = filtro; ir('financeiro'); };
+    blocos.push(h('div', null, h('div', {class:'alertas-tit'}, titulo),
+      h('div', {class:'alertas'},
+        r.vencidas.length ? h('button', {class:'alerta-box av-vencido', onclick:() => ir_('vencido')}, h('b', null, `🔴 ${r.vencidas.length} vencida(s)`), h('span', null, moeda(somaP(r.vencidas)))) : null,
+        r.hoje.length ? h('button', {class:'alerta-box av-hoje', onclick:() => ir_('hoje')}, h('b', null, `🟠 ${r.hoje.length} vence(m) hoje`), h('span', null, moeda(somaP(r.hoje)))) : null,
+        r.breve.length ? h('button', {class:'alerta-box av-breve', onclick:() => ir_('breve')}, h('b', null, `🟡 ${r.breve.length} nos próximos 7 dias`), h('span', null, moeda(somaP(r.breve)))) : null)));
+  };
+  montar('receita', '📥 A receber');
+  if (ehAdmin()) montar('despesa', '📤 A pagar');
+  if (!blocos.length) return null;
+  return h('div', {class:'cartao cartao-alertas'}, h('h2', null, '⚠️ Alertas de pagamento'), blocos);
+}
+function msgCobranca(l, i){
+  const p = l.parcelas[i], pac = pacientePorId(l.pacienteId) || {};
+  const ev = estadoVenc(p);
+  const quando = ev.cls === 'vencido' ? `venceu em ${fmtData(p.vencimento)}` : ev.cls === 'hoje' ? 'vence hoje' : `vence em ${fmtData(p.vencimento)}`;
+  return `Olá, ${(pac.nome || '').split(' ')[0] || 'tudo bem'}! 🌸\n\nPassando para lembrar que a parcela ${i + 1}/${l.parcelas.length} de *${moeda(p.valor)}*, referente a ${l.descricao || 'atendimento'}, ${quando}.\n\n` +
+    `Forma de pagamento: ${l.forma}.\nSe você já pagou, por favor desconsidere esta mensagem.\n\nQualquer dúvida, estamos à disposição.\n*${estado.config.nome || ''}*`;
+}
+function cobrarWhats(l, i){
+  const pac = pacientePorId(l.pacienteId) || {};
+  let tel = soDigitos(pac.telefone);
+  if (tel && tel.length <= 11) tel = '55' + tel;
+  window.open('https://wa.me/' + (tel || '') + '?text=' + encodeURIComponent(msgCobranca(l, i)), '_blank');
+  l.parcelas[i].lembreteEm = new Date().toISOString();
+  gravar('financeiro', l).catch(() => {});
+}
+
+/* =========================================================
+   HORÁRIOS DE ATENDIMENTO E HORÁRIOS LIVRES
+   ========================================================= */
+const AGENDA_PADRAO = {duracao:30, diasAFrente:60, dias:{
+  0:{ativo:false, inicio:'08:00', fim:'12:00', pausaIni:'', pausaFim:''},
+  1:{ativo:true, inicio:'08:00', fim:'18:00', pausaIni:'12:00', pausaFim:'13:00'},
+  2:{ativo:true, inicio:'08:00', fim:'18:00', pausaIni:'12:00', pausaFim:'13:00'},
+  3:{ativo:true, inicio:'08:00', fim:'18:00', pausaIni:'12:00', pausaFim:'13:00'},
+  4:{ativo:true, inicio:'08:00', fim:'18:00', pausaIni:'12:00', pausaFim:'13:00'},
+  5:{ativo:true, inicio:'08:00', fim:'18:00', pausaIni:'12:00', pausaFim:'13:00'},
+  6:{ativo:true, inicio:'08:00', fim:'12:00', pausaIni:'', pausaFim:''}}};
+const cfgAgenda = () => { const c = estado.config.agendaCfg; return c && c.dias ? c : copia(AGENDA_PADRAO); };
+const minutos = hm => { const [a, b] = String(hm || '0:0').split(':').map(Number); return (a || 0) * 60 + (b || 0); };
+const hmDe = m => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+function bloqueiosDoDia(iso){ return (estado.bloqueios || []).filter(b => b.inicio <= iso && iso <= (b.fim || b.inicio)); }
+const diaBloqueadoInteiro = iso => bloqueiosDoDia(iso).some(b => b.diaInteiro !== false);
+const diaAtende = iso => !!(cfgAgenda().dias[dataDe(iso).getDay()] || {}).ativo;
+function horariosLivres(iso, ignorarId){
+  const cfg = cfgAgenda(), d = cfg.dias[dataDe(iso).getDay()];
+  if (!d || !d.ativo || diaBloqueadoInteiro(iso)) return [];
+  const dur = cfg.duracao || 30, ini = minutos(d.inicio), fim = minutos(d.fim);
+  const ocup = estado.atendimentos.filter(a => a.data === iso && a.id !== ignorarId && a.status !== 'Cancelado' && a.hora)
+    .map(a => [minutos(a.hora), a.horaFim && minutos(a.horaFim) > minutos(a.hora) ? minutos(a.horaFim) : minutos(a.hora) + dur]);
+  bloqueiosDoDia(iso).filter(b => b.diaInteiro === false).forEach(b => ocup.push([minutos(b.horaIni), minutos(b.horaFim)]));
+  if (d.pausaIni && d.pausaFim && minutos(d.pausaFim) > minutos(d.pausaIni)) ocup.push([minutos(d.pausaIni), minutos(d.pausaFim)]);
+  const agora = iso === hojeISO() ? new Date().getHours() * 60 + new Date().getMinutes() : -1;
+  const out = [];
+  for (let t = ini; t + dur <= fim; t += dur) {
+    if (t <= agora) continue;
+    if (ocup.some(([a, b]) => t < b && t + dur > a)) continue;
+    out.push(hmDe(t));
+  }
+  return out;
+}
+function seletorHorario(a, ignorarId){
+  const caixa = h('div', {class:'campo full'});
+  let encaixe = false;
+  const desenhar = () => {
+    limpar(caixa);
+    const cfg = cfgAgenda(), hoje = hojeISO();
+    caixa.appendChild(h('span', null, '📅 Escolha o dia', h('b', {class:'req'}, ' *')));
+    const dias = h('div', {class:'dias-livres'});
+    for (let i = 0; i < (cfg.diasAFrente || 60); i++) {
+      const iso = somarDias(hoje, i);
+      if (!diaAtende(iso)) continue;
+      const livres = horariosLivres(iso, ignorarId), dd = dataDe(iso), bloq = diaBloqueadoInteiro(iso);
+      const bt = h('button', {type:'button', class:'dia-chip' + (iso === a.data ? ' sel' : '') + (bloq ? ' bloq' : !livres.length ? ' cheio' : ''), disabled: !livres.length && !(ehAdmin() && encaixe),
+        onclick:() => { a.data = iso; a.hora = ''; desenhar(); }},
+        h('small', null, i === 0 ? 'Hoje' : i === 1 ? 'Amanhã' : DIAS_SEM[dd.getDay()]),
+        h('b', null, String(dd.getDate()).padStart(2, '0') + '/' + String(dd.getMonth() + 1).padStart(2, '0')),
+        h('small', null, bloq ? '🚫 sem atend.' : livres.length ? `${livres.length} livre${livres.length > 1 ? 's' : ''}` : 'lotado'));
+      dias.appendChild(bt);
+    }
+    caixa.appendChild(dias);
+    if (a.data) {
+      const livres = horariosLivres(a.data, ignorarId);
+      bloqueiosDoDia(a.data).forEach(b => caixa.appendChild(h('div', {class:'aviso-bloq'}, `🚫 ${b.diaInteiro === false ? `${b.horaIni} às ${b.horaFim}` : 'Dia todo'}: ${b.motivo || 'sem atendimento'}`)));
+      caixa.appendChild(h('span', {style:'margin-top:12px'}, `🕘 Horários livres — ${DIAS_LONGO[dataDe(a.data).getDay()]}, ${fmtData(a.data)}`));
+      if (encaixe) {
+        const inp = h('input', {type:'time', value:a.hora || ''});
+        inp.addEventListener('change', () => { a.hora = inp.value; a.horaFim = a.hora ? hmDe(minutos(a.hora) + (cfg.duracao || 30)) : ''; desenhar(); });
+        caixa.appendChild(h('div', {class:'alerta', style:'margin-top:6px'}, '⚠️ Encaixe: escolha qualquer horário, mesmo fora dos horários livres.', inp));
+      } else {
+        caixa.appendChild(h('div', {class:'horas-livres'}, livres.length ? livres.map(t => h('button', {type:'button', class:'hora-chip' + (t === a.hora ? ' sel' : ''),
+          onclick:() => { a.hora = t; a.horaFim = hmDe(minutos(t) + (cfg.duracao || 30)); desenhar(); }}, t))
+          : h('div', {class:'meta', style:'color:var(--cinza)'}, 'Nenhum horário livre neste dia. Escolha outro dia.')));
+      }
+    }
+    if (a.data && a.hora) caixa.appendChild(h('div', {class:'aviso-ok', style:'margin-top:10px'}, `✅ ${DIAS_LONGO[dataDe(a.data).getDay()]}, ${fmtData(a.data)}, das ${a.hora} às ${a.horaFim}`));
+    if (ehAdmin()) caixa.appendChild(h('label', {class:'ck', style:'margin-top:8px;padding:0'},
+      (() => { const c = h('input', {type:'checkbox', checked:encaixe}); c.addEventListener('change', () => { encaixe = c.checked; a.encaixe = encaixe; desenhar(); }); return c; })(),
+      'Encaixe (somente a Kárita)'));
+  };
+  desenhar();
+  return caixa;
+}
+function cartaoHorariosAtendimento(){
+  const cfg = copia(cfgAgenda());
+  const linhas = [1, 2, 3, 4, 5, 6, 0].map(n => {
+    const d = cfg.dias[n];
+    const ck = h('input', {type:'checkbox', checked:d.ativo}); ck.addEventListener('change', () => { d.ativo = ck.checked; });
+    const t = k => { const i = h('input', {type:'time', value:d[k] || ''}); i.addEventListener('change', () => { d[k] = i.value; }); return i; };
+    return h('div', {class:'linha-hor'}, h('label', {class:'ck', style:'padding:0'}, ck, DIAS_LONGO[n].split('-')[0]), t('inicio'), t('fim'), t('pausaIni'), t('pausaFim'));
+  });
+  const selDur = h('select', null, [15, 20, 30, 40, 45, 50, 60, 90, 120].map(m => h('option', {value:String(m)}, m + ' minutos')));
+  selDur.value = String(cfg.duracao || 30);
+  selDur.addEventListener('change', () => { cfg.duracao = parseInt(selDur.value, 10); });
+  const selAte = h('select', null, [[30, '30 dias'], [60, '60 dias'], [90, '90 dias'], [180, '6 meses']].map(([v, t]) => h('option', {value:String(v)}, t)));
+  selAte.value = String(cfg.diasAFrente || 60);
+  selAte.addEventListener('change', () => { cfg.diasAFrente = parseInt(selAte.value, 10); });
+  return h('div', {class:'cartao'}, h('h2', null, '🕘 Horários de atendimento'),
+    h('p', {style:'margin:0 0 10px;font-size:14px;color:var(--cinza)'}, 'Ao agendar ou remarcar, o sistema só mostra os dias e horários livres, de acordo com esta tabela, os bloqueios e os agendamentos já marcados.'),
+    h('div', {class:'linha-hor cab'}, h('span', null, 'Dia'), h('span', null, 'Início'), h('span', null, 'Fim'), h('span', null, 'Pausa de'), h('span', null, 'até')),
+    linhas,
+    h('div', {class:'grade', style:'margin-top:12px'},
+      h('div', {class:'campo'}, h('span', null, 'Duração de cada atendimento'), selDur),
+      h('div', {class:'campo'}, h('span', null, 'Mostrar horários para os próximos'), selAte)),
+    h('div', {class:'acoes'}, h('button', {class:'btn rosa', onclick: async () => { estado.config.agendaCfg = cfg; await salvarConfig(); toast('Horários salvos'); }}, '💾 Salvar horários')));
+}
+
+/* =========================================================
+   BLOQUEIOS: dias e horários sem atendimento
+   ========================================================= */
+const MOTIVOS_BLOQUEIO = ['Férias', 'Feriado', 'Congresso / curso', 'Compromisso pessoal', 'Saúde', 'Viagem', 'Outro'];
+async function gerenciarBloqueios(){
+  const hoje = hojeISO();
+  const n = {inicio:hoje, fim:hoje, diaInteiro:'Sim', horaIni:'08:00', horaFim:'12:00', motivo:MOTIVOS_BLOQUEIO[0], obs:''};
+  const lista = h('div');
+  const caixaHoras = h('div', {class:'grade', style:'margin-top:8px'});
+  const desenharHoras = () => { limpar(caixaHoras); if (n.diaInteiro === 'Não') { caixaHoras.appendChild(campo(n, 'horaIni', 'Das', {tipo:'time'})); caixaHoras.appendChild(campo(n, 'horaFim', 'Até', {tipo:'time'})); } };
+  const desenharLista = () => {
+    limpar(lista);
+    const futuros = (estado.bloqueios || []).filter(b => (b.fim || b.inicio) >= hoje).sort((a, b) => a.inicio.localeCompare(b.inicio));
+    if (!futuros.length) { lista.appendChild(h('div', {class:'meta', style:'color:var(--cinza)'}, 'Nenhum bloqueio marcado.')); return; }
+    futuros.forEach(b => lista.appendChild(h('div', {class:'parc v-bloq'},
+      h('div', {class:'pn'}, '🚫'),
+      h('div', {style:'flex:1;min-width:0'},
+        h('b', null, b.inicio === (b.fim || b.inicio) ? fmtData(b.inicio) : `${fmtData(b.inicio)} a ${fmtData(b.fim)}`),
+        h('div', {class:'meta'}, (b.diaInteiro === false ? `Das ${b.horaIni} às ${b.horaFim}` : 'Dia todo') + ' · ' + (b.motivo || '') + (b.obs ? ' — ' + b.obs : '')),
+        b.criadoPor ? h('div', {class:'meta'}, 'Marcado por ' + b.criadoPor) : null),
+      h('button', {class:'btn perigo peq', onclick: async () => {
+        if (!await confirmar('Remover este bloqueio? Os horários voltam a ficar livres para agendamento.', 'Remover bloqueio', 'Remover', true)) return;
+        await apagar('bloqueios', b.id); estado.bloqueios = estado.bloqueios.filter(x => x.id !== b.id); desenharLista(); toast('Bloqueio removido');
+      }}, '🗑️'))));
+  };
+  desenharLista(); desenharHoras();
+  const corpo = h('div', null,
+    h('p', {style:'margin-top:0;font-size:14px;color:var(--cinza)'}, 'Marque os dias ou horários em que a Kárita não vai atender. Eles somem das opções de agendamento e aparecem na agenda.'),
+    h('h4', {class:'sub-form', style:'margin:0 0 8px'}, 'Bloqueios marcados'), lista,
+    h('h4', {class:'sub-form', style:'margin:16px 0 8px'}, '＋ Novo bloqueio'),
+    h('div', {class:'grade'},
+      campo(n, 'inicio', 'De', {tipo:'date', aoMudar:v => { if (!n.fim || n.fim < v) n.fim = v; }}),
+      campo(n, 'fim', 'Até', {tipo:'date'}),
+      campo(n, 'diaInteiro', 'O dia todo?', {tipo:'select', opcoes:['Sim', 'Não'], aoMudar:desenharHoras}),
+      campo(n, 'motivo', 'Motivo', {tipo:'select', opcoes:MOTIVOS_BLOQUEIO})),
+    caixaHoras,
+    h('div', {class:'grade', style:'margin-top:8px'}, campo(n, 'obs', 'Observação (opcional)', {cheio:true})),
+    h('div', {class:'acoes'}, h('button', {class:'btn rosa', onclick: async () => {
+      if (!n.inicio) { toast('Informe a data'); return; }
+      const fim = n.fim && n.fim >= n.inicio ? n.fim : n.inicio;
+      if (n.diaInteiro === 'Não' && minutos(n.horaFim) <= minutos(n.horaIni)) { toast('O horário final precisa ser depois do inicial'); return; }
+      const b = {id:uid(), inicio:n.inicio, fim, diaInteiro:n.diaInteiro !== 'Não', horaIni:n.horaIni, horaFim:n.horaFim, motivo:n.motivo, obs:n.obs.trim(), criadoPor:estado.usuario ? estado.usuario.nome : '', criadoEm:Date.now()};
+      const afetados = estado.atendimentos.filter(a => a.status !== 'Cancelado' && a.data >= b.inicio && a.data <= b.fim && a.hora &&
+        (b.diaInteiro || (minutos(a.hora) < minutos(b.horaFim) && minutos(a.horaFim || hmDe(minutos(a.hora) + (cfgAgenda().duracao || 30))) > minutos(b.horaIni))));
+      if (afetados.length && !await confirmar(`Já existem ${afetados.length} agendamento(s) nesse período:\n\n${afetados.slice(0, 8).map(a => `• ${fmtData(a.data)} ${a.hora} — ${(pacientePorId(a.pacienteId) || {}).nome || ''}`).join('\n')}\n\nEles NÃO são cancelados sozinhos. Salve o bloqueio e depois remarque esses pacientes.`, 'Atenção', 'Salvar bloqueio')) return;
+      await gravar('bloqueios', b);
+      estado.bloqueios = (estado.bloqueios || []).concat(b);
+      toast('Bloqueio salvo'); desenharLista();
+    }}, '🚫 Salvar bloqueio')));
+  await modal('🚫 Dias e horários sem atendimento', corpo, [{texto:'Fechar', valor:true, classe:'rosa'}], 680);
+  recarregar();
+}
+function avisosBloqueioDia(iso){
+  return bloqueiosDoDia(iso).map(b => h('div', {class:'aviso-bloq'}, `🚫 Sem atendimento ${b.diaInteiro === false ? `das ${b.horaIni} às ${b.horaFim}` : 'o dia todo'} — ${b.motivo || ''}${b.obs ? ': ' + b.obs : ''}`));
+}
+
+/* =========================================================
+   SECRETÁRIA SÓ ENTRA NO CONSULTÓRIO (localização)
+   ========================================================= */
+function obterLocalizacao(){
+  return new Promise((res, rej) => {
+    if (!navigator.geolocation) { rej(new Error('semgps')); return; }
+    navigator.geolocation.getCurrentPosition(
+      p => res({lat:p.coords.latitude, lng:p.coords.longitude, precisao:Math.round(p.coords.accuracy || 0)}),
+      e => rej(new Error(e.code === 1 ? 'negado' : 'semgps')),
+      {enableHighAccuracy:true, timeout:20000, maximumAge:0});
+  });
+}
+function distanciaM(a, b){
+  const R = 6371000, rad = x => x * Math.PI / 180;
+  const dLat = rad(b.lat - a.lat), dLng = rad(b.lng - a.lng);
+  const s = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(s));
+}
+async function verificarConsultorio(){
+  const c = estado.config.consultorio;
+  if (!c || !c.ativo || typeof c.lat !== 'number') return {ok:true, semRegra:true};
+  let pos;
+  try { pos = await obterLocalizacao(); }
+  catch (e) { return {ok:false, erro:e.message}; }
+  const d = Math.round(distanciaM(pos, c)), raio = c.raio || 150;
+  return {ok: d <= raio + Math.min(pos.precisao || 0, 100), distancia:d, precisao:pos.precisao, lat:pos.lat, lng:pos.lng, raio};
+}
+function textoErroLocal(v){
+  if (v.erro === 'negado') return '📍 Para a secretária entrar, o celular precisa liberar a LOCALIZAÇÃO para este site. Toque no cadeado ao lado do endereço, permita "Localização" e tente de novo.';
+  if (v.erro === 'semgps') return '📍 Não foi possível descobrir a localização. Ligue o GPS (localização) do aparelho e tente de novo.';
+  return `📍 Você está a cerca de ${v.distancia >= 1000 ? (v.distancia / 1000).toFixed(1).replace('.', ',') + ' km' : v.distancia + ' m'} do consultório. O acesso da secretária só é liberado dentro do consultório.`;
+}
+function cartaoConsultorio(){
+  const c = estado.config.consultorio || {};
+  const f = {raio:String(c.raio || 150), ativo:c.ativo ? 'Sim' : 'Não'};
+  const info = h('div');
+  const desenhar = () => {
+    limpar(info);
+    const cc = estado.config.consultorio || {};
+    info.appendChild(typeof cc.lat === 'number'
+      ? h('div', {class:'aviso-ok'}, `📍 Local salvo (precisão de ${cc.precisao || '?'} m). `, h('a', {href:`https://maps.google.com/?q=${cc.lat},${cc.lng}`, target:'_blank', rel:'noopener'}, 'Ver no mapa'))
+      : h('div', {class:'alerta'}, 'Local do consultório ainda não cadastrado.'));
+  };
+  desenhar();
+  return h('div', {class:'cartao'}, h('h2', null, '📍 Acesso da secretária só no consultório'),
+    h('p', {style:'margin:0 0 10px;font-size:14px;color:var(--cinza)'}, 'Quando ligado, a secretária só consegue entrar (e registrar o ponto) se o celular ou computador dela estiver dentro do consultório. A localização e a distância ficam gravadas em cada ponto. A Kárita entra de qualquer lugar.'),
+    info,
+    h('div', {class:'acoes'}, h('button', {class:'btn ouro', onclick: async () => {
+      toast('Buscando a localização...');
+      try {
+        const p = await obterLocalizacao();
+        estado.config.consultorio = Object.assign({}, estado.config.consultorio || {}, {lat:p.lat, lng:p.lng, precisao:p.precisao});
+        await salvarConfig(); desenhar();
+        toast(p.precisao > 100 ? `Local salvo, mas a precisão está baixa (${p.precisao} m). Tente perto de uma janela.` : 'Local do consultório salvo');
+      } catch (e) { aviso(e.message === 'negado' ? 'O navegador não liberou a localização. Permita a localização para este site e tente de novo.' : 'Não foi possível pegar a localização. Ligue o GPS e tente de novo.', 'Localização'); }
+    }}, '📍 Estou no consultório: salvar este local')),
+    h('div', {class:'grade', style:'margin-top:10px'},
+      campo(f, 'raio', 'Distância máxima permitida', {tipo:'select', opcoes:['50', '100', '150', '200', '300', '500']}),
+      campo(f, 'ativo', 'Exigir que a secretária esteja no consultório?', {tipo:'select', opcoes:['Não', 'Sim']})),
+    h('div', {class:'meta', style:'color:var(--cinza)'}, '(distância em metros; 150 m costuma bastar, porque o GPS dentro de prédios varia um pouco)'),
+    h('div', {class:'acoes'}, h('button', {class:'btn rosa', onclick: async () => {
+      const cc = estado.config.consultorio || {};
+      if (f.ativo === 'Sim' && typeof cc.lat !== 'number') { await aviso('Primeiro salve o local do consultório, estando lá dentro.', 'Localização'); return; }
+      estado.config.consultorio = Object.assign({}, cc, {raio:parseInt(f.raio, 10), ativo:f.ativo === 'Sim'});
+      await salvarConfig(); toast('Regra de local salva');
+    }}, '💾 Salvar regra')));
+}
+
 /* ---------- Tela: Configurações ---------- */
 function telaConfig(area){
   const c = copia(estado.config);
@@ -2967,7 +3381,7 @@ function telaConfig(area){
       campo(c, 'registro', 'Registro profissional padrão'),
       campo(c, 'rodape', 'Texto do rodapé do relatório', {tipo:'textarea', cheio:true, linhas:2})),
     h('div', {class:'acoes'}, h('button', {class:'btn rosa', onclick: async () => {
-      ['contador', 'contadorRecibo', 'senhaHash', 'bloqueioMin', 'portal', 'nuvemPlano', 'adminLogin', 'testeRemovido', 'exemploCarregado'].forEach(k => { c[k] = estado.config[k]; });
+      ['contador', 'contadorRecibo', 'senhaHash', 'bloqueioMin', 'portal', 'nuvemPlano', 'adminLogin', 'testeRemovido', 'exemploCarregado', 'agendaCfg', 'consultorio'].forEach(k => { c[k] = estado.config[k]; });
       estado.config = c; await salvarConfig(); toast('Ajustes salvos');
     }}, '💾 Salvar ajustes'))));
 
@@ -2976,7 +3390,9 @@ function telaConfig(area){
   const selTempo = h('select', null, [['15', '15 minutos'], ['30', '30 minutos'], ['60', '1 hora'], ['120', '2 horas'], ['0', 'Nunca bloquear sozinho']].map(([v, t]) => h('option', {value:v}, t)));
   selTempo.value = String(estado.config.bloqueioMin === 0 ? 0 : (estado.config.bloqueioMin || 30));
   selTempo.addEventListener('change', async () => { estado.config.bloqueioMin = parseInt(selTempo.value, 10); await salvarConfig(); toast('Tempo de bloqueio salvo'); });
+  area.appendChild(cartaoHorariosAtendimento());
   area.appendChild(cartaoEquipe());
+  area.appendChild(cartaoConsultorio());
   area.appendChild(cartaoNuvem());
   area.appendChild(h('div', {class:'cartao'}, h('h2', null, '🧪 Dados de teste'),
     h('p', {style:'margin:0 0 10px;font-size:14px;color:var(--cinza)'}, temDadosTeste()
@@ -3038,7 +3454,7 @@ function telaConfig(area){
     inpImp));
 
   area.appendChild(h('div', {class:'cartao'}, h('h2', null, 'ℹ️ Sobre'),
-    h('p', {style:'margin:0;font-size:14px'}, 'Relatório de Atendimento ao Paciente — versão 2.0', h('br'),
+    h('p', {style:'margin:0;font-size:14px'}, 'Relatório de Atendimento ao Paciente — versão 2.2', h('br'),
       'Desenvolvido por ', h('b', null, 'Wendel Emílio de Souza Matias'), h('br'),
       'Contato: oficial.respostas@gmail.com')));
 }
@@ -3172,6 +3588,10 @@ async function carregarExemplo(silencioso){
       await gravar('ponto', {id:uid(), uid:sec.id, nome:sec.nome, login:sec.login, data:dia, entrada:ent.toISOString(), saida: i === 3 ? '' : sai.toISOString(), obs:'', teste:true});
     }
   }
+  if (!(estado.bloqueios || []).some(b => b.teste)) {
+    await gravar('bloqueios', {id:uid(), inicio:somarDias(hj, 10), fim:somarDias(hj, 11), diaInteiro:true, horaIni:'08:00', horaFim:'12:00', motivo:'Congresso / curso', obs:'Congresso em Goiânia (teste)', criadoPor:'teste', criadoEm:Date.now(), teste:true});
+    await gravar('bloqueios', {id:uid(), inicio:somarDias(hj, 3), fim:somarDias(hj, 3), diaInteiro:false, horaIni:'14:00', horaFim:'16:00', motivo:'Compromisso pessoal', obs:'(teste)', criadoPor:'teste', criadoEm:Date.now(), teste:true});
+  }
   estado.config.exemploCarregado = true;
   await salvarConfig();
   await carregar();
@@ -3180,7 +3600,7 @@ async function carregarExemplo(silencioso){
   ir(estado.tela && estado.tela !== 'form' ? estado.tela : 'inicio');
 }
 function temDadosTeste(){
-  return estado.pacientes.some(p => p.teste) || estado.atendimentos.some(a => a.teste) || estado.financeiro.some(l => l.teste) || (estado.usuarios || []).some(u => u.teste) || (estado.ponto || []).some(r => r.teste);
+  return estado.pacientes.some(p => p.teste) || estado.atendimentos.some(a => a.teste) || estado.financeiro.some(l => l.teste) || (estado.usuarios || []).some(u => u.teste) || (estado.ponto || []).some(r => r.teste) || (estado.bloqueios || []).some(b => b.teste);
 }
 async function apagarDadosTeste(){
   const nP = estado.pacientes.filter(p => p.teste).length, nA = estado.atendimentos.filter(a => a.teste).length, nF = estado.financeiro.filter(l => l.teste).length;
@@ -3199,6 +3619,7 @@ async function apagarDadosTeste(){
   for (const p of estado.pacientes) if (p.teste) await apagar('pacientes', p.id);
   for (const u of (estado.usuarios || [])) if (u.teste) await apagar('usuarios', u.id);
   for (const r of (estado.ponto || [])) if (r.teste) await apagar('ponto', r.id);
+  for (const b of (estado.bloqueios || [])) if (b.teste) await apagar('bloqueios', b.id);
   /* acerta a numeração para continuar do último relatório e recibo de verdade */
   const restantesAt = estado.atendimentos.filter(a => !(a.teste || idsTeste.has(a.pacienteId)));
   const restantesFin = estado.financeiro.filter(l => !(l.teste || idsTeste.has(l.pacienteId)));
@@ -3301,6 +3722,17 @@ function telaBloqueio(msgErro){
     erro.textContent = ''; botao.disabled = true; botao.textContent = 'Entrando...';
     try {
       const u = await fazerLogin(inpU.value, inp.value);
+      if (u.papel === 'secretaria') {
+        if (emNuvem()) { try { const g = await nuvemGet(COLECOES.config, 'geral'); if (g) Object.assign(estado.config, doJson(g)); } catch (e) {} }
+        botao.textContent = '📍 Verificando localização...';
+        const v = await verificarConsultorio();
+        if (!v.ok) {
+          if (emNuvem()) { sessaoNuvem = null; guardarSessaoNuvem(); }
+          erro.textContent = textoErroLocal(v); botao.disabled = false; botao.textContent = 'Entrar →';
+          return;
+        }
+        estado.localLogin = v;
+      }
       try { localStorage.setItem('kt_ultimo_login', inpU.value.trim()); } catch (e) {}
       guardarSessaoLocal(u);
       if (estado.usuario && estado.usuario.uid !== u.uid) { try { sessionStorage.removeItem('kt_ponto'); } catch (e) {} location.reload(); return; }
@@ -3342,7 +3774,9 @@ setInterval(() => {
 /* ----- ponto da secretária ----- */
 async function registrarEntrada(){
   const u = estado.usuario, agora = new Date();
-  const reg = {id:uid(), uid:u.uid, nome:u.nome, login:u.login, data:hojeISO(), entrada:agora.toISOString(), saida:'', obs:''};
+  const v = estado.localLogin;
+  const reg = {id:uid(), uid:u.uid, nome:u.nome, login:u.login, data:hojeISO(), entrada:agora.toISOString(), saida:'', obs:'',
+    local: v && !v.semRegra ? {distancia:v.distancia, precisao:v.precisao, lat:v.lat, lng:v.lng} : null};
   await gravar('ponto', reg);
   try { sessionStorage.setItem('kt_ponto', reg.id); } catch (e) {}
   estado.ponto = (estado.ponto || []).concat(reg);
@@ -3412,7 +3846,8 @@ function telaPonto(area){
       h('div', {style:'flex:1;min-width:0'},
         adm ? h('b', null, r.nome) : null,
         h('div', null, `Entrada ${hhmm(horaEntrada(r))}  ·  Saída ${r.saida ? hhmm(horaSaida(r)) : '— sem saída'}`),
-        h('div', {class:'meta'}, r.saida ? 'Total: ' + fmtHoras(minutosPonto(r)) : 'Saída não registrada', r.ajustado ? ' · ✏️ ajustado' + (r.obs ? ': ' + r.obs : '') : '')),
+        h('div', {class:'meta'}, r.saida ? 'Total: ' + fmtHoras(minutosPonto(r)) : 'Saída não registrada', r.ajustado ? ' · ✏️ ajustado' + (r.obs ? ': ' + r.obs : '') : ''),
+        r.local ? h('div', {class:'meta'}, `📍 Entrou a ${r.local.distancia} m do consultório (GPS ±${r.local.precisao} m)`) : null),
       adm ? h('button', {class:'btn peq', onclick:() => ajustarPonto(r.id)}, '✏️ Ajustar') : null));
   });
   area.appendChild(lista);
@@ -3447,7 +3882,7 @@ function imprimirPonto(mes, uidFiltro){
         h('div', {class:'rel-box', style:'padding:0'}, h('table', {class:'rel-tab', style:'margin:0'},
           h('tr', null, h('th', null, 'Data'), h('th', null, 'Entrada'), h('th', null, 'Saída'), h('th', null, 'Total'), h('th', null, 'Observação')),
           meus.map(r => h('tr', null, h('td', null, `${DIAS_SEM[dataDe(r.data).getDay()]} ${fmtData(r.data)}`), h('td', null, hhmm(horaEntrada(r))),
-            h('td', null, r.saida ? hhmm(horaSaida(r)) : '—'), h('td', null, r.saida ? fmtHoras(minutosPonto(r)) : '—'), h('td', null, r.ajustado ? 'Ajustado: ' + (r.obs || '') : ''))),
+            h('td', null, r.saida ? hhmm(horaSaida(r)) : '—'), h('td', null, r.saida ? fmtHoras(minutosPonto(r)) : '—'), h('td', null, [r.ajustado ? 'Ajustado: ' + (r.obs || '') : '', r.local ? `📍 ${r.local.distancia} m` : ''].filter(Boolean).join(' · ')))),
           h('tr', null, h('td', {colspan:'3', style:'font-weight:700'}, 'Total no mês'), h('td', {style:'font-weight:700'}, fmtHoras(tot)), h('td', null, '')))),
         h('div', {class:'rel-assin', style:'margin-top:26px;display:flex;gap:30px;justify-content:center'},
           h('div', {style:'flex:1'}, h('div', {class:'linha'}, n), h('small', null, 'Funcionária')),
@@ -3462,7 +3897,9 @@ function novoOuAgendar(pre){ if (ehAdmin()) editarAtendimento(null, pre); else e
 async function editarAgendamento(id, pre){
   pre = typeof pre === 'string' ? {pacienteId:pre} : (pre || {});
   const orig = id ? estado.atendimentos.find(a => a.id === id) : null;
-  const a = orig ? copia(orig) : Object.assign(novoAtendimento(pre), {hora:'', status:'Agendado', obsAgenda:'', criadoPor:estado.usuario ? estado.usuario.nome : ''});
+  const a = orig ? copia(orig) : Object.assign(novoAtendimento(pre), {hora:'', horaFim:'', status:'Agendado', obsAgenda:'', criadoPor:estado.usuario ? estado.usuario.nome : ''});
+  if (!orig && (a.data < hojeISO() || !diaAtende(a.data) || !horariosLivres(a.data).length)) a.data = '';
+  if (orig && orig.status === 'Agendado' && orig.data < hojeISO()) { a.data = ''; a.hora = ''; }
   const selPac = h('select');
   const montarSel = () => {
     limpar(selPac);
@@ -3475,9 +3912,7 @@ async function editarAgendamento(id, pre){
   const corpo = h('div', {class:'grade'},
     h('div', {class:'campo full'}, h('span', null, 'Paciente', h('b', {class:'req'}, ' *')),
       h('div', {style:'display:flex;gap:8px'}, selPac, h('button', {class:'btn ouro', type:'button', onclick: async () => { const p = await editarPaciente(null); if (p) { a.pacienteId = p.id; montarSel(); } }}, '＋ Novo'))),
-    campo(a, 'data', 'Data', {tipo:'date', obrig:true}),
-    campo(a, 'hora', 'Horário', {tipo:'time', obrig:true}),
-    campo(a, 'horaFim', 'Até (opcional)', {tipo:'time'}),
+    seletorHorario(a, orig ? orig.id : null),
     campo(a, 'tipo', 'Tipo de atendimento', {tipo:'select', opcoes:TIPOS}),
     campo(a, 'status', 'Situação', {tipo:'select', opcoes:['Agendado', 'Concluído', 'Cancelado', 'Retorno agendado', 'Em acompanhamento', 'Encaminhado']}),
     campo(a, 'local', 'Local'),
@@ -3487,9 +3922,11 @@ async function editarAgendamento(id, pre){
     {texto:'Cancelar', valor:false},
     {texto:'💾 Salvar agendamento', valor:true, classe:'rosa', antes:() => {
       if (!a.pacienteId) { toast('Escolha o paciente'); return false; }
-      if (!a.data || !a.hora) { toast('Informe a data e o horário'); return false; }
+      if (!a.data || !a.hora) { toast('Escolha o dia e um horário livre'); return false; }
+      if (!a.encaixe && !horariosLivres(a.data, a.id).includes(a.hora) && !(orig && orig.data === a.data && orig.hora === a.hora)) { toast('Esse horário acabou de ser ocupado. Escolha outro.'); return false; }
     }}], 680);
   if (!ok) return;
+  delete a.encaixe;
   if (!a.numero) a.numero = formatarNumero(await proximoNumero('contador'), a.data);
   a.atualizadoEm = Date.now();
   await gravar('atendimentos', a);
@@ -3592,6 +4029,7 @@ service cloud.firestore {
     match /karita_usuarios/{id} { allow read: if admin() || (logado() && request.auth.uid == id); allow write: if admin(); }
     match /karita_config/{id} { allow read: if equipe(); allow write: if admin(); }
     match /karita_contadores/{id} { allow read, write: if equipe(); }
+    match /karita_bloqueios/{id} { allow read, write: if equipe(); }
     match /karita_pacientes/{id} { allow read, create, update: if equipe(); allow delete: if admin(); }
     match /karita_agenda/{id} { allow read, create, update: if equipe(); allow delete: if admin(); }
     match /karita_prontuario/{id} { allow read, write: if admin(); }

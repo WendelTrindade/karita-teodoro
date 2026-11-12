@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#EBBECB">
+<meta name="description" content="Kárita Teodoro — atendimento com cuidado, atenção e carinho.">
+<meta name="author" content="Wendel Emílio de Souza Matias — oficial.respostas@gmail.com">
+<title>Kárita Teodoro</title>
+<style>
+:root{
+  --rosa:#EBBECB; --rosa-medio:#DDA1B4; --rosa-esc:#A8566F; --vinho:#5E2A3D; --rosa-claro:#FAEDF1; --rosa-bg:#FFF8FA;
+  --ouro:#c9a227; --ouro-esc:#9c7a12; --ouro-claro:#f6e7b0; --texto:#3d2430; --cinza:#806673; --borda:#F3DCE4;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--texto);background:var(--rosa-bg);line-height:1.6}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif;margin:0;color:var(--vinho)}
+a{color:inherit}
+.contido{max-width:1100px;margin:0 auto;padding:0 20px}
+/* Topo */
+.topo{position:sticky;top:0;z-index:20;background:rgba(255,248,250,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--borda)}
+.topo .contido{display:flex;align-items:center;gap:14px;height:70px}
+.marca{display:flex;align-items:center;gap:10px;text-decoration:none}
+.marca .selo{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--rosa),var(--rosa-medio));border:2px solid var(--ouro);display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-weight:700;color:var(--vinho);font-size:17px}
+.marca b{font-family:Georgia,serif;font-size:20px;color:var(--vinho);display:block;line-height:1.1}
+.marca small{color:var(--ouro-esc);font-size:12px;font-weight:600;letter-spacing:.5px}
+.menu{display:flex;gap:4px;margin-left:auto}
+.menu a{text-decoration:none;padding:8px 12px;border-radius:999px;font-weight:600;font-size:14.5px;color:var(--rosa-esc)}
+.menu a:hover{background:var(--rosa-claro)}
+.btn{display:inline-flex;align-items:center;gap:8px;border:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:15px;padding:12px 22px;border-radius:999px;text-decoration:none;transition:.2s}
+.btn.rosa{background:linear-gradient(135deg,var(--rosa),var(--rosa-medio));color:var(--vinho);box-shadow:0 6px 18px rgba(168,86,111,.25)}
+.btn.rosa:hover{transform:translateY(-2px)}
+.btn.ouro{background:linear-gradient(135deg,#f0d168,var(--ouro));color:#4a3505;box-shadow:0 6px 18px rgba(201,162,39,.25)}
+.btn.linha{background:#fff;color:var(--rosa-esc);border:1.5px solid var(--rosa-medio)}
+.btn.peq{padding:9px 16px;font-size:14px}
+.btn-area{margin-left:8px}
+@media (max-width:520px){.so-grande{display:none}.marca b{font-size:16px}.topo .btn{padding:9px 12px;font-size:13.5px}.marca .selo{width:38px;height:38px;font-size:15px}}
+.btn{white-space:nowrap}
+@media (max-width:760px){.menu{display:none}.btn-area{margin-left:auto}.marca small{display:none}}
+/* Abertura */
+.abertura{position:relative;overflow:hidden;padding:80px 0 90px;background:radial-gradient(circle at 85% 20%,rgba(235,190,203,.75),transparent 55%),radial-gradient(circle at 10% 90%,rgba(246,231,176,.55),transparent 50%),var(--rosa-bg)}
+.abertura .contido{display:grid;grid-template-columns:1.2fr 1fr;gap:40px;align-items:center}
+.etiqueta{display:inline-block;background:#fff;border:1px solid var(--ouro-claro);color:var(--ouro-esc);font-weight:700;font-size:13px;padding:6px 14px;border-radius:999px;letter-spacing:.5px}
+.abertura h1{font-size:46px;line-height:1.15;margin:18px 0 16px}
+.abertura h1 em{font-style:normal;color:var(--rosa-esc);border-bottom:3px solid var(--ouro)}
+.abertura p{font-size:18px;color:#5c4350;max-width:520px;margin:0 0 26px}
+.acoes{display:flex;gap:12px;flex-wrap:wrap}
+.moldura{position:relative;aspect-ratio:1/1;max-width:400px;margin-left:auto;border-radius:50%;background:linear-gradient(145deg,var(--rosa),var(--rosa-medio));border:6px solid #fff;box-shadow:0 0 0 3px var(--ouro),0 30px 60px rgba(168,86,111,.25);display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;color:var(--vinho)}
+.moldura .ini{font-family:Georgia,serif;font-size:110px;line-height:1;font-weight:700;color:#fff;text-shadow:0 4px 18px rgba(94,42,61,.25)}
+.moldura .nome{font-family:Georgia,serif;font-size:22px;margin-top:8px;font-weight:700}
+.moldura .flor{position:absolute;font-size:34px}
+.moldura .f1{top:6%;right:12%}.moldura .f2{bottom:10%;left:8%}
+@media (max-width:760px){.abertura{padding:50px 0 60px}.abertura .contido{grid-template-columns:1fr}.abertura h1{font-size:34px}.moldura{max-width:260px;margin:10px auto 0}.moldura .ini{font-size:80px}}
+/* Seções */
+section{padding:70px 0}
+.titulo{text-align:center;margin-bottom:40px}
+.titulo small{color:var(--ouro-esc);font-weight:700;letter-spacing:2px;text-transform:uppercase;font-size:13px}
+.titulo h2{font-size:34px;margin-top:6px}
+.titulo h2::after{content:"";display:block;width:70px;height:3px;background:var(--ouro);margin:12px auto 0;border-radius:3px}
+.sobre{background:#fff}
+.sobre .contido{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
+.sobre p{font-size:17px;color:#5c4350}
+.valores{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.valor{background:var(--rosa-bg);border:1px solid var(--borda);border-top:4px solid var(--ouro);border-radius:16px;padding:18px}
+.valor b{display:block;font-family:Georgia,serif;color:var(--vinho);font-size:17px;margin:6px 0 4px}
+.valor span{font-size:26px}
+.valor p{font-size:14.5px;margin:0}
+@media (max-width:760px){.sobre .contido{grid-template-columns:1fr}}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.card{background:#fff;border:1px solid var(--borda);border-radius:18px;padding:24px 20px;box-shadow:0 8px 24px rgba(168,86,111,.08);transition:.2s}
+.card:hover{transform:translateY(-4px);box-shadow:0 14px 30px rgba(168,86,111,.15)}
+.card .ico{width:58px;height:58px;border-radius:16px;background:linear-gradient(135deg,var(--rosa),var(--rosa-medio));display:flex;align-items:center;justify-content:center;font-size:28px;border:2px solid var(--ouro-claro)}
+.card h3{font-size:19px;margin:14px 0 6px}
+.card p{margin:0;font-size:14.5px;color:#5c4350}
+@media (max-width:900px){.cards{grid-template-columns:1fr 1fr}}
+@media (max-width:520px){.cards{grid-template-columns:1fr}}
+.passos{background:linear-gradient(135deg,var(--rosa),var(--rosa-medio))}
+.passos .titulo small{color:var(--vinho)}
+.passos .lista{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.passo{background:rgba(255,255,255,.85);border-radius:18px;padding:24px;text-align:center;border:2px solid rgba(255,255,255,.9)}
+.passo .n{width:50px;height:50px;border-radius:50%;margin:0 auto 10px;background:linear-gradient(135deg,#f0d168,var(--ouro));color:#4a3505;font-weight:800;font-size:22px;display:flex;align-items:center;justify-content:center;font-family:Georgia,serif}
+.passo h3{font-size:19px;margin-bottom:6px}
+.passo p{margin:0;font-size:14.5px;color:#5c4350}
+@media (max-width:760px){.passos .lista{grid-template-columns:1fr}}
+.contato .caixa{background:#fff;border:1px solid var(--borda);border-radius:24px;padding:34px;display:grid;grid-template-columns:1.1fr 1fr;gap:30px;box-shadow:0 14px 40px rgba(168,86,111,.10);border-top:5px solid var(--ouro)}
+.linha-ctt{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px;font-size:16px}
+.linha-ctt span{font-size:22px;width:40px;height:40px;border-radius:12px;background:var(--rosa-claro);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.linha-ctt small{display:block;color:var(--ouro-esc);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+.chamada{background:var(--rosa-bg);border-radius:18px;padding:26px;text-align:center;border:1px dashed var(--rosa-medio)}
+.chamada h3{font-size:22px;margin-bottom:8px}
+@media (max-width:760px){.contato .caixa{grid-template-columns:1fr;padding:22px}}
+footer{background:var(--vinho);color:#f3dfe6;padding:30px 0;text-align:center;font-size:14px;border-top:4px solid var(--ouro)}
+footer b{color:var(--ouro-claro)}
+footer a{color:var(--rosa);text-decoration:none;font-weight:600}
+.zap{position:fixed;right:18px;bottom:18px;width:58px;height:58px;border-radius:50%;background:#25D366;color:#fff;display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 8px 20px rgba(0,0,0,.25);text-decoration:none;z-index:30;border:3px solid #fff}
+/* Login */
+.login-fundo{position:fixed;inset:0;background:rgba(61,36,48,.6);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center;padding:16px}
+.login-fundo.aberto{display:flex}
+.login{background:#fff;border-radius:24px;width:100%;max-width:400px;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.3);animation:sobe .25s ease}
+@keyframes sobe{from{transform:translateY(20px);opacity:0}}
+.login-topo{background:linear-gradient(135deg,var(--rosa),var(--rosa-medio));padding:28px 24px 22px;text-align:center;border-bottom:4px solid var(--ouro);position:relative}
+.login-topo .cad{width:64px;height:64px;border-radius:50%;background:#fff;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:28px;border:3px solid var(--ouro)}
+.login-topo h3{font-size:22px}
+.login-topo p{margin:4px 0 0;color:var(--vinho);font-size:14px}
+.login-topo .x{position:absolute;top:10px;right:14px;background:none;border:none;font-size:28px;color:var(--vinho);cursor:pointer}
+.login-corpo{padding:24px}
+.login-corpo label{font-weight:700;color:var(--rosa-esc);font-size:14px;display:block;margin-bottom:6px}
+.campo-senha{position:relative}
+.campo-senha input{width:100%;padding:14px 50px 14px 16px;border:1.5px solid var(--borda);border-radius:14px;font-size:17px;font-family:inherit;background:#fffdfe}
+.campo-senha input:focus{outline:none;border-color:var(--ouro);box-shadow:0 0 0 3px rgba(201,162,39,.18)}
+.campo-senha button{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:20px;cursor:pointer}
+.erro{color:#b3261e;font-size:14px;font-weight:600;min-height:22px;margin-top:8px}
+.login-corpo .btn{width:100%;justify-content:center;margin-top:6px;font-size:16px;padding:14px}
+.aviso-seg{font-size:12.5px;color:var(--cinza);text-align:center;margin-top:14px}
+.folha{background:#fff;width:210mm;max-width:calc(100% - 20px);min-height:297mm;margin:18px auto;padding:16mm 15mm;box-shadow:0 6px 24px rgba(0,0,0,.15);color:#2b1a24;font-size:12.5px}
+.rel-cab{display:flex;gap:14px;align-items:center;border-bottom:3px solid var(--ouro);padding-bottom:10px}
+.rel-cab .rlogo{width:70px;height:70px;object-fit:contain;flex-shrink:0}
+.rel-cab .rnome{flex:1}
+.rel-cab h2{font-size:20px;color:var(--rosa-esc)}
+.rel-cab .sub{color:var(--ouro-esc);font-weight:600;font-size:13px}
+.rel-cab .ctt{font-size:11px;color:#6b5560;margin-top:3px}
+.rel-num{text-align:right;font-size:11.5px;border:1.5px solid var(--ouro);border-radius:8px;padding:6px 10px;background:#fffbea}
+.rel-num b{display:block;font-size:15px;color:var(--rosa-esc)}
+.rel-tit{text-align:center;margin:14px 0 6px;font-family:Georgia,serif;font-size:17px;letter-spacing:2px;color:var(--rosa-esc);font-weight:700}
+.rel-tit::after{content:"";display:block;width:120px;height:2px;background:var(--ouro);margin:6px auto 0}
+.rel-sec{margin-top:14px;page-break-inside:avoid;break-inside:avoid}
+.rel-sec h3{font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--vinho);background:linear-gradient(90deg,var(--rosa),var(--rosa-medio));padding:5px 10px;border-radius:6px 6px 0 0;border-bottom:2px solid var(--ouro);font-family:inherit}
+.rel-box{border:1px solid var(--borda);border-top:none;padding:9px 11px;border-radius:0 0 6px 6px;white-space:pre-wrap}
+.rel-pares{display:grid;grid-template-columns:repeat(3,1fr);gap:6px 14px;white-space:normal}
+.rel-pares div small{display:block;color:var(--ouro-esc);font-size:10px;text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+.rel-pares .l2{grid-column:span 2}.rel-pares .l3{grid-column:1/-1}
+.rel-alerta{background:#fff1f1;border:1px solid #f3c4c0;color:#9b1c1c;padding:6px 10px;border-radius:6px;margin-top:8px;white-space:normal}
+.rel-sinais{width:100%;border-collapse:collapse;text-align:center}
+.rel-sinais th{font-size:10px;color:var(--ouro-esc);text-transform:uppercase;padding:4px;border-bottom:1px solid var(--borda)}
+.rel-sinais td{padding:6px 4px;font-weight:600;font-size:13px}
+.rel-fotos{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;white-space:normal}
+.rel-fotos figure{margin:0;border:1px solid var(--borda);border-radius:6px;overflow:hidden;page-break-inside:avoid;break-inside:avoid}
+.rel-fotos img{width:100%;height:62mm;object-fit:cover;display:block}
+.rel-fotos figcaption{font-size:11px;padding:5px 8px;background:#fffbea;border-top:1px solid var(--ouro-claro)}
+.rel-assin{margin-top:30px;text-align:center;page-break-inside:avoid;break-inside:avoid}
+.rel-assin img{height:70px;display:block;margin:0 auto -6px}
+.rel-assin .linha{width:280px;max-width:80%;border-top:1.5px solid #2b1a24;margin:0 auto;padding-top:4px;font-weight:700}
+.rel-assin small{display:block;color:#6b5560}
+.rel-rod{margin-top:22px;border-top:2px solid var(--ouro);padding-top:6px;font-size:10px;color:#7a6470;display:flex;justify-content:space-between;gap:10px}
+@media (max-width:720px){.folha{padding:14px 12px;min-height:auto;font-size:12px}.rel-pares{grid-template-columns:1fr 1fr}.rel-fotos img{height:150px}}
+.rel-pac{display:flex;gap:12px;white-space:normal}
+.rel-pac .rel-pares{flex:1}
+.rel-foto{width:27mm;height:33mm;object-fit:cover;border:1.5px solid var(--ouro);border-radius:6px;flex-shrink:0}
+/* Área do paciente */
+.paciente-area{background:#fff}
+.portal-caixa{max-width:560px;margin:0 auto;background:var(--rosa-bg);border:1px solid var(--borda);border-top:5px solid var(--ouro);border-radius:24px;padding:28px;box-shadow:0 14px 40px rgba(168,86,111,.10)}
+.portal-caixa label{display:block;font-weight:700;color:var(--rosa-esc);font-size:14px;margin:12px 0 6px}
+.portal-caixa input{width:100%;padding:14px 16px;border:1.5px solid var(--borda);border-radius:14px;font-size:18px;font-family:inherit;background:#fff;letter-spacing:1px}
+.portal-caixa input:focus{outline:none;border-color:var(--ouro);box-shadow:0 0 0 3px rgba(201,162,39,.18)}
+.portal-caixa .btn{width:100%;justify-content:center;margin-top:16px;font-size:16px;padding:14px}
+.teste-box{background:#fffbea;border:1.5px dashed var(--ouro);border-radius:14px;padding:12px 14px;font-size:14px;margin-bottom:6px}
+.teste-box b{color:var(--vinho)}
+.teste-box button{background:#fff;border:1px solid var(--ouro-claro);border-radius:10px;padding:6px 10px;margin:6px 6px 0 0;cursor:pointer;font-family:inherit;font-size:13px;color:var(--vinho);font-weight:600}
+.laudo-item{display:flex;gap:12px;align-items:center;background:#fff;border:1px solid var(--borda);border-left:5px solid var(--rosa-medio);border-radius:14px;padding:12px 14px;margin-top:10px}
+.laudo-item .ic{font-size:28px}
+.laudo-item b{display:block;color:var(--vinho);font-family:Georgia,serif;font-size:16px}
+.laudo-item small{color:var(--cinza)}
+.laudo-item .btn{width:auto;margin:0;padding:9px 16px;font-size:14px}
+.ola{font-family:Georgia,serif;color:var(--vinho);font-size:22px;margin-bottom:2px}
+#laudoTela{position:fixed;inset:0;background:#efe3e9;z-index:200;overflow:auto;padding-bottom:30px}
+#laudoTela .barra{position:sticky;top:0;background:linear-gradient(135deg,var(--rosa),var(--rosa-medio));padding:10px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-bottom:3px solid var(--ouro);z-index:2}
+#laudoTela .barra .btn{padding:9px 16px;font-size:14px}
+#laudoTela .barra .grow{flex:1}
+.validade-faixa{max-width:210mm;margin:12px auto 0;background:#fffbea;border:1px solid var(--ouro-claro);border-radius:10px;padding:8px 12px;font-size:13.5px;color:#6b4e06;text-align:center}
+#fotoGrande{position:fixed;inset:0;background:rgba(28,12,20,.96);z-index:300;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:14px}
+#fotoGrande img{max-width:100%;max-height:85vh;border-radius:8px}
+#fotoGrande p{color:#fff;margin:10px 0 0;text-align:center}
+.rel-fotos img{cursor:zoom-in}
+@media print{
+  @page{size:A4;margin:10mm}
+  body{background:#fff}
+  body>*:not(#laudoTela){display:none!important}
+  #laudoTela{position:static;background:#fff;overflow:visible;padding:0}
+  #laudoTela .barra,.validade-faixa{display:none}
+  .folha{box-shadow:none;margin:0;width:auto;max-width:none;min-height:auto;padding:0}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+<header class="topo">
+  <div class="contido">
+    <a class="marca" href="#inicio"><div class="selo">KT</div><div><b>Kárita Teodoro</b><small id="txtEspecialidade">CUIDADO E ATENDIMENTO</small></div></a>
+    <nav class="menu">
+      <a href="#sobre">Sobre</a><a href="#laudos">Meus laudos</a><a href="#atendimentos">Atendimentos</a><a href="#como">Como funciona</a><a href="#contato">Contato</a>
+    </nav>
+    <button class="btn rosa peq btn-area" data-ir-laudos>📄 Meus laudos</button>
+    <button class="btn ouro peq" id="btnArea" title="Área da Kárita">🔒<span class="so-grande"> Área da Kárita</span></button>
+  </div>
+</header>
+
+<section class="abertura" id="inicio">
+  <div class="contido">
+    <div>
+      <span class="etiqueta">✨ Atendimento humanizado</span>
+      <h1>Cuidado, atenção e <em>carinho</em> em cada atendimento</h1>
+      <p>Um atendimento pensado para você, com escuta atenciosa, acompanhamento próximo e todo o respeito que a sua saúde merece.</p>
+      <div class="acoes">
+        <a class="btn rosa" id="btnAgendar" href="#contato">📅 Agendar atendimento</a>
+        <button class="btn linha" data-ir-laudos>📄 Ver meus laudos</button>
+      </div>
+    </div>
+    <div class="moldura"><span class="flor f1">🌸</span><span class="flor f2">🌷</span><div class="ini">KT</div><div class="nome">Kárita Teodoro</div></div>
+  </div>
+</section>
+
+<section class="sobre" id="sobre">
+  <div class="contido">
+    <div>
+      <div class="titulo" style="text-align:left;margin-bottom:20px"><small>Sobre</small><h2 style="margin-top:6px">Quem cuida de você</h2></div>
+      <p>Kárita Teodoro oferece um atendimento personalizado, em que cada paciente é ouvido com calma e acompanhado de perto, do primeiro contato ao retorno.</p>
+      <p>Cada atendimento é registrado com cuidado, com relatos, fotos e orientações, para que o seu acompanhamento seja sempre seguro e organizado.</p>
+    </div>
+    <div class="valores">
+      <div class="valor"><span>💗</span><b>Acolhimento</b><p>Você é ouvido com atenção e respeito.</p></div>
+      <div class="valor"><span>📋</span><b>Organização</b><p>Histórico completo de cada atendimento.</p></div>
+      <div class="valor"><span>🤝</span><b>Acompanhamento</b><p>Retornos marcados e cuidado contínuo.</p></div>
+      <div class="valor"><span>🔒</span><b>Sigilo</b><p>Suas informações tratadas com discrição.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="atendimentos">
+  <div class="contido">
+    <div class="titulo"><small>Atendimentos</small><h2>Como posso ajudar</h2></div>
+    <div class="cards">
+      <div class="card"><div class="ico">🩺</div><h3>Consultas</h3><p>Avaliação cuidadosa, escuta do seu relato e orientação clara sobre os próximos passos.</p></div>
+      <div class="card"><div class="ico">💉</div><h3>Procedimentos</h3><p>Procedimentos realizados com segurança, higiene e registro de tudo o que foi feito.</p></div>
+      <div class="card"><div class="ico">🔁</div><h3>Retornos</h3><p>Acompanhamento da sua evolução, com retornos agendados e histórico sempre à mão.</p></div>
+      <div class="card"><div class="ico">🏠</div><h3>Atendimento domiciliar</h3><p>Para quem precisa de cuidado no conforto de casa. Consulte a disponibilidade.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="passos" id="como">
+  <div class="contido">
+    <div class="titulo"><small>Como funciona</small><h2>Simples e sem complicação</h2></div>
+    <div class="lista">
+      <div class="passo"><div class="n">1</div><h3>Agende</h3><p>Entre em contato e escolha o melhor dia e horário para você.</p></div>
+      <div class="passo"><div class="n">2</div><h3>Seja atendido</h3><p>Atendimento com calma, atenção e explicação de cada etapa.</p></div>
+      <div class="passo"><div class="n">3</div><h3>Acompanhamento</h3><p>Orientações, retornos e todo o seu histórico organizado.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="paciente-area" id="laudos">
+  <div class="contido">
+    <div class="titulo"><small>Área do paciente</small><h2>Meus laudos</h2></div>
+    <p style="text-align:center;color:#5c4350;max-width:560px;margin:-20px auto 26px">Veja e salve os relatórios dos seus atendimentos. Informe o seu CPF e o código de acesso que a Kárita enviou para você.</p>
+    <div class="portal-caixa" id="portalConteudo"></div>
+  </div>
+</section>
+
+<section class="contato" id="contato">
+  <div class="contido">
+    <div class="titulo"><small>Contato</small><h2>Vamos conversar?</h2></div>
+    <div class="caixa">
+      <div id="listaContato"></div>
+      <div class="chamada">
+        <h3>Agende seu atendimento</h3>
+        <p style="color:#5c4350;margin:0 0 16px">Fale diretamente com a Kárita e tire suas dúvidas.</p>
+        <div id="botoesContato" class="acoes" style="justify-content:center"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="contido">
+    <div style="font-family:Georgia,serif;font-size:20px;color:#fff;margin-bottom:4px">Kárita Teodoro</div>
+    <div>© <span id="ano"></span> Kárita Teodoro · Todos os direitos reservados</div>
+    <div style="margin-top:10px;font-size:12.5px">Site e sistema desenvolvidos por <b>Wendel Emílio de Souza Matias</b> · <a href="mailto:oficial.respostas@gmail.com">oficial.respostas@gmail.com</a></div>
+  </div>
+</footer>
+
+<a class="zap" id="zap" href="#" target="_blank" rel="noopener" title="Falar no WhatsApp" style="display:none">💬</a>
+
+<div class="login-fundo" id="loginFundo">
+  <div class="login" role="dialog" aria-modal="true" aria-labelledby="loginTitulo">
+    <div class="login-topo">
+      <button class="x" id="loginFechar" title="Fechar">×</button>
+      <div class="cad">🔒</div>
+      <h3 id="loginTitulo">Área da Kárita</h3>
+      <p>Painel administrativo e relatórios de atendimento</p>
+    </div>
+    <form class="login-corpo" id="loginForm" autocomplete="off">
+      <label for="senha">Senha de acesso</label>
+      <div class="campo-senha">
+        <input type="password" id="senha" placeholder="Digite a senha" autocomplete="current-password">
+        <button type="button" id="verSenha" title="Mostrar senha">👁️</button>
+      </div>
+      <div class="erro" id="erro"></div>
+      <button class="btn rosa" type="submit">Entrar no painel →</button>
+      <div class="aviso-seg">Acesso restrito. Os dados dos pacientes ficam guardados somente no aparelho da Kárita.</div>
+    </form>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* =========================================================
+   Site Kárita Teodoro — página pública + entrada do painel
+   Desenvolvido por: Wendel Emílio de Souza Matias
+   Contato: oficial.respostas@gmail.com
+   ========================================================= */
+
+/* >>> DADOS DE CONTATO DO SITE — preencha e o site mostra automaticamente <<< */
+const SITE = {
+  especialidade: '',        // ex.: 'Enfermeira · Estomaterapia'
+  whatsapp: '',             // só números com DDD, ex.: '62999999999'
+  telefone: '',             // ex.: '(62) 99999-9999'
+  email: '',                // ex.: 'contato@karitateodoro.com.br'
+  instagram: '',            // ex.: 'karitateodoro' (sem @)
+  endereco: '',             // ex.: 'Rua X, 123 — Centro, Trindade - GO'
+  horario: ''               // ex.: 'Segunda a sexta, das 8h às 18h'
+};
+const PAGINA_PAINEL = 'relatorio-atendimento.html';
+/* Código de segurança da senha (a senha nunca fica escrita no arquivo, só o "resumo" dela) */
+function sha256(texto){
+  const K = [0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0xfc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x6ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  const H = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  const b = new TextEncoder().encode(texto), l = b.length;
+  const nb = ((l + 9 + 63) >> 6) << 6;
+  const m = new Uint8Array(nb); m.set(b); m[l] = 0x80;
+  const dv = new DataView(m.buffer);
+  dv.setUint32(nb - 4, (l * 8) >>> 0); dv.setUint32(nb - 8, Math.floor(l * 8 / 4294967296));
+  const w = new Uint32Array(64);
+  const rot = (x, n) => (x >>> n) | (x << (32 - n));
+  for (let i = 0; i < nb; i += 64) {
+    for (let t = 0; t < 16; t++) w[t] = dv.getUint32(i + t * 4);
+    for (let t = 16; t < 64; t++) {
+      const s0 = rot(w[t - 15], 7) ^ rot(w[t - 15], 18) ^ (w[t - 15] >>> 3);
+      const s1 = rot(w[t - 2], 17) ^ rot(w[t - 2], 19) ^ (w[t - 2] >>> 10);
+      w[t] = (w[t - 16] + s0 + w[t - 7] + s1) >>> 0;
+    }
+    let [a, bb, c, d, e, f, g, hh] = H;
+    for (let t = 0; t < 64; t++) {
+      const t1 = (hh + (rot(e, 6) ^ rot(e, 11) ^ rot(e, 25)) + ((e & f) ^ (~e & g)) + K[t] + w[t]) >>> 0;
+      const t2 = ((rot(a, 2) ^ rot(a, 13) ^ rot(a, 22)) + ((a & bb) ^ (a & c) ^ (bb & c))) >>> 0;
+      hh = g; g = f; f = e; e = (d + t1) >>> 0; d = c; c = bb; bb = a; a = (t1 + t2) >>> 0;
+    }
+    H[0] = (H[0] + a) >>> 0; H[1] = (H[1] + bb) >>> 0; H[2] = (H[2] + c) >>> 0; H[3] = (H[3] + d) >>> 0;
+    H[4] = (H[4] + e) >>> 0; H[5] = (H[5] + f) >>> 0; H[6] = (H[6] + g) >>> 0; H[7] = (H[7] + hh) >>> 0;
+  }
+  return H.map(x => x.toString(16).padStart(8, '0')).join('');
+}
+const resumoSenha = s => sha256('kt::' + String(s || ''));
+const SENHA_PADRAO = '8d6b8f824d509af014d74a977a30d8791cf248479f59033bbb6dbe08dbbd74fe';
+/* ---------- Portal do paciente: tranca dos laudos (comum ao site e ao painel) ---------- */
+const PORTAL_COL_IDX = 'karita_portal_indices';
+const PORTAL_COL_LAUDO = 'karita_portal_laudos';
+const PORTAL_ALFABETO = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const soDigitos = s => String(s || '').replace(/\D/g, '');
+function cpfValido(c){
+  c = soDigitos(c);
+  if (c.length !== 11 || /^(\d)\1+$/.test(c)) return false;
+  let s = 0; for (let i = 0; i < 9; i++) s += +c[i] * (10 - i);
+  if ((s * 10) % 11 % 10 !== +c[9]) return false;
+  s = 0; for (let i = 0; i < 10; i++) s += +c[i] * (11 - i);
+  return (s * 10) % 11 % 10 === +c[10];
+}
+const mascaraCPF = c => { c = soDigitos(c); return c.length === 11 ? `${c.slice(0, 3)}.${c.slice(3, 6)}.${c.slice(6, 9)}-${c.slice(9)}` : c; };
+const normCodigo = c => String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+const fmtCodigo = c => { c = normCodigo(c); return c.length === 6 ? c.slice(0, 3) + '-' + c.slice(3) : c; };
+function paraB64(buf){
+  const b = new Uint8Array(buf); let s = '';
+  for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000));
+  return btoa(s);
+}
+const deB64 = t => Uint8Array.from(atob(t), ch => ch.charCodeAt(0));
+async function chavePortal(cpf, codigo, sal){
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode('kt-portal|' + soDigitos(cpf) + '|' + normCodigo(codigo)), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2', salt:sal, iterations:120000, hash:'SHA-256'}, base, {name:'AES-GCM', length:256}, false, ['encrypt', 'decrypt']);
+}
+async function trancar(obj, cpf, codigo){
+  const sal = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+  const k = await chavePortal(cpf, codigo, sal);
+  const dados = await crypto.subtle.encrypt({name:'AES-GCM', iv}, k, new TextEncoder().encode(JSON.stringify(obj)));
+  return {dados:paraB64(dados), iv:paraB64(iv), sal:paraB64(sal)};
+}
+async function destrancar(doc, cpf, codigo){
+  const k = await chavePortal(cpf, codigo, deB64(doc.sal));
+  const txt = await crypto.subtle.decrypt({name:'AES-GCM', iv:deB64(doc.iv)}, k, deB64(doc.dados));
+  return JSON.parse(new TextDecoder().decode(txt));
+}
+const idIndicePortal = (cpf, codigo) => sha256('kt-indice|' + soDigitos(cpf) + '|' + normCodigo(codigo));
+const idLaudoPortal = (cpf, codigo, atId) => sha256('kt-laudo|' + soDigitos(cpf) + '|' + normCodigo(codigo) + '|' + atId);
+const fimDoDia = iso => { const [a, m, d] = iso.split('-').map(Number); return new Date(a, m - 1, d, 23, 59, 59); };
+const urlFirestore = (proj, col, id) => `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(proj)}/databases/(default)/documents/${col}/${id}`;
+function camposFirestore(o){
+  const f = {};
+  for (const [k, v] of Object.entries(o)) f[k] = v instanceof Date ? {timestampValue:v.toISOString()} : {stringValue:String(v)};
+  return {fields:f};
+}
+function lerFirestore(doc){
+  const o = {};
+  for (const [k, v] of Object.entries(doc.fields || {})) o[k] = v.stringValue !== undefined ? v.stringValue : (v.timestampValue !== undefined ? v.timestampValue : v.integerValue);
+  return o;
+}
+/* Laudos fictícios para teste (usados só enquanto o portal não está ligado ao Firebase) */
+const DEMO_DOCS = {"karita_portal_laudos/0e69e2f2770842537966b68c28808689e0059391f70fb1a6548f196d55bdfb6e":{"dados":"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","iv":"O/MP0UjUa/cq816s","sal":"SJPNiuNQ/MwysIY3KROGaw==","validade":"2027-07-01T02:59:59.000Z"},"karita_portal_laudos/48a353cb96cd463147d1fb7ad9e58b03eec35cf32c3c90b3f87f5faf468a61c6":{"dados":"3LEUYF14kbu5paJVYF6jt1q0BB7dhbCCnG4U8MeBt/RkSJwKciTILppsJM3EzwWfKtbhiwF/RUmFV6OVYiTpy2B9l1mjLqbGYN0IJD3vfjzuj4OzUWCSm3jdnDrNGhk+n3rsbk6lQhh4/9qVv95SA5z4+ZNoMRb0l9z9pCtdonumjos90Nm+MI/P07/tKRChAeftLDAwIe/2qMbXNcVYbF09CWkbz+2Cekfg05HdRSHZFspevEbCnWpFM9X2GBmoODjuhY69eITp4SgpVJDitZWod8+zd+gUhOj7IgEnlmXkGxI/MYgS9CgClRtBbLpBJlO4k54OZPSlxETNvd3TuJms1j5HshPnjJFDbMazZ1+S4hGsd4HPmUMnXyiMdq4czxLS8VspSIPPCT8hEAamqKejx/UofcqMOhGLtAI3dyTMdiscBth5urH6BKWTos/oos6vDZp6pl9ks/9AV0vB/2691ykioL70I8J4SmhT6DgVX5qFjREFxzaN1OUDGMjURjvvd7tFOLxZAYjwpPh1c/VSoGYgELySkT4COPjjdWskkd4YGvQWsCGohMX/FmiLvlLegpPn0PQLNB/IX28i7MCqbtavmMv+8HkWkYV/G7QMsUBODQq8xYfidMpJIwj7UEzs49mu7sY/TIpI1wTO5wUVu70LOLjrhM4kyKclfGtgTiV+d1l6mnGdYfrlNJ8RNGzNuseiCdeJ3m0RXddfpN2E2zehvuPRNFTdCG/oZByUDq+AIOf88IYxtnepxpJ6aLIoh+qpnX+dZMDhJgLO/7HUN/aWREGY1C1KGCxL5PkpzlK4/0dyLMDeIYrEVnK7sfeftsybcy3gEDMcXAFdaFXxnJpandt1S3jxdajM9OkmA4163dLivt6P3L8IjYKKJqnzPgEexTWe9xwm8nOquwFDLd2QSYs0zpABkqliTyOUkr+Ipw8/xjwS1woqyFPiopUCpJGUkliKmsidGQ9de8LPzIfy48dL5eFg/nhIUTG5uZfKfVDJLmiuoOihd/uYaDLk7pTVhDAwAcl3g6nWGK5Dgm6d/gHmNc1X1TGQJ1bPXiCdZM8kPzQIRYDnsAWokt1qtuiqleJuN3e2qMgG5OZqzbqhOrg4I32Nh7D/JZu635doKv8EQZ9LqmGrY3/s1vGWLiDwbk1fWtL6rnITllNpc6PyPG2OmI/HifNEH6nPLGT2pta7CEi6A0LoE94epeCj0ZiIieCFnGreLETRWEjbIHjCQ8hG81Z7wCuKacvLmNLqBJhtV0qWsN++QUclRNaoJH+43q4hmgitLPx4Z3L1fsl8x9Btja2FABXfToGdmxSCIdsRmdL/Fo8YlbLbTAFNgbckoWc7zmLO01FDrl6bxycJ1qFOlQwtHyesmU/Rma4gSG6Ov8b86gpkj0AEFSQLwxMxgmc1vME5jS6vw1DLquKzXEioz0uMSlhG2jW51oFeT8Z+Mw==","iv":"N9EvNdHpfPKKtJjZ","sal":"k+H6vYU1QRuMCOAHB8uRdg==","validade":"2027-07-01T02:59:59.000Z"},"karita_portal_indices/d584d3ee30427bb579b2c8a07b51e739d3b3a94c6a2e66394ae7dcaf1f29dfc2":{"dados":"Bzu8ayKlQvX2aIJOD6eKsJ3vRnwyosgzuoxYjIyLy6pd2AcB9kmLL4QCow1CFG57ShjJR4108BL7jF0s2wBitC2v5U0uf4/Htory/lxylQauV/+7xcSIyTsLea7ppYEpCArAZLsd8NwoKpNfaU3IY0yZ6EkwQN/BwH3jFrr8SLpK2Jdrm1bejZ/6PG8z1S1Au9lOKP6D9pRpoX5hC1mTqHsM+iBT3cFtFjVCP/dV4FtoNpYjH/RWaIVb0nBXDlk9FmJdJyXK7t7gIhh5YUxodGoWzoDzUHVqbYZy/eYwp0LvIqD6xSwQ/aOjUMlurPeLk/6IPpjzEz0Ve+ErHAfSKs17kO+xq5ucRd8wcL+fv5nG6rNA7t5sfmTqg8Rew+B8mMowPQFvy+ERQuy1jn1mef4O3QuNXwRS8ErBUylk1IfYvc0OKs9xgWJLOkLMDjR0fmX10HcMQv44n8iMWu3fZzX4xAGZdh2+M7xBSFnB2DBeT9o4RmBpdWfqVQkpdz6U","iv":"UBukUKnRSIYvP1NS","sal":"S2gEoXeuwBu73ToFBelE6g==","validade":"2027-07-01T02:59:59.000Z"},"karita_portal_laudos/612d1a42daaa0f97c369dee5210a3f6f8f2a57f9ac1d85b838cfc2988fcecd3b":{"dados":"RYi/Swc1SUHzp0AbhlMSdMnTaOC3GUMcyndw0KItPGGPf1NqgjQsH9jKXkH5ThYVVMmpIFjRRifoT1pXlySbnZsrENNB2/KL9hNOXKq2SI6sBOxJunjqA0XBelSYEDYLh/Pfokp3YyE/enzuwS8cQHAX8KDgk5Mbh20ia4d0yBXiAaWQR5Lu5JGNuVSIriiw3WOT/mPKAjuhdS4mOlYbeWHqemo/VUb3hxRVUPBCjfaxJCooKd7i6Bogrf8uh6EfpTZWzM7TnnwKUIGkTkJdTTnaUSa1YCefdoSEz9hpGmQXYy+rr3M5+eBfAGSbcuVJAa0//grdqdQg5bd8svSBJu1uY5QCRuU00uU0Cr9T0ylnCdsmVkE7QXury1CcJzfdEPRxovEKF7Z1hNBujRO5jBiOI/Ck84IE0gOe9fccQeY43LT109+GcYrTaMjSoHhLYayFQq9LtMpEbQA7cKnjCErGTy6hWqBLlACSuZIYA6pN2cPFfa1L3pEB/7b2NeD59jn+Of2NhY2VN5/0otSRm2qQlMnt8UWOk2qf6UFH6zTBGvEjfEYb7ZXusxEM7LOlShvOb3VBVx7hwlWTXUicPi7DUX8Sfiqv6welsV8nLJG2E1/hbP/H/mFFxR8LjmcYSB/tGSM9ayvSNeLoSxPhO7J6bDgk+QgLg81PxRo09jN1vs5PrIfdvshsymAiAYEoHEX7EPUnod113I4+XbxupvFvXGBgbI5t1b6YGp3b/IamFCf2JzM9iSm8oVHv2EGOqijnX0FfMJfjlaIt74a6HmxsMKp385B+wYwdW9Hhl9tNSxfW+XYmmdEeVph2/w0jDr4jUa4Nge2DKYyGr7Zs4UAxUXln80bTHR78GcP3djw7yY36nPUE/EtVbv3+Cqxry9DJ9/Yg4sgqry9FXN2XIFu1TEpDAM3T4uqEgzApST7w19gSdi56Bda2v06RjwxZDyzEy4GCBO2NuuslIJv+BAAd7jEJZIcrc6/r1vIhwruUqHVTrMzcX7D4U+NUy1UV5p/0t+B26Q06/JxP6a0r2AV5Aeyg276gcrXGmjA6ZHC3oTG9oC2hWtqg16gqKfcjgSFJIrD4CHMlIvkueGHB1ByVdwGAn4xW3lFUrvy3BXT1JSemFmgC8vFkyjkIYVA4FpmmpmBU0bnF8DH+DQsDoBgDV0dK/RYEsAysNIsjlouX+491cntcL2kZ1ae9vnbSxMiEXDG21+/3gUOIFHnxNjEWF6TzopGdZ7ecJ62MqIlHrHYupD+FmvxsV/m56a9K7Va/ml2ibWiZHOy+eyYRzyQbqdqt5YrkmBmdsTCevq4sQLj/hQsblNugzs/u9+MIPxiDJWH1rWceY8bdcvddqwDfYRydMMPdrfsdn9GctMqLCfGY6LOdMVRy7Yi5KYgLeAPCugtKLS/uMEsPW5mct59zcx8d2FmKUYabp2G+M3MTtG7dRSw4IKtr28cavu9EzWMDGf7Kj4C47GBxbSsJX99gKceQhkZKMByPud8nmyNk3y2Frz6pXhmghDjy+vZcshgcUmGlBvHMyzDOHwdlOX6Sgk7VinQj33Y0+aO3BN+6eWfgPcmllglq+OVvlm36V4m5+PT377B7sSq87V8BEN4O0ol5lPNHZ4Am1Hc7mrFvUxetXb0LeSF99/xSxL6uulEvdOqIThcpkFQhkuYhjIbAHNkhJI6cT1CGHr77yILkSkkXR8oKDv0Aglayc1zeF+KdxS/Mi+IwFMM2jCtK8v2yLR/deGdfJrcgSLzd9EU3ts8mLBr9kuCPu/DM6n+wd+pmKDScQIrJJ/rAmjiVx5uve9B+EBjk5Xz7","iv":"XKQ09kVL6tzol1JK","sal":"0U7aJFwLQ3Fw3NtG+abLwA==","validade":"2027-04-01T02:59:59.000Z"},"karita_portal_indices/fa281d996b95e09452983ec9925126ff03666d2497438be2fdbb49fbf5db576e":{"dados":"AYwEm4qrtt16oiMTR523ZbNaAWVp+yJn+uwIjqhgigHr9jh44+U2+WKQ7GJtrakpWAQbz4d9+6ARW+we9pFytuf+1kwpjYwVCKrO+uzEnpWaDLL6bMQjYc/Vov5NvJGoAOY4uyL0+U7v3KejP1Ri8v1jKxE+ehXdAoOWdWLdOhr/u2uiFURs2pHOnVX5cwXt7XPDJP8oiwccyLcuwZyhMAuD+yH07q5g1Zbvjyjjs3oij3TuPKMz0658XYyLypOK2RI2BG+LgmBiwica1N09lOZB9j4figblLcx30hcfw1IrtW+41cPqjErOBRE/qwypEttEMpaJhNjWMDqKR7kDBGdz1ejljL7AUIJHKFGcrH6uDBBwpWLJ8F7W","iv":"5Is1QIbdsL7ALCKR","sal":"HjoIg6pdLQQx5Hdi3qFuDQ==","validade":"2027-07-01T02:59:59.000Z"}};
+
+function h(tag, attrs, ...filhos){
+  const el = document.createElement(tag);
+  if (attrs) for (const [k, v] of Object.entries(attrs)) { if (v === null || v === undefined || v === false) continue; if (k === 'class') el.className = v; else el.setAttribute(k, v); }
+  filhos.flat().forEach(c => { if (c === null || c === undefined || c === false) return; el.appendChild(c instanceof Node ? c : document.createTextNode(String(c))); });
+  return el;
+}
+document.getElementById('ano').textContent = new Date().getFullYear();
+if (SITE.especialidade) document.getElementById('txtEspecialidade').textContent = SITE.especialidade.toUpperCase();
+
+/* Contato */
+(function montarContato(){
+  const lista = document.getElementById('listaContato');
+  const botoes = document.getElementById('botoesContato');
+  const zapNum = String(SITE.whatsapp || '').replace(/\D/g, '');
+  const zapLink = zapNum ? 'https://wa.me/' + (zapNum.length <= 11 ? '55' + zapNum : zapNum) + '?text=' + encodeURIComponent('Olá, Kárita! Gostaria de agendar um atendimento.') : '';
+  const itens = [
+    ['📱', 'WhatsApp / Telefone', SITE.telefone || (zapNum ? zapNum : '')],
+    ['✉️', 'E-mail', SITE.email],
+    ['📸', 'Instagram', SITE.instagram ? '@' + SITE.instagram.replace(/^@/, '') : ''],
+    ['📍', 'Endereço', SITE.endereco],
+    ['🕐', 'Horário de atendimento', SITE.horario]
+  ].filter(i => i[2]);
+  if (!itens.length) lista.appendChild(h('div', {class:'linha-ctt'}, h('span', null, '🌸'), h('div', null, h('small', null, 'Contato'), 'As informações de contato serão publicadas em breve.')));
+  itens.forEach(([ico, rot, val]) => lista.appendChild(h('div', {class:'linha-ctt'}, h('span', null, ico), h('div', null, h('small', null, rot), val))));
+  if (zapLink) {
+    botoes.appendChild(h('a', {class:'btn rosa', href:zapLink, target:'_blank', rel:'noopener'}, '💬 Chamar no WhatsApp'));
+    const z = document.getElementById('zap'); z.href = zapLink; z.style.display = '';
+    const ag = document.getElementById('btnAgendar'); ag.href = zapLink; ag.target = '_blank'; ag.rel = 'noopener';
+  }
+  if (SITE.instagram) botoes.appendChild(h('a', {class:'btn linha', href:'https://instagram.com/' + SITE.instagram.replace(/^@/, ''), target:'_blank', rel:'noopener'}, '📸 Instagram'));
+  if (SITE.email) botoes.appendChild(h('a', {class:'btn linha', href:'mailto:' + SITE.email}, '✉️ E-mail'));
+  if (!botoes.children.length) botoes.appendChild(h('span', {style:'color:var(--cinza)'}, 'Em breve, canais de agendamento.'));
+})();
+
+/* Entrada no painel */
+const fundo = document.getElementById('loginFundo');
+const campo = document.getElementById('senha');
+const erro = document.getElementById('erro');
+function abrirLogin(){ fundo.classList.add('aberto'); erro.textContent = ''; campo.value = ''; setTimeout(() => campo.focus(), 50); }
+function fecharLogin(){ fundo.classList.remove('aberto'); }
+document.getElementById('btnArea').addEventListener('click', abrirLogin);
+document.getElementById('loginFechar').addEventListener('click', fecharLogin);
+fundo.addEventListener('click', e => { if (e.target === fundo) fecharLogin(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') fecharLogin(); });
+document.getElementById('verSenha').addEventListener('click', () => { campo.type = campo.type === 'password' ? 'text' : 'password'; });
+document.getElementById('loginForm').addEventListener('submit', e => {
+  e.preventDefault();
+  if (!campo.value) { erro.textContent = 'Digite a senha.'; return; }
+  try { sessionStorage.setItem('kt_tentativa', resumoSenha(campo.value)); } catch (err) {}
+  location.href = PAGINA_PAINEL;
+});
+if (location.hash === '#entrar') abrirLogin();
+
+/* =========================================================
+   ÁREA DO PACIENTE — laudos liberados (CPF + código)
+   ========================================================= */
+const PORTAL = {projectId:'', apiKey:''};
+const MODO_TESTE = !PORTAL.projectId;
+const DEMONSTRACAO = true;   /* mostra os pacientes fictícios enquanto o portal está em teste */
+const MOSTRAR_DEMO = MODO_TESTE && DEMONSTRACAO && (() => { try { return !localStorage.getItem('kt_sem_demonstracao'); } catch (e) { return true; } })();
+const fmtData = iso => { if (!iso) return ''; const [a, m, d] = String(iso).slice(0, 10).split('-'); return d && m && a ? `${d}/${m}/${a}` : iso; };
+const hojeISO = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
+function idade(nasc){
+  if (!nasc) return '';
+  const n = new Date(nasc + 'T12:00:00'), h0 = new Date();
+  let a = h0.getFullYear() - n.getFullYear();
+  const m = h0.getMonth() - n.getMonth();
+  if (m < 0 || (m === 0 && h0.getDate() < n.getDate())) a--;
+  return a >= 0 ? a + (a === 1 ? ' ano' : ' anos') : '';
+}
+const limpar = el => { while (el.firstChild) el.removeChild(el.firstChild); };
+
+async function lerDocPortal(col, id){
+  let d = null;
+  if (!MODO_TESTE) {
+    const r = await fetch(urlFirestore(PORTAL.projectId, col, id) + (PORTAL.apiKey ? '?key=' + encodeURIComponent(PORTAL.apiKey) : ''));
+    if (r.status === 404 || r.status === 403) return null;
+    if (!r.ok) throw new Error('rede');
+    d = lerFirestore(await r.json());
+  } else {
+    let o = {};
+    try { o = JSON.parse(localStorage.getItem('kt_portal_teste') || '{}'); } catch (e) {}
+    d = o[col + '/' + id] || (MOSTRAR_DEMO ? DEMO_DOCS[col + '/' + id] : null) || null;
+  }
+  if (d && d.validade && new Date(d.validade) < new Date()) return null;
+  return d;
+}
+
+const portal = {cpf:'', codigo:'', indice:null};
+const caixaPortal = document.getElementById('portalConteudo');
+
+function telaEntradaPortal(msg){
+  limpar(caixaPortal);
+  const cpf = h('input', {type:'text', inputmode:'numeric', placeholder:'000.000.000-00', autocomplete:'off', maxlength:'14', id:'pCpf'});
+  const cod = h('input', {type:'text', placeholder:'ABC-123', autocomplete:'off', maxlength:'7', id:'pCod', style:'text-transform:uppercase'});
+  cpf.addEventListener('input', () => {
+    const d = soDigitos(cpf.value).slice(0, 11);
+    cpf.value = d.length > 9 ? `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}` : d.length > 6 ? `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}` : d.length > 3 ? `${d.slice(0, 3)}.${d.slice(3)}` : d;
+  });
+  cod.addEventListener('input', () => { const c = normCodigo(cod.value).slice(0, 6); cod.value = c.length > 3 ? c.slice(0, 3) + '-' + c.slice(3) : c; });
+  const erro = h('div', {class:'erro'}, msg || '');
+  const botao = h('button', {class:'btn rosa', type:'submit'}, '🔓 Ver meus laudos');
+  const form = h('form', {autocomplete:'off'},
+    MOSTRAR_DEMO ? h('div', {class:'teste-box'}, '🧪 ', h('b', null, 'Modo de demonstração'), ' — use um destes pacientes fictícios:', h('br'),
+      h('button', {type:'button', 'data-c':'529.982.247-25', 'data-k':'KAR-26T'}, 'Ana Paula · CPF 529.982.247-25 · código KAR-26T'),
+      h('button', {type:'button', 'data-c':'111.444.777-35', 'data-k':'BEM-7X9'}, 'Carlos · CPF 111.444.777-35 · código BEM-7X9')) : null,
+    h('label', {for:'pCpf'}, 'Seu CPF'), cpf,
+    h('label', {for:'pCod'}, 'Código de acesso (enviado pela Kárita)'), cod,
+    erro, botao,
+    h('div', {class:'aviso-seg'}, '🔒 Seus laudos ficam protegidos e só abrem com o seu CPF e o seu código pessoal.'));
+  form.querySelectorAll('.teste-box button').forEach(b => b.addEventListener('click', () => { cpf.value = b.dataset.c; cod.value = b.dataset.k; }));
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    erro.textContent = '';
+    let tent = {n:0, ate:0};
+    try { tent = JSON.parse(localStorage.getItem('kt_tentativas') || '{"n":0,"ate":0}'); } catch (err) {}
+    if (tent.ate > Date.now()) { erro.textContent = `Muitas tentativas. Aguarde ${Math.ceil((tent.ate - Date.now()) / 1000)} segundos.`; return; }
+    if (!cpfValido(cpf.value)) { erro.textContent = 'Confira o CPF: ele não parece válido.'; return; }
+    if (normCodigo(cod.value).length !== 6) { erro.textContent = 'O código tem 6 letras e números.'; return; }
+    botao.disabled = true; botao.textContent = 'Abrindo...';
+    try {
+      const doc = await lerDocPortal(PORTAL_COL_IDX, idIndicePortal(cpf.value, cod.value));
+      if (!doc) throw new Error('nada');
+      portal.indice = await destrancar(doc, cpf.value, cod.value);
+      portal.cpf = soDigitos(cpf.value); portal.codigo = normCodigo(cod.value);
+      try { localStorage.removeItem('kt_tentativas'); } catch (err) {}
+      telaListaLaudos();
+    } catch (err) {
+      tent.n++; if (tent.n >= 5) { tent.ate = Date.now() + 60000; tent.n = 0; }
+      try { localStorage.setItem('kt_tentativas', JSON.stringify(tent)); } catch (e2) {}
+      erro.textContent = err.message === 'rede' ? 'Não foi possível conectar. Verifique sua internet e tente de novo.' : 'Não encontramos laudos com esse CPF e código, ou o prazo de acesso já terminou. Confira os dados ou fale com a Kárita.';
+      botao.disabled = false; botao.textContent = '🔓 Ver meus laudos';
+    }
+  });
+  caixaPortal.appendChild(form);
+}
+function telaListaLaudos(){
+  limpar(caixaPortal);
+  const hoje = hojeISO();
+  const laudos = (portal.indice.laudos || []).filter(l => l.validade >= hoje);
+  caixaPortal.appendChild(h('div', null,
+    h('div', {class:'ola'}, 'Olá, ' + String(portal.indice.paciente || '').split(' ')[0] + '! 🌸'),
+    h('div', {style:'color:var(--cinza);font-size:14.5px'}, laudos.length ? `Você tem ${laudos.length} laudo(s) disponível(is):` : 'Não há laudos disponíveis no momento.'),
+    laudos.map(l => {
+      const b = h('button', {class:'btn rosa'}, 'Abrir');
+      b.addEventListener('click', () => abrirLaudo(l, b));
+      return h('div', {class:'laudo-item'}, h('span', {class:'ic'}, '📄'),
+        h('div', {style:'flex:1;min-width:0'}, h('b', null, `${l.tipo} — ${fmtData(l.data)}`), h('small', null, `Nº ${l.numero} · disponível até ${fmtData(l.validade)}`)), b);
+    }),
+    (() => { const s = h('button', {class:'btn linha', style:'margin-top:18px'}, '🚪 Sair'); s.addEventListener('click', () => { portal.cpf = portal.codigo = ''; portal.indice = null; telaEntradaPortal(); }); return s; })()));
+}
+async function abrirLaudo(item, botao){
+  const txt = botao.textContent;
+  botao.disabled = true; botao.textContent = 'Abrindo...';
+  try {
+    const doc = await lerDocPortal(PORTAL_COL_LAUDO, idLaudoPortal(portal.cpf, portal.codigo, item.id));
+    if (!doc) { alertaPortal('Este laudo não está mais disponível. O prazo de acesso pode ter terminado.'); return; }
+    mostrarLaudo(await destrancar(doc, portal.cpf, portal.codigo));
+  } catch (e) { alertaPortal('Não foi possível abrir o laudo agora. Verifique sua internet e tente de novo.'); }
+  finally { botao.disabled = false; botao.textContent = txt; }
+}
+function alertaPortal(msg){
+  const e = caixaPortal.querySelector('.erro') || caixaPortal.appendChild(h('div', {class:'erro'}));
+  e.textContent = msg;
+}
+function mostrarLaudo(L){
+  const c = L.clinica || {}, p = L.paciente || {}, a = L.atendimento || {};
+  const par = (rot, val, cls) => val ? h('div', {class:cls || null}, h('small', null, rot), val) : null;
+  const secao = (titulo, conteudo) => conteudo ? h('div', {class:'rel-sec'}, h('h3', null, titulo), h('div', {class:'rel-box'}, conteudo)) : null;
+  const sinais = [['PA', a.pa, 'mmHg'], ['FC', a.fc, 'bpm'], ['FR', a.fr, 'irpm'], ['Temp.', a.temp, '°C'], ['SpO₂', a.spo2, '%'], ['Glicemia', a.glicemia, 'mg/dL'], ['Peso', a.peso, 'kg'], ['Altura', a.altura, 'm'], ['Dor', a.dor, '/10']].filter(s => s[1]);
+  const contato = [c.endereco, c.telefone, c.email].filter(Boolean).join('  ·  ');
+  const fotoGrande = f => {
+    const t = h('div', {id:'fotoGrande'}, h('img', {src:f.src, alt:''}), f.legenda ? h('p', null, f.legenda) : null, h('p', {style:'opacity:.7;font-size:13px'}, 'Toque para fechar'));
+    t.addEventListener('click', () => t.remove());
+    document.body.appendChild(t);
+  };
+  const folha = h('div', {class:'folha'},
+    h('div', {class:'rel-cab'},
+      c.logo ? h('img', {class:'rlogo', src:c.logo, alt:''}) : null,
+      h('div', {class:'rnome'}, h('h2', null, c.nome || ''), c.subtitulo ? h('div', {class:'sub'}, c.subtitulo) : null, contato ? h('div', {class:'ctt'}, contato) : null),
+      h('div', {class:'rel-num'}, 'Relatório Nº', h('b', null, a.numero || '—'), fmtData(a.data))),
+    h('div', {class:'rel-tit'}, 'RELATÓRIO DE ATENDIMENTO'),
+    secao('Dados do paciente', h('div', null, h('div', {class:'rel-pares'},
+      par('Nome', p.nome, 'l2'), par('Idade', idade(p.nascimento) ? `${idade(p.nascimento)} (${fmtData(p.nascimento)})` : ''),
+      par('Sexo', p.sexo), par('CPF', p.cpf), par('Tipo sanguíneo', p.tipoSanguineo), par('Convênio', p.convenio, 'l3')),
+      p.alergias ? h('div', {class:'rel-alerta'}, h('b', null, '⚠ ALERGIAS: '), p.alergias) : null)),
+    secao('Dados do atendimento', h('div', {class:'rel-pares'},
+      par('Data', fmtData(a.data)), par('Horário', a.hora ? a.hora + (a.horaFim ? ' às ' + a.horaFim : '') : ''), par('Tipo', a.tipo),
+      par('Local', a.local), par('Profissional', a.profissional), par('Situação', a.status), par('Retorno', fmtData(a.retorno)))),
+    sinais.length ? secao('Sinais vitais', h('table', {class:'rel-sinais'}, h('tr', null, sinais.map(s => h('th', null, s[0]))), h('tr', null, sinais.map(s => h('td', null, `${s[1]} ${s[2]}`))))) : null,
+    secao('Queixa principal / motivo', a.queixa),
+    secao('Relato do paciente', a.relatoPaciente),
+    secao('Relato do acompanhante / familiar', a.relatoAcompanhante),
+    secao('Avaliação do profissional', a.relatoProfissional),
+    secao('Procedimentos realizados', a.procedimentos),
+    secao('Medicações administradas / prescritas', a.medicacoes),
+    secao('Orientações ao paciente', a.conduta),
+    secao('Encaminhamentos', a.encaminhamentos),
+    (a.extras || []).map(e => secao(e.titulo || 'Informação adicional', e.texto || '—')),
+    secao('Observações gerais', a.observacoes),
+    (L.fotos || []).length ? secao(`Registro fotográfico (${L.fotos.length})`, h('div', {class:'rel-fotos'}, L.fotos.map((f, i) => {
+      const img = h('img', {src:f.src, alt:'foto ' + (i + 1)}); img.addEventListener('click', () => fotoGrande(f));
+      return h('figure', null, img, h('figcaption', null, h('b', null, `Foto ${i + 1}`), f.legenda ? ' — ' + f.legenda : ''));
+    }))) : null,
+    L.fotosOmitidas ? h('div', {style:'font-size:11px;color:#7a6470;margin-top:6px'}, `${L.fotosOmitidas} foto(s) não incluída(s) na versão on-line. Peça à Kárita, se precisar.`) : null,
+    h('div', {class:'rel-assin'},
+      L.assinatura ? h('img', {src:L.assinatura, alt:'assinatura'}) : h('div', {style:'height:50px'}),
+      h('div', {class:'linha'}, a.profissional || 'Profissional responsável'),
+      a.registro ? h('small', null, a.registro) : null,
+      h('small', null, `${c.local ? c.local + ', ' : ''}${fmtData(a.data)}`)),
+    h('div', {class:'rel-rod'}, h('span', null, c.rodape || ''), h('span', null, 'Disponível on-line até ' + fmtData(L.validade))));
+  const fechar = h('button', {class:'btn linha'}, '← Voltar');
+  const imprimir = h('button', {class:'btn ouro'}, '🖨️ Imprimir / Salvar PDF');
+  const tela = h('div', {id:'laudoTela'},
+    h('div', {class:'barra'}, fechar, h('div', {class:'grow'}), imprimir),
+    h('div', {class:'validade-faixa'}, `📅 Este laudo fica disponível aqui até ${fmtData(L.validade)}. Para guardar, use "Imprimir / Salvar PDF".`),
+    folha);
+  fechar.addEventListener('click', () => tela.remove());
+  imprimir.addEventListener('click', () => window.print());
+  document.body.appendChild(tela);
+}
+document.querySelectorAll('[data-ir-laudos]').forEach(b => b.addEventListener('click', () => {
+  document.getElementById('laudos').scrollIntoView({behavior:'smooth'});
+  setTimeout(() => { const i = document.getElementById('pCpf'); if (i) i.focus({preventScroll:true}); }, 500);
+}));
+telaEntradaPortal();
+</script>
+</body>
+</html>

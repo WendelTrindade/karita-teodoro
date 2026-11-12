@@ -1,6 +1,6 @@
 /* Kárita Teodoro — funciona como aplicativo e abre mesmo com internet fraca.
    Desenvolvido por Wendel Emílio de Souza Matias — oficial.respostas@gmail.com */
-const CACHE = 'kt-app-v2.6';
+const CACHE = 'kt-app-v2.7';
 const ARQUIVOS = ['./', 'index.html', 'relatorio-atendimento.html', 'site.webmanifest', 'painel.webmanifest',
   'icones/icon-192.png', 'icones/icon-512.png', 'icones/icon-maskable-512.png', 'icones/apple-touch-icon.png', 'icones/favicon-64.png'];
 self.addEventListener('install', e => {

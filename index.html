@@ -164,6 +164,7 @@ footer a{color:var(--rosa);text-decoration:none;font-weight:600}
 .rel-num b{display:block;font-size:15px;color:var(--rosa-esc)}
 .rel-tit{text-align:center;margin:14px 0 6px;font-family:Georgia,serif;font-size:17px;letter-spacing:2px;color:var(--rosa-esc);font-weight:700}
 .rel-tit::after{content:"";display:block;width:120px;height:2px;background:var(--ouro);margin:6px auto 0}
+.rel-tab{width:100%;border-collapse:collapse;font-size:12.5px;white-space:normal}.rel-tab th{text-align:left;color:var(--vinho);border-bottom:2px solid var(--ouro);padding:4px 5px;font-size:11px;text-transform:uppercase}.rel-tab td{padding:5px;border-bottom:1px solid var(--borda);vertical-align:top}
 .rel-sec{margin-top:14px;page-break-inside:avoid;break-inside:avoid}
 .rel-sec h3{font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--vinho);background:linear-gradient(90deg,var(--rosa),var(--rosa-medio));padding:5px 10px;border-radius:6px 6px 0 0;border-bottom:2px solid var(--ouro);font-family:inherit}
 .rel-box{border:1px solid var(--borda);border-top:none;padding:9px 11px;border-radius:0 0 6px 6px;white-space:pre-wrap}
@@ -371,7 +372,7 @@ footer a{color:var(--rosa);text-decoration:none;font-weight:600}
 const SITE = {"especialidade":"","whatsapp":"","telefone":"","email":"","endereco":"","horario":"","mapa":"","instagram":"","facebook":"","tiktok":"","youtube":"","linkedin":""};
 /*SITE_FIM*/
 /* Os dados acima são preenchidos pelo painel: Ajustes › Site: contato e redes sociais › Baixar site atualizado */
-const VERSAO = '2.6';
+const VERSAO = '2.7';
 const PAGINA_PAINEL = 'relatorio-atendimento.html';
 /* Código de segurança da senha (a senha nunca fica escrita no arquivo, só o "resumo" dela) */
 function sha256(texto){
@@ -708,8 +709,19 @@ function mostrarLaudo(L){
     secao('Relato do paciente', a.relatoPaciente),
     secao('Relato do acompanhante / familiar', a.relatoAcompanhante),
     secao('Avaliação do profissional', a.relatoProfissional),
-    secao('Procedimentos realizados', a.procedimentos),
-    secao('Medicações administradas / prescritas', a.medicacoes),
+    (a.procedimentosLista || []).length ? secao('Procedimentos realizados', h('table', {class:'rel-tab'},
+      h('tr', null, h('th', null, 'Procedimento'), h('th', null, 'Local'), h('th', null, 'Descrição')),
+      a.procedimentosLista.map(x => h('tr', null, h('td', null, h('b', null, x.nome)), h('td', null, x.regiao || ''), h('td', null, x.descricao || ''))))) : null,
+    ...[['Administrado na clínica', 'Medicamentos aplicados na clínica', 'Horário'], ['Prescrito (uso em casa)', 'Medicamentos para usar em casa', 'Como usar']].map(([uso, tit, col]) => {
+      const ms = (a.medicamentos || []).filter(m => (m.uso || 'Administrado na clínica') === uso);
+      return ms.length ? secao(tit, h('table', {class:'rel-tab'},
+        h('tr', null, h('th', null, 'Medicamento'), h('th', null, 'Dose'), h('th', null, 'Via'), h('th', null, col)),
+        ms.map(m => h('tr', null, h('td', null, h('b', null, m.nome), m.apresentacao ? ' (' + m.apresentacao + ')' : ''),
+          h('td', null, [m.dosagem, [m.quantidade, m.unidade].filter(Boolean).join(' ')].filter(Boolean).join(' · ')), h('td', null, m.via || ''),
+          h('td', null, uso === 'Administrado na clínica' ? (m.horario || '') : [m.frequencia, m.periodo].filter(Boolean).join(' · '), m.obs ? h('div', {style:'font-size:11.5px;color:#7a5a66'}, m.obs) : null))))) : null;
+    }),
+    secao((a.procedimentosLista || []).length ? 'Anotações sobre os procedimentos' : 'Procedimentos realizados', a.procedimentos),
+    secao((a.medicamentos || []).length ? 'Anotações sobre medicação' : 'Medicações administradas / prescritas', a.medicacoes),
     secao('Orientações ao paciente', a.conduta),
     secao('Encaminhamentos', a.encaminhamentos),
     (a.extras || []).map(e => secao(e.titulo || 'Informação adicional', e.texto || '—')),

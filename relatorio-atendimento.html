@@ -158,6 +158,12 @@ textarea{resize:vertical;min-height:70px}
 .engrenagem{margin-left:auto;background:rgba(255,255,255,.45);border:1px solid rgba(255,255,255,.7);color:var(--vinho);border-radius:50%;width:42px;height:42px;font-size:19px;cursor:pointer;flex-shrink:0}
 .rec-valor{text-align:center;font-size:24px;font-weight:700;color:var(--rosa-esc);border:2px solid var(--ouro);border-radius:10px;padding:8px;margin:12px auto;max-width:260px;background:#fffbea;font-family:Georgia,serif}
 .rec-txt{font-size:14px;line-height:1.9;text-align:justify}
+.item-clin{border:1px solid var(--borda);border-left:4px solid var(--ouro);border-radius:12px;padding:10px 12px;margin-bottom:10px;background:#fffdfb}
+.item-clin-topo{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;color:var(--rosa-esc)}
+.rel-chips{display:flex;flex-wrap:wrap;gap:6px}.rel-chips span{border:1px solid var(--borda);border-radius:20px;padding:3px 10px;font-size:11.5px;background:#fff}
+.hist-clin{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px dashed var(--borda);font-size:13.5px;line-height:1.5}
+.hc-data{min-width:48px;text-align:center;background:var(--rosa-claro);border-radius:10px;padding:4px 6px;color:var(--rosa-esc);line-height:1.1}
+.hc-data small{display:block;font-size:10.5px;color:var(--cinza)}
 .rel-tab{width:100%;border-collapse:collapse;margin:10px 0;font-size:11.5px}
 .rel-tab th{background:var(--rosa-claro);color:var(--rosa-esc);text-align:left;padding:5px 6px;border-bottom:2px solid var(--ouro)}
 .rel-tab td{padding:5px 6px;border-bottom:1px solid var(--borda)}
@@ -292,6 +298,22 @@ body.bloqueado>*:not(#telaBloqueio){display:none!important}
 .linha-hor.cab span{font-size:11.5px;font-weight:700;color:var(--ouro-esc)}
 @media (max-width:520px){.linha-hor{grid-template-columns:1.2fr 1fr 1fr;}.linha-hor>*:nth-child(4),.linha-hor>*:nth-child(5){grid-column:auto}.linha-hor.cab{display:none}}
 .selo.aguarda{background:#ffecd6;color:#b45309;border-color:#f0a04b}
+.ag-linha.cancelado{opacity:.62;background:#f6f3f4}.ag-linha.cancelado .ag-info>b{text-decoration:line-through}
+.ag-selo{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.acoes-ag{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px}
+.tile-ag{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;border:1.5px solid var(--borda);border-radius:16px;padding:12px 13px;background:#fff;cursor:pointer;font:inherit;color:var(--texto);min-height:84px;transition:transform .08s,box-shadow .15s}
+.tile-ag:active{transform:scale(.97)}.tile-ag:hover{box-shadow:0 4px 14px rgba(150,80,100,.15)}
+.tile-ag .tile-ico{font-size:22px;line-height:1}.tile-ag b{font-size:15px}.tile-ag small{font-size:12px;color:var(--cinza);line-height:1.25}
+.tile-ag.rosa{border-color:var(--rosa-esc);background:linear-gradient(135deg,#fff,var(--rosa-claro))}
+.tile-ag.ouro{border-color:var(--ouro);background:linear-gradient(135deg,#fff,#fbf3e2)}
+.tile-ag.verde{border-color:#5fae7b;background:linear-gradient(135deg,#fff,#eaf7ee)}
+.tile-ag.vermelho{border-color:#d9534f;background:linear-gradient(135deg,#fff,#fdecea)}
+.tile-ag.cinza{background:#fbfafa}
+.chips-motivo{display:flex;flex-wrap:wrap;gap:8px}
+.chip-mot{border:1.5px solid var(--borda);background:#fff;border-radius:22px;padding:9px 14px;font:inherit;font-size:14px;cursor:pointer;color:var(--texto)}
+.chip-mot.sel{border-color:var(--rosa-esc);background:var(--rosa-claro);color:var(--rosa-esc);font-weight:700}
+.hist-ag{margin-top:14px;border-top:1px dashed var(--borda);padding-top:8px}.hist-ag summary{cursor:pointer;font-weight:700;color:var(--rosa-esc);font-size:14px}
+.hist-ag-li{padding:6px 0;border-bottom:1px solid #f3e7eb;font-size:13.5px}
 .ag-linha.pendente{border:2px dashed #f0a04b;background:#fffaf3}
 .ag-linha.pendente .ag-hora{background:linear-gradient(135deg,#ffd7a8,#f0a04b);color:#5a2c00}
 .cartao-encaixe{border:2px solid #f0a04b;background:#fffaf3}
@@ -643,14 +665,14 @@ function operar(store, modo, fn){
    ========================================================= */
 /* >>> Preenchido pelo botão "Baixar painel configurado" (Ajustes › Trabalho em equipe) <<< */
 const NUVEM = {projectId:'', apiKey:'', adminEmail:''};
-const VERSAO = '2.6';
+const VERSAO = '2.7';
 const VERSAO_DATA = '12/11/2026';
 const DOMINIO_EQUIPE = 'equipe.karitateodoro.app';
 const emNuvem = () => !!(NUVEM.projectId && NUVEM.apiKey && NUVEM.adminEmail);
 const SO_LOCAL = new Set(['midias', 'fotos']);
 const COLECOES = {pacientes:'karita_pacientes', agenda:'karita_agenda', prontuario:'karita_prontuario', financeiro:'karita_financeiro',
   usuarios:'karita_usuarios', ponto:'karita_ponto', arquivos:'karita_arquivos', config:'karita_config', contadores:'karita_contadores', bloqueios:'karita_bloqueios'};
-const CAMPOS_AGENDA = ['id','numero','pacienteId','data','hora','horaFim','tipo','local','profissional','registro','status','retorno','obsAgenda','criadoEm','atualizadoEm','teste','criadoPor'];
+const CAMPOS_AGENDA = ['id','numero','pacienteId','data','hora','horaFim','tipo','local','profissional','registro','status','retorno','obsAgenda','criadoEm','atualizadoEm','teste','criadoPor','encaixePedido','encaixeDecisao','falta','historico','cancelamento','confirmacao','remarcadoDe','remarcacoes'];
 const CAMPOS_CONFIG_EQUIPE = ['site','agendaCfg','consultorio','nome','subtitulo','endereco','telefone','email','logo','profissional','registro','local','rodape','testeRemovido','exemploCarregado'];
 const idbLerTodos = s => operar(s, 'readonly', st => st.getAll());
 const idbGravar = (s, v) => operar(s, 'readwrite', st => st.put(v));
@@ -1665,6 +1687,157 @@ async function excluirPaciente(id){
   toast('Paciente excluído');
   ir('pacientes');
 }
+/* =========================================================
+   FICHA DE PROCEDIMENTOS, MEDICAMENTOS E MATERIAIS
+   ========================================================= */
+const PROCEDIMENTOS_COMUNS = ['Curativo simples','Curativo especial','Desbridamento','Retirada de pontos','Aplicação de injetável','Aplicação de medicação endovenosa','Soroterapia','Nebulização','Sondagem vesical','Troca de sonda','Lavagem','Coleta de exame','Teste rápido','Aferição de sinais vitais','Glicemia capilar','Drenagem','Cuidados com estomia','Avaliação de ferida','Orientação em saúde'];
+const APRESENTACOES = ['','Comprimido','Cápsula','Solução oral','Gotas','Xarope','Ampola','Frasco-ampola','Soro / bolsa','Pomada / creme','Gel','Spray','Adesivo','Colírio','Supositório','Outro'];
+const UNIDADES_MED = ['','comprimido(s)','cápsula(s)','ml','gota(s)','ampola(s)','frasco(s)','aplicação(ões)','g','mg','UI','jato(s)','unidade(s)'];
+const VIAS = ['','Oral','Sublingual','Intramuscular (IM)','Endovenosa (EV)','Subcutânea (SC)','Intradérmica','Tópica (na pele)','Inalatória','Oftálmica','Nasal','Retal','Outra'];
+const MATERIAIS_COMUNS = ['Gaze estéril','Luva de procedimento','Luva estéril','Soro fisiológico 0,9%','Atadura','Esparadrapo','Fita microporosa','Seringa','Agulha','Scalp','Equipo','Cateter','Cobertura (curativo)','Álcool 70%','Clorexidina','Algodão','Máscara','Avental descartável'];
+function nomesUsados(campoLista, chave){
+  const s = new Set();
+  estado.atendimentos.forEach(a => (a[campoLista] || []).forEach(x => { if (x[chave]) s.add(x[chave]); }));
+  return [...s].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+}
+function datalist(id, itens){ return h('datalist', {id}, [...new Set(itens)].map(v => h('option', {value:v}))); }
+function alergiaConflito(p, nomeMed){
+  if (!p || !p.alergias || !nomeMed) return '';
+  const al = p.alergias.toLowerCase(), n = nomeMed.toLowerCase().trim();
+  if (n.length < 3) return '';
+  const partes = al.split(/[,;\/\n]| e /).map(x => x.trim()).filter(x => x.length >= 3);
+  const bate = partes.find(x => n.includes(x) || x.includes(n));
+  return bate ? p.alergias : '';
+}
+function listaEditavel(lista, montarLinha, rotuloNovo, novoItem, vazio){
+  const caixa = h('div');
+  const desenhar = () => {
+    limpar(caixa);
+    if (!lista.length) caixa.appendChild(h('div', {class:'meta', style:'color:var(--cinza);margin-bottom:8px'}, vazio));
+    lista.forEach((item, i) => caixa.appendChild(h('div', {class:'item-clin'},
+      h('div', {class:'item-clin-topo'}, h('b', null, `${i + 1}.`),
+        h('button', {class:'btn perigo peq', type:'button', onclick:() => { lista.splice(i, 1); desenhar(); }}, '🗑️ Remover')),
+      montarLinha(item, desenhar))));
+    caixa.appendChild(h('button', {class:'btn ouro', type:'button', onclick:() => { lista.push(novoItem()); desenhar(); }}, rotuloNovo));
+  };
+  desenhar();
+  return caixa;
+}
+function cartoesClinicos(at){
+  if (!Array.isArray(at.procedimentosLista)) at.procedimentosLista = [];
+  if (!Array.isArray(at.medicamentos)) at.medicamentos = [];
+  if (!Array.isArray(at.materiais)) at.materiais = [];
+  const procs = listaEditavel(at.procedimentosLista, (pr) => { const g = h('div', {class:'grade'},
+      campo(pr, 'nome', 'Procedimento', {cheio:true, dica:'Toque e escolha ou escreva. Ex.: Curativo especial'}),
+      campo(pr, 'regiao', 'Local / região do corpo', {dica:'Ex.: pé direito, região dorsal'}),
+      campo(pr, 'duracao', 'Duração (minutos)', {im:'numeric'}),
+      campo(pr, 'descricao', 'Como foi feito / técnica / resultado', {tipo:'textarea', cheio:true, linhas:2}));
+    const i = g.querySelector('input'); if (i) i.setAttribute('list', 'dlProcedimentos'); return g; },
+    '＋ Adicionar procedimento', () => ({nome:'', regiao:'', duracao:'', descricao:''}), 'Nenhum procedimento adicionado.');
+  const meds = listaEditavel(at.medicamentos, (m, redesenhar) => {
+    const aviso = h('div');
+    const conferir = () => { limpar(aviso); const c = alergiaConflito(pacientePorId(at.pacienteId), m.nome); if (c) aviso.appendChild(h('div', {class:'alerta', style:'margin:6px 0 0'}, `⛔ ATENÇÃO: o paciente tem alergia registrada (${c}). Confira antes de usar este medicamento.`)); };
+    const caixaPresc = h('div', {class:'grade', style:'margin-top:8px'});
+    const desenharPresc = () => { limpar(caixaPresc); if (m.uso === 'Prescrito (uso em casa)') { caixaPresc.appendChild(campo(m, 'frequencia', 'De quanto em quanto tempo', {dica:'Ex.: de 8 em 8 horas'})); caixaPresc.appendChild(campo(m, 'periodo', 'Por quanto tempo', {dica:'Ex.: por 7 dias'})); } };
+    const g = h('div', null,
+      h('div', {class:'grade'},
+        campo(m, 'uso', 'Tipo', {tipo:'select', opcoes:['Administrado na clínica', 'Prescrito (uso em casa)'], aoMudar:desenharPresc}),
+        campo(m, 'nome', 'Medicamento', {dica:'Ex.: Dipirona', aoMudar:conferir}),
+        campo(m, 'apresentacao', 'Apresentação', {tipo:'select', opcoes:APRESENTACOES}),
+        campo(m, 'dosagem', 'Dosagem / concentração', {dica:'Ex.: 500 mg, 1 g/2 ml'}),
+        campo(m, 'quantidade', 'Quantidade', {im:'decimal', dica:'Ex.: 1'}),
+        campo(m, 'unidade', 'Unidade', {tipo:'select', opcoes:UNIDADES_MED}),
+        campo(m, 'via', 'Via de administração', {tipo:'select', opcoes:VIAS}),
+        campo(m, 'horario', 'Horário', {tipo:'time'}),
+        campo(m, 'lote', 'Lote (opcional)'),
+        campo(m, 'validade', 'Validade (opcional)', {tipo:'date'}),
+        campo(m, 'obs', 'Observação', {cheio:true, dica:'Ex.: diluído em 10 ml de água destilada'})),
+      caixaPresc, aviso);
+    const inpNome = g.querySelectorAll('input')[0];
+    if (inpNome) inpNome.setAttribute('list', 'dlMedicamentos');
+    desenharPresc(); conferir();
+    return g;
+  }, '＋ Adicionar medicamento', () => ({uso:'Administrado na clínica', nome:'', apresentacao:'', dosagem:'', quantidade:'', unidade:'', via:'', horario:agoraHora(), lote:'', validade:'', obs:''}), 'Nenhum medicamento adicionado.');
+  const mats = listaEditavel(at.materiais, (mt) => {
+    const g = h('div', {class:'grade g3'},
+      campo(mt, 'nome', 'Material', {dica:'Ex.: Gaze estéril'}),
+      campo(mt, 'quantidade', 'Quantidade', {im:'decimal'}),
+      campo(mt, 'unidade', 'Unidade', {tipo:'select', opcoes:['unidade(s)', 'pacote(s)', 'ml', 'par(es)', 'rolo(s)', 'cm', 'caixa(s)']}));
+    const inp = g.querySelector('input'); if (inp) inp.setAttribute('list', 'dlMateriais');
+    return g;
+  }, '＋ Adicionar material', () => ({nome:'', quantidade:'1', unidade:'unidade(s)'}), 'Nenhum material adicionado.');
+  const obsProc = procs;
+  return [
+    datalist('dlProcedimentos', PROCEDIMENTOS_COMUNS.concat(nomesUsados('procedimentosLista', 'nome'))),
+    datalist('dlMedicamentos', nomesUsados('medicamentos', 'nome')),
+    datalist('dlMateriais', MATERIAIS_COMUNS.concat(nomesUsados('materiais', 'nome'))),
+    h('div', {class:'cartao'}, h('h2', null, '💉 Procedimentos realizados'), obsProc,
+      h('div', {class:'grade', style:'margin-top:12px'}, campo(at, 'procedimentos', 'Anotações gerais sobre os procedimentos (opcional)', {tipo:'textarea', cheio:true, linhas:2}))),
+    h('div', {class:'cartao'}, h('h2', null, '💊 Medicamentos utilizados'), meds,
+      h('div', {class:'grade', style:'margin-top:12px'}, campo(at, 'medicacoes', 'Anotações gerais sobre medicação (opcional)', {tipo:'textarea', cheio:true, linhas:2}))),
+    h('div', {class:'cartao'}, h('h2', null, '🧰 Materiais utilizados'), mats)
+  ];
+}
+/* tabelas para o relatório impresso */
+function tabelasClinicas(at, secao){
+  const procs = (at.procedimentosLista || []).filter(x => x.nome || x.descricao);
+  const meds = (at.medicamentos || []).filter(x => x.nome);
+  const mats = (at.materiais || []).filter(x => x.nome);
+  const out = [];
+  if (procs.length) out.push(secao('Procedimentos realizados', h('table', {class:'rel-tab', style:'margin:0'},
+    h('tr', null, h('th', null, 'Procedimento'), h('th', null, 'Local'), h('th', null, 'Duração'), h('th', null, 'Descrição')),
+    procs.map(x => h('tr', null, h('td', null, h('b', null, x.nome || '')), h('td', null, x.regiao || ''), h('td', null, x.duracao ? x.duracao + ' min' : ''), h('td', null, x.descricao || ''))))));
+  const adm = meds.filter(m => m.uso !== 'Prescrito (uso em casa)'), presc = meds.filter(m => m.uso === 'Prescrito (uso em casa)');
+  const linhaMed = m => h('tr', null, h('td', null, h('b', null, m.nome), m.apresentacao ? h('div', {style:'font-size:10.5px;color:#6b5560'}, m.apresentacao) : null),
+    h('td', null, m.dosagem || ''), h('td', null, [m.quantidade, m.unidade].filter(Boolean).join(' ')), h('td', null, m.via || ''),
+    h('td', null, m.uso === 'Prescrito (uso em casa)' ? [m.frequencia, m.periodo].filter(Boolean).join(' · ') : (m.horario || '')),
+    h('td', null, [m.lote ? 'Lote ' + m.lote : '', m.validade ? 'Val. ' + fmtData(m.validade) : '', m.obs].filter(Boolean).join(' · ')));
+  const cab = ult => h('tr', null, h('th', null, 'Medicamento'), h('th', null, 'Dosagem'), h('th', null, 'Quantidade'), h('th', null, 'Via'), h('th', null, ult), h('th', null, 'Observações'));
+  if (adm.length) out.push(secao('Medicamentos administrados na clínica', h('table', {class:'rel-tab', style:'margin:0'}, cab('Horário'), adm.map(linhaMed))));
+  if (presc.length) out.push(secao('Medicamentos prescritos (uso em casa)', h('table', {class:'rel-tab', style:'margin:0'}, cab('Como usar'), presc.map(linhaMed))));
+  if (mats.length) out.push(secao('Materiais utilizados', h('div', {class:'rel-chips'}, mats.map(x => h('span', null, `${x.nome}${x.quantidade ? ' — ' + x.quantidade + ' ' + (x.unidade || '') : ''}`)))));
+  return out;
+}
+/* histórico clínico do paciente (todos os atendimentos) */
+function historicoClinico(pid){
+  const ats = estado.atendimentos.filter(a => a.pacienteId === pid && ((a.procedimentosLista || []).some(x => x.nome) || (a.medicamentos || []).some(x => x.nome) || a.procedimentos || a.medicacoes))
+    .sort((x, y) => (y.data + (y.hora || '')).localeCompare(x.data + (x.hora || '')));
+  return ats;
+}
+function blocoHistoricoClinico(pid){
+  const ats = historicoClinico(pid);
+  if (!ats.length) return h('div', {class:'meta', style:'color:var(--cinza)'}, 'Nenhum procedimento ou medicamento registrado ainda.');
+  return h('div', null, ats.slice(0, 12).map(a => h('div', {class:'hist-clin'},
+    h('div', {class:'hc-data'}, h('b', null, fmtData(a.data).slice(0, 5)), h('small', null, a.data.slice(0, 4))),
+    h('div', {style:'flex:1;min-width:0'},
+      h('div', {class:'meta', style:'font-weight:700;color:var(--rosa-esc)'}, `${a.tipo || ''} · Nº ${a.numero || ''}`),
+      (a.procedimentosLista || []).filter(x => x.nome).map(x => h('div', null, '💉 ', h('b', null, x.nome), x.regiao ? ` — ${x.regiao}` : '')),
+      (a.medicamentos || []).filter(x => x.nome).map(m => h('div', null, '💊 ', h('b', null, m.nome), ` ${[m.dosagem, [m.quantidade, m.unidade].filter(Boolean).join(' '), m.via].filter(Boolean).join(' · ')}`, m.uso === 'Prescrito (uso em casa)' ? h('span', {class:'selo ouro', style:'margin-left:4px'}, 'prescrito') : null)),
+      a.procedimentos && !(a.procedimentosLista || []).length ? h('div', {class:'meta'}, '💉 ' + a.procedimentos) : null,
+      a.medicacoes && !(a.medicamentos || []).length ? h('div', {class:'meta'}, '💊 ' + a.medicacoes) : null),
+    h('button', {class:'btn peq', onclick:() => { fecharModais(); abrirRelatorio(a.id); }}, '📄'))),
+    ats.length > 12 ? h('div', {class:'meta'}, `… e mais ${ats.length - 12} atendimento(s). Use "Imprimir histórico" para ver tudo.`) : null,
+    h('div', {class:'acoes'}, h('button', {class:'btn ouro peq', onclick:() => { fecharModais(); imprimirHistoricoClinico(pid); }}, '🖨️ Imprimir histórico de procedimentos')));
+}
+function imprimirHistoricoClinico(pid){
+  const p = pacientePorId(pid) || {};
+  const ats = historicoClinico(pid).slice().reverse();
+  const secao = (titulo, conteudo) => conteudo ? h('div', {class:'rel-sec'}, h('h3', null, titulo), h('div', {class:'rel-box'}, conteudo)) : null;
+  const folha = h('div', {class:'folha'},
+    cabecalhoDoc('Paciente', (p.nome || '').split(' ')[0], hojeISO().split('-').reverse().join('/')),
+    h('div', {class:'rel-tit'}, 'HISTÓRICO DE PROCEDIMENTOS E MEDICAMENTOS'),
+    secao('Paciente', h('div', {class:'rel-pares'},
+      h('div', {class:'l2'}, h('small', null, 'Nome'), p.nome || ''), h('div', null, h('small', null, 'Nascimento'), fmtData(p.nascimento)),
+      p.alergias ? h('div', {class:'l3'}, h('small', null, 'Alergias'), h('b', {style:'color:#b3261e'}, p.alergias)) : null)),
+    ats.length ? ats.map(a => h('div', {class:'rel-sec'}, h('h3', null, `${fmtData(a.data)}${a.hora ? ' às ' + a.hora : ''} — ${a.tipo || ''} (Nº ${a.numero || ''})`),
+      h('div', {class:'rel-box'}, tabelasClinicas(a, (t, c) => h('div', {style:'margin-bottom:8px'}, h('b', {style:'font-size:11px;color:var(--ouro-esc);text-transform:uppercase'}, t), c)),
+        a.procedimentos ? h('p', {style:'margin:4px 0'}, h('b', null, 'Procedimentos: '), a.procedimentos) : null,
+        a.medicacoes ? h('p', {style:'margin:4px 0'}, h('b', null, 'Medicação: '), a.medicacoes) : null))) : h('p', null, 'Nenhum registro.'),
+    h('div', {class:'rel-rod'}, h('span', null, estado.config.nome || ''), h('span', null, 'Emitido em ' + new Date().toLocaleString('pt-BR'))));
+  mostrarDocumento(folha);
+}
+
+
 async function fichaPaciente(id){
   const original = pacientePorId(id);
   if (!original) return;
@@ -1682,6 +1855,7 @@ async function fichaPaciente(id){
     painelEmergencia(p),
     h('h4', {class:'sub-form'}, `📌 Observações automáticas — faltas sem aviso (${qtdFaltas(pacientePorId(id))})`),
     blocoFaltasFicha(id),
+    ehAdmin() ? [h('h4', {class:'sub-form'}, '💉 Histórico de procedimentos e medicamentos'), blocoHistoricoClinico(id)] : null,
     h('div', {class:'ficha-dados'},
       lin('Nascimento', fmtData(p.nascimento)), lin('CPF', p.cpf), lin('RG', p.rg),
       lin('Estado civil', p.estadoCivil), lin('Profissão', p.profissao), lin('Nome da mãe', p.mae), lin('E-mail', p.email),
@@ -1814,10 +1988,9 @@ async function editarAtendimento(id, pre){
     )));
 
   /* Conduta */
-  area.appendChild(h('div', {class:'cartao'}, h('h2', null, '🩺 Conduta'),
+  cartoesClinicos(at).forEach(el => area.appendChild(el));
+  area.appendChild(h('div', {class:'cartao'}, h('h2', null, '🩺 Orientações e encaminhamentos'),
     h('div', {class:'grade'},
-      campo(at, 'procedimentos', 'Procedimentos realizados', {tipo:'textarea', cheio:true}),
-      campo(at, 'medicacoes', 'Medicações administradas / prescritas', {tipo:'textarea', cheio:true}),
       campo(at, 'conduta', 'Orientações dadas ao paciente', {tipo:'textarea', cheio:true}),
       campo(at, 'encaminhamentos', 'Encaminhamentos', {tipo:'textarea', cheio:true, linhas:2}),
       campo(at, 'observacoes', 'Observações gerais', {tipo:'textarea', cheio:true, linhas:2})
@@ -2049,8 +2222,9 @@ async function abrirRelatorio(id){
     secao('Relato do paciente', at.relatoPaciente),
     secao('Relato do acompanhante / familiar', at.relatoAcompanhante),
     secao('Avaliação do profissional', at.relatoProfissional),
-    secao('Procedimentos realizados', at.procedimentos),
-    secao('Medicações administradas / prescritas', at.medicacoes),
+    tabelasClinicas(at, secao),
+    secao((at.procedimentosLista || []).some(x => x.nome) ? 'Anotações sobre os procedimentos' : 'Procedimentos realizados', at.procedimentos),
+    secao((at.medicamentos || []).some(x => x.nome) ? 'Anotações sobre medicação' : 'Medicações administradas / prescritas', at.medicacoes),
     secao('Orientações ao paciente', at.conduta),
     secao('Encaminhamentos', at.encaminhamentos),
     (at.extras || []).filter(e => (e.titulo || e.texto)).map(e => secao(e.titulo || 'Informação adicional', e.texto || '—')),
@@ -2104,7 +2278,7 @@ function eventosDoDia(iso){
 }
 function linhaAgenda(ev){
   const a = ev.at, p = pacientePorId(a.pacienteId) || {};
-  return h('div', {class:'ag-linha' + (ev.retorno ? ' retorno' : '') + (!ev.retorno && a.status === 'Aguardando autorização' ? ' pendente' : ''), onclick:() => acoesAgenda(a, ev.retorno)},
+  return h('div', {class:'ag-linha' + (ev.retorno ? ' retorno' : '') + (!ev.retorno && a.status === 'Aguardando autorização' ? ' pendente' : '') + (!ev.retorno && a.status === 'Cancelado' ? ' cancelado' : ''), onclick:() => acoesAgenda(a, ev.retorno)},
     h('div', {class:'ag-hora'}, ev.retorno ? '↩' : (a.hora || '--:--'),
       h('small', null, ev.retorno ? 'Retorno' : (a.horaFim ? 'até ' + a.horaFim : ''))),
     h('div', {style:'align-self:center'}, avatar(p, 42)),
@@ -2114,53 +2288,237 @@ function linhaAgenda(ev){
       p.telefone ? h('div', {class:'meta'}, '📞 ' + p.telefone) : null,
       (!ev.retorno && a.queixa && ehAdmin()) ? h('div', {class:'prev'}, a.queixa.length > 90 ? a.queixa.slice(0, 90) + '…' : a.queixa) : null,
       (!ev.retorno && a.obsAgenda) ? h('div', {class:'meta'}, '📝 ' + a.obsAgenda) : null),
-    h('div', {class:'ag-selo'}, ev.retorno ? h('span', {class:'selo ouro'}, 'Retorno') : seloStatus(a.status)));
+    h('div', {class:'ag-selo'}, ev.retorno ? h('span', {class:'selo ouro'}, 'Retorno') : [seloStatus(a.status), seloConfirmacao(a)]));
+}
+/* =========================================================
+   AGENDA: remarcar, cancelar e confirmar — do jeito fácil
+   ========================================================= */
+const MOTIVOS_REMARCAR = ['Paciente pediu para mudar', 'Paciente não pode comparecer', 'Paciente está doente', 'Kárita / clínica precisou mudar', 'Imprevisto de horário', 'Outro motivo'];
+const MOTIVOS_CANCELAR = ['Paciente avisou que não vem', 'Paciente desistiu', 'Paciente está doente', 'Kárita / clínica cancelou', 'Agendado por engano', 'Outro motivo'];
+const primeiroNome = n => String(n || '').trim().split(/\s+/)[0] || '';
+const quandoTxt = (data, hora) => `${DIAS_LONGO[dataDe(data).getDay()]}, ${fmtData(data)}${hora ? ' às ' + hora : ''}`;
+function abrirWhatsPaciente(p, msg){
+  const n = soDigitos(p && p.telefone);
+  if (!n) { aviso('Este paciente não tem telefone cadastrado. Cadastre o telefone na ficha dele para enviar mensagens.', 'WhatsApp'); return; }
+  window.open('https://wa.me/' + (n.length <= 11 ? '55' + n : n) + '?text=' + encodeURIComponent(msg), '_blank');
+}
+function msgAgenda(tipo, a, p, extra){
+  const cli = estado.config.nome || 'Kárita Teodoro', nome = primeiroNome(p.nome);
+  if (tipo === 'confirmar') return `Olá, ${nome}! 😊 Aqui é da clínica ${cli}.\n\nPassando para lembrar do seu atendimento:\n📅 *${quandoTxt(a.data, a.hora)}*\n\nPode responder *SIM* para confirmar? Se não puder vir, é só avisar que a gente remarca. Obrigada!`;
+  if (tipo === 'remarcado') return `Olá, ${nome}! Aqui é da clínica ${cli}.\n\nSeu atendimento foi *remarcado* ✅\n${extra ? '❌ Antes: ' + extra + '\n' : ''}📅 *Novo horário: ${quandoTxt(a.data, a.hora)}*\n\nSe não puder comparecer, por favor nos avise por aqui. Obrigada!`;
+  if (tipo === 'cancelado') return `Olá, ${nome}. Aqui é da clínica ${cli}.\n\nSeu atendimento de *${quandoTxt(a.data, a.hora)}* foi *cancelado*.${extra ? '\nMotivo: ' + extra : ''}\n\nQuando quiser marcar um novo horário, é só responder esta mensagem. 💗`;
+  return '';
+}
+function anotarHistorico(a, acao, detalhe){
+  if (!Array.isArray(a.historico)) a.historico = [];
+  a.historico.push({em:new Date().toISOString(), por:estado.usuario ? estado.usuario.nome : '', acao, detalhe:detalhe || ''});
+}
+function blocoHistoricoAgenda(a){
+  const hs = (a.historico || []).slice().reverse();
+  if (!hs.length) return null;
+  return h('details', {class:'hist-ag'}, h('summary', null, `🕘 Histórico deste agendamento (${hs.length})`),
+    hs.map(x => h('div', {class:'hist-ag-li'}, h('b', null, x.acao), x.detalhe ? ' — ' + x.detalhe : '',
+      h('div', {class:'meta'}, new Date(x.em).toLocaleString('pt-BR', {dateStyle:'short', timeStyle:'short'}) + (x.por ? ' · ' + x.por : '')))));
+}
+/* escolha de motivo por botões grandes */
+function escolhaMotivo(obj, opcoes){
+  const caixa = h('div', {class:'chips-motivo'});
+  const desenhar = () => { limpar(caixa); opcoes.forEach(m => caixa.appendChild(h('button', {type:'button', class:'chip-mot' + (obj.motivo === m ? ' sel' : ''), onclick:() => { obj.motivo = m; desenhar(); }}, m))); };
+  desenhar();
+  return caixa;
+}
+function motivoFinal(o){ return [o.motivo === 'Outro motivo' ? '' : o.motivo, String(o.detalhe || '').trim()].filter(Boolean).join(' — '); }
+
+async function salvarAg(a){
+  a.atualizadoEm = Date.now();
+  await gravar('atendimentos', a);
+  const i = estado.atendimentos.findIndex(x => x.id === a.id);
+  if (i >= 0) estado.atendimentos[i] = a; else estado.atendimentos.push(a);
+  ordenar();
+}
+
+/* ----- REMARCAR ----- */
+async function remarcarAgendamento(orig){
+  const p = pacientePorId(orig.pacienteId) || {};
+  const faltou = orig.status === ST_FALTA, concluido = orig.status === 'Concluído';
+  const novo = faltou || concluido;   /* falta/atendimento feito fica guardado; cria um agendamento novo */
+  const esc = {data:'', hora:'', horaFim:'', motivo: faltou ? 'Paciente não pode comparecer' : '', detalhe:''};
+  const antes = orig.data ? quandoTxt(orig.data, orig.hora) : '';
+  const corpo = h('div', null,
+    h('div', {class:'resumo-pac'}, avatar(p, 48), h('b', null, p.nome || ''), h('br'),
+      orig.status === 'Cancelado' ? '🚫 Cancelado: ' : '📅 Marcado para: ', antes || '—'),
+    novo ? h('div', {class:'aviso-ok', style:'margin:8px 0'}, faltou ? 'A falta continua anotada na ficha. Será criado um NOVO agendamento.' : 'Será criado um NOVO agendamento para este paciente.') : null,
+    h('h4', {class:'sub-form'}, '1️⃣ Por que vai remarcar?'),
+    escolhaMotivo(esc, MOTIVOS_REMARCAR),
+    h('div', {class:'grade', style:'margin-top:8px'}, campo(esc, 'detalhe', 'Detalhes (opcional)', {cheio:true, dica:'Ex.: vai viajar, prefere à tarde'})),
+    h('h4', {class:'sub-form'}, '2️⃣ Escolha o novo dia e horário'),
+    seletorHorario(esc, novo ? null : orig.id));
+  const ok = await modal('📅 Remarcar — ' + primeiroNome(p.nome), corpo, [
+    {texto:'Voltar', valor:false},
+    {texto:'✅ Confirmar nova data', valor:true, classe:'rosa', antes:() => {
+      if (!esc.motivo) { toast('Toque no motivo da remarcação'); return false; }
+      if (esc.motivo === 'Outro motivo' && !String(esc.detalhe || '').trim()) { toast('Escreva o motivo nos detalhes'); return false; }
+      if (!esc.data || !esc.hora) { toast('Escolha o novo dia e o horário'); return false; }
+      if (!esc.encaixe && !horariosLivres(esc.data, novo ? null : orig.id).includes(esc.hora)) { toast('Esse horário acabou de ser ocupado. Escolha outro.'); return false; }
+    }}], 680);
+  if (!ok) return;
+  const motivo = motivoFinal(esc);
+  const pedirEncaixe = esc.encaixe && !ehAdmin();
+  let a;
+  if (novo) {
+    a = Object.assign(novoAtendimento({pacienteId:orig.pacienteId}), {tipo:orig.tipo, local:orig.local, profissional:orig.profissional, registro:orig.registro,
+      data:esc.data, hora:esc.hora, horaFim:esc.horaFim, status:'Agendado', obsAgenda:'Remarcado: ' + motivo, remarcadoDe:orig.id, criadoPor:estado.usuario ? estado.usuario.nome : ''});
+    a.numero = formatarNumero(await proximoNumero('contador'), a.data);
+    anotarHistorico(a, 'Criado por remarcação', `do Nº ${orig.numero} (${antes}) · ${motivo}`);
+    const o = copia(orig); anotarHistorico(o, 'Remarcado', `novo Nº ${a.numero} em ${quandoTxt(a.data, a.hora)} · ${motivo}`); await salvarAg(o);
+  } else {
+    a = copia(orig);
+    const anterior = {data:orig.data, hora:orig.hora, horaFim:orig.horaFim, status:orig.status, obsAgenda:orig.obsAgenda || ''};
+    Object.assign(a, {data:esc.data, hora:esc.hora, horaFim:esc.horaFim, status:'Agendado'});
+    delete a.cancelamento; delete a.confirmacao;
+    anotarHistorico(a, orig.status === 'Cancelado' ? 'Reagendado (estava cancelado)' : 'Remarcado', `${antes || 'sem data'} → ${quandoTxt(esc.data, esc.hora)} · ${motivo}`);
+    a.remarcacoes = (a.remarcacoes || 0) + 1;
+    if (pedirEncaixe) {
+      a.encaixePedido = {por:estado.usuario.nome, porUid:estado.usuario.uid, em:new Date().toISOString(), motivo:'Remarcação em encaixe: ' + motivo, anterior};
+      delete a.encaixeDecisao;
+    }
+  }
+  if (pedirEncaixe) {
+    if (novo) a.encaixePedido = {por:estado.usuario.nome, porUid:estado.usuario.uid, em:new Date().toISOString(), motivo:'Remarcação em encaixe: ' + motivo, anterior:null};
+    a.status = 'Aguardando autorização';
+  }
+  await salvarAg(a);
+  recarregar();
+  if (pedirEncaixe) { toast('⏳ Pedido de encaixe enviado para a Kárita'); avisarKaritaEncaixe(a); return; }
+  toast('📅 Remarcado para ' + quandoTxt(a.data, a.hora));
+  const r = await modal('✅ Remarcado', h('div', null,
+    h('div', {class:'aviso-ok'}, `${p.nome || 'Paciente'} agora está marcado(a) para ${quandoTxt(a.data, a.hora)}.`),
+    h('p', null, 'Quer avisar o paciente pelo WhatsApp? A mensagem já vai pronta.')),
+    [{texto:'Agora não', valor:false}, {texto:'💬 Avisar no WhatsApp', valor:true, classe:'rosa'}]);
+  if (r) abrirWhatsPaciente(p, msgAgenda('remarcado', a, p, antes));
+}
+
+/* ----- CANCELAR ----- */
+async function cancelarAgendamento(orig){
+  const p = pacientePorId(orig.pacienteId) || {};
+  const esc = {motivo:'', detalhe:''};
+  const corpo = h('div', null,
+    h('div', {class:'resumo-pac'}, avatar(p, 48), h('b', null, p.nome || ''), h('br'), '📅 ', quandoTxt(orig.data, orig.hora)),
+    h('h4', {class:'sub-form'}, 'Por que vai cancelar?'),
+    escolhaMotivo(esc, MOTIVOS_CANCELAR),
+    h('div', {class:'grade', style:'margin-top:8px'}, campo(esc, 'detalhe', 'Detalhes (opcional)', {cheio:true})),
+    h('p', {class:'meta', style:'margin-top:10px'}, 'O horário fica livre para outro paciente. Cancelar com aviso NÃO conta como falta.'));
+  const ok = await modal('🚫 Cancelar agendamento', corpo, [
+    {texto:'Voltar', valor:false},
+    {texto:'🚫 Cancelar agendamento', valor:true, classe:'perigo', antes:() => {
+      if (!esc.motivo) { toast('Toque no motivo do cancelamento'); return false; }
+      if (esc.motivo === 'Outro motivo' && !String(esc.detalhe || '').trim()) { toast('Escreva o motivo nos detalhes'); return false; }
+    }}]);
+  if (!ok) return;
+  const a = copia(orig), motivo = motivoFinal(esc);
+  a.cancelamento = {motivo, por:estado.usuario ? estado.usuario.nome : '', em:new Date().toISOString(), statusAnterior:orig.status};
+  a.status = 'Cancelado';
+  anotarHistorico(a, 'Cancelado', motivo);
+  await salvarAg(a);
+  recarregar();
+  toast('Agendamento cancelado — horário liberado');
+  const r = await modal('🚫 Cancelado', h('div', null,
+    h('div', {class:'aviso-ok'}, 'O horário de ' + quandoTxt(a.data, a.hora) + ' está livre de novo.'),
+    h('p', null, 'O que deseja fazer agora?')),
+    [{texto:'Pronto', valor:null}, {texto:'💬 Avisar no WhatsApp', valor:'zap', classe:'ouro'}, {texto:'📅 Já marcar outra data', valor:'rem', classe:'rosa'}]);
+  if (r === 'zap') abrirWhatsPaciente(p, msgAgenda('cancelado', a, p, /clínica/.test(motivo) ? motivo : ''));
+  else if (r === 'rem') remarcarAgendamento(estado.atendimentos.find(x => x.id === a.id));
+}
+
+/* ----- CONFIRMAR PRESENÇA ----- */
+async function pedirConfirmacao(orig){
+  const p = pacientePorId(orig.pacienteId) || {};
+  abrirWhatsPaciente(p, msgAgenda('confirmar', orig, p));
+  if (!soDigitos(p.telefone)) return;
+  const a = copia(orig);
+  a.confirmacao = Object.assign({}, a.confirmacao, {pedidaEm:new Date().toISOString(), por:estado.usuario ? estado.usuario.nome : ''});
+  anotarHistorico(a, 'Pedido de confirmação enviado', 'WhatsApp');
+  await salvarAg(a); recarregar();
+}
+async function marcarConfirmado(orig){
+  const a = copia(orig);
+  a.confirmacao = Object.assign({}, a.confirmacao, {confirmadoEm:new Date().toISOString(), por:estado.usuario ? estado.usuario.nome : ''});
+  anotarHistorico(a, 'Paciente confirmou presença', '');
+  await salvarAg(a); toast('👍 Presença confirmada'); recarregar();
+}
+async function marcarCompareceu(orig){
+  const a = copia(orig); a.status = 'Concluído'; anotarHistorico(a, 'Compareceu', ''); await salvarAg(a); toast('Marcado como compareceu'); recarregar();
+}
+
+/* ----- JANELA DE AÇÕES (um toque) ----- */
+function seloConfirmacao(a){
+  const c = a.confirmacao || {};
+  if (a.status !== 'Agendado') return null;
+  if (c.confirmadoEm) return h('span', {class:'selo verde', style:'margin-top:4px'}, '👍 Confirmado');
+  if (c.pedidaEm) return h('span', {class:'selo', style:'margin-top:4px'}, '💬 Aguardando resposta');
+  return null;
 }
 async function acoesAgenda(a, retorno){
   const p = pacientePorId(a.pacienteId) || {};
-  if (!ehAdmin()) {
-    const bts = [{texto:'Fechar', valor:null}];
-    if (!retorno && a.status === 'Agendado' && a.data <= hojeISO()) { bts.push({texto:'✅ Compareceu', valor:'veio'}); bts.push({texto:'❌ Faltou', valor:'falta', classe:'perigo'}); }
-    if (!retorno && a.status === ST_FALTA) bts.push({texto:'↩ Compareceu', valor:'desf'});
-    bts.push({texto:'💰 Recebimento', valor:'fin', classe:'ouro'});
-    bts.push(retorno ? {texto:'＋ Agendar o retorno', valor:'ret', classe:'rosa'} : {texto:'✏️ Editar agendamento', valor:'ag', classe:'rosa'});
-    const r = await modal(p.nome || 'Agendamento', h('div', null,
-      h('div', {class:'resumo-pac'}, avatar(p, 52),
-        h('b', null, retorno ? `Retorno marcado para ${fmtData(a.retorno)}` : `${fmtData(a.data)} às ${a.hora || '--:--'}${a.horaFim ? ' até ' + a.horaFim : ''}`), h('br'),
-        `Nº ${a.numero} · ${a.tipo || ''} · ${a.status || ''}`, h('br'), p.telefone ? '📞 ' + p.telefone : null),
-      a.obsAgenda ? h('p', {style:'margin:10px 0 0'}, h('b', null, 'Observação: '), a.obsAgenda) : null, alertaFaltas(p)), bts);
-    if (r === 'veio') { a.status = 'Concluído'; a.atualizadoEm = Date.now(); await gravar('atendimentos', a); toast('Marcado como compareceu'); recarregar(); return; }
-    if (r === 'falta') { if (await confirmar('Registrar que o paciente faltou SEM avisar? Fica anotado na ficha dele.', 'Falta', 'Registrar falta', true)) { await registrarFalta(a, false); toast('Falta registrada na ficha'); recarregar(); } return; }
-    if (r === 'desf') { await desfazerFalta(a.id); recarregar(); return; }
-    if (r === 'fin') editarLancamento(null, {tipo:'receita', pacienteId:a.pacienteId, atendimentoId:a.id});
-    else if (r === 'ag') editarAgendamento(a.id);
-    else if (r === 'ret') editarAgendamento(null, {pacienteId:a.pacienteId, data:a.retorno, tipo:'Retorno'});
-    return;
+  const adm = ehAdmin();
+  if (!retorno && adm && a.status === 'Aguardando autorização') { await revisarEncaixe(a.id); return; }
+  const hoje = hojeISO();
+  const st = a.status;
+  const ativo = ['Agendado', 'Aguardando autorização'].includes(st);
+  const tiles = [];
+  const t = (ico, txt, sub, v, cls) => tiles.push({ico, txt, sub, v, cls});
+  if (retorno) {
+    t('＋', adm ? 'Registrar o retorno' : 'Agendar o retorno', 'Marcar o retorno na agenda', 'ret', 'rosa');
+  } else {
+    if (st === 'Agendado' && a.data <= hoje) { t('✅', 'Compareceu', 'O paciente veio', 'veio', 'verde'); t('❌', 'Faltou', 'Não veio e não avisou', 'falta', 'vermelho'); }
+    if (ativo) {
+      t('📅', 'Remarcar', 'Escolher outro dia e horário', 'rem', 'rosa');
+      t('🚫', 'Cancelar', 'Libera o horário', 'canc', 'cinza');
+      if (st === 'Agendado' && a.data >= hoje) {
+        if (!(a.confirmacao || {}).confirmadoEm) t('💬', 'Pedir confirmação', 'Mensagem pronta no WhatsApp', 'conf', 'ouro');
+        if ((a.confirmacao || {}).pedidaEm && !(a.confirmacao || {}).confirmadoEm) t('👍', 'Paciente confirmou', 'Marcar como confirmado', 'confok', 'verde');
+      }
+    }
+    if (st === ST_FALTA) { t('📅', 'Remarcar', 'Novo agendamento (a falta fica anotada)', 'rem', 'rosa'); t('↩', 'Ele veio', 'Desfazer a falta', 'desf', 'cinza'); }
+    if (st === 'Cancelado') t('📅', 'Reagendar', 'Marcar nova data', 'rem', 'rosa');
+    if (adm) t('📄', 'Relatório', 'Ver / imprimir', 'rel', 'ouro');
+    if (adm) t('🩺', 'Ficha do atendimento', 'Procedimentos e medicamentos', 'ed', 'rosa');
+    t('💰', 'Recebimento', 'Lançar pagamento', 'fin', 'ouro');
+    if (!adm || st !== 'Concluído') t('✏️', 'Editar agendamento', 'Tipo, local e observação', 'ag', 'cinza');
   }
-  if (!retorno && a.status === 'Aguardando autorização') { await revisarEncaixe(a.id); return; }
-  const botoes = [{texto:'Fechar', valor:null}];
-  if (retorno) botoes.push({texto:'＋ Registrar o retorno', valor:'ret', classe:'rosa'});
-  botoes.push({texto:'📄 Relatório', valor:'rel', classe:'ouro'});
-  if (!retorno && a.status === 'Agendado' && a.data <= hojeISO()) botoes.push({texto:'❌ Faltou', valor:'falta', classe:'perigo'});
-  if (!retorno && a.status === ST_FALTA) botoes.push({texto:'↩ Compareceu', valor:'desf'});
-  if (!retorno) botoes.push({texto:'📅 Remarcar', valor:'rem'});
-  botoes.push({texto:'✏️ Editar', valor:'ed', classe: retorno ? '' : 'rosa'});
+  let escolha = null;
+  const grade = h('div', {class:'acoes-ag'}, tiles.map(x => h('button', {type:'button', class:'tile-ag ' + (x.cls || ''), onclick:e => {
+    escolha = x.v; const bg = e.currentTarget.closest('.modal-bg'); if (bg) bg.querySelector('.x').click(); }},
+    h('span', {class:'tile-ico'}, x.ico), h('b', null, x.txt), h('small', null, x.sub))));
+  const can = a.cancelamento;
   const corpo = h('div', null,
-    h('div', {class:'resumo-pac'},
-      h('b', null, retorno ? `Retorno marcado para ${fmtData(a.retorno)}` : `${fmtData(a.data)} às ${a.hora || '--:--'}${a.horaFim ? ' até ' + a.horaFim : ''}`), h('br'),
+    h('div', {class:'resumo-pac'}, avatar(p, 52),
+      h('b', null, retorno ? `Retorno marcado para ${fmtData(a.retorno)}` : quandoTxt(a.data, a.hora) + (a.horaFim ? ' até ' + a.horaFim : '')), h('br'),
       `Nº ${a.numero} · ${a.tipo || ''}`, h('br'),
-      p.telefone ? '📞 ' + p.telefone : null),
-    p.alergias ? h('div', {class:'alerta'}, '⚠️ Alergias: ' + p.alergias) : null,
-    a.queixa ? h('p', {style:'margin:10px 0 0'}, h('b', null, 'Motivo: '), a.queixa) : null,
-    a.obsAgenda ? h('p', {style:'margin:6px 0 0'}, h('b', null, 'Obs. da agenda: '), a.obsAgenda) : null,
-    alertaFaltas(p));
-  const r = await modal(p.nome || 'Atendimento', corpo, botoes);
-  if (r === 'falta') { if (await confirmar('Registrar que o paciente faltou SEM avisar? Fica anotado na ficha dele.', 'Falta', 'Registrar falta', true)) { await registrarFalta(a, false); toast('Falta registrada na ficha'); recarregar(); } return; }
+      h('span', {style:'display:inline-flex;gap:6px;flex-wrap:wrap;margin-top:4px'}, seloStatus(st), seloConfirmacao(a)),
+      p.telefone ? h('div', null, '📞 ' + p.telefone) : null),
+    st === 'Cancelado' && can ? h('div', {class:'aviso-bloq'}, `🚫 Cancelado${can.motivo ? ': ' + can.motivo : ''}${can.por ? ' (por ' + can.por + ')' : ''}`) : null,
+    adm && p.alergias ? h('div', {class:'alerta'}, '⚠️ Alergias: ' + p.alergias) : null,
+    adm && a.queixa ? h('p', {style:'margin:8px 0 0'}, h('b', null, 'Motivo: '), a.queixa) : null,
+    a.obsAgenda ? h('p', {style:'margin:6px 0 0'}, h('b', null, 'Obs.: '), a.obsAgenda) : null,
+    alertaFaltas(p),
+    grade,
+    blocoHistoricoAgenda(a));
+  await modal(p.nome || 'Agendamento', corpo, [], 560);
+  const r = escolha;
+  if (!r) return;
+  if (r === 'veio') return marcarCompareceu(a);
+  if (r === 'falta') { if (await confirmar('Registrar que o paciente faltou SEM avisar? Fica anotado na ficha dele. (Se ele avisou antes, use "Cancelar" ou "Remarcar".)', 'Falta', 'Registrar falta', true)) { await registrarFalta(a, false); toast('Falta registrada na ficha'); recarregar(); } return; }
   if (r === 'desf') { await desfazerFalta(a.id); recarregar(); return; }
-  if (r === 'rel') abrirRelatorio(a.id);
-  else if (r === 'ed') editarAtendimento(a.id);
-  else if (r === 'rem') editarAgendamento(a.id);
-  else if (r === 'ret') editarAgendamento(null, {pacienteId:a.pacienteId, data:a.retorno >= hojeISO() ? a.retorno : hojeISO(), tipo:'Retorno'});
+  if (r === 'rem') return remarcarAgendamento(a);
+  if (r === 'canc') return cancelarAgendamento(a);
+  if (r === 'conf') return pedirConfirmacao(a);
+  if (r === 'confok') return marcarConfirmado(a);
+  if (r === 'rel') return abrirRelatorio(a.id);
+  if (r === 'ed') return editarAtendimento(a.id);
+  if (r === 'fin') return editarLancamento(null, {tipo:'receita', pacienteId:a.pacienteId, atendimentoId:a.id});
+  if (r === 'ag') return editarAgendamento(a.id);
+  if (r === 'ret') return editarAgendamento(null, {pacienteId:a.pacienteId, data:a.retorno >= hojeISO() ? a.retorno : hojeISO(), tipo:'Retorno'});
 }
 function cartaoAgendaHoje(){
   const evs = eventosDoDia(hojeISO());
@@ -2867,6 +3225,10 @@ async function montarLaudo(at, p){
   const c = estado.config;
   const a = {};
   CAMPOS_LAUDO.forEach(k => { if (at[k]) a[k] = at[k]; });
+  const procL = (at.procedimentosLista || []).filter(x => x.nome).map(x => ({nome:x.nome, regiao:x.regiao || '', duracao:x.duracao || '', descricao:x.descricao || ''}));
+  const medL = (at.medicamentos || []).filter(x => x.nome).map(m => ({uso:m.uso, nome:m.nome, apresentacao:m.apresentacao || '', dosagem:m.dosagem || '', quantidade:m.quantidade || '', unidade:m.unidade || '', via:m.via || '', horario:m.horario || '', frequencia:m.frequencia || '', periodo:m.periodo || '', obs:m.obs || ''}));
+  if (procL.length) a.procedimentosLista = procL;
+  if (medL.length) a.medicamentos = medL;
   a.extras = (at.extras || []).filter(e => e.titulo || e.texto);
   const laudo = {versao:1,
     clinica:{nome:c.nome || '', subtitulo:c.subtitulo || '', endereco:c.endereco || '', telefone:c.telefone || '', email:c.email || '', local:c.local || '', rodape:c.rodape || '',
@@ -3920,7 +4282,29 @@ async function carregarExemplo(silencioso){
   const a6 = novo(p5.id, {data:somarDias(hj, 1), hora:'15:00', tipo:'Avaliação', status:'Agendado', queixa:'Primeira avaliação.'});
   const a7 = novo(p2.id, {data:somarDias(hj, 2), hora:'09:00', tipo:'Retorno', status:'Agendado', queixa:'Retorno da consulta.'});
   const a8 = novo(p5.id, {data:somarDias(hj, -1), hora:'10:00', tipo:'Consulta', status:'Agendado', obsAgenda:'Agendamento fictício: paciente não veio e não avisou'});
-  const ats = [a1, a2, a3, a4, a5, a6, a7, a8];
+  /* ficha estruturada de procedimentos / medicamentos / materiais (exemplo) */
+  const M = (uso, nome, apresentacao, dosagem, quantidade, unidade, via, extra) => Object.assign({uso, nome, apresentacao, dosagem, quantidade, unidade, via, horario:'', lote:'', validade:'', obs:'', frequencia:'', periodo:''}, extra || {});
+  a1.procedimentosLista = [{nome:'Avaliação de ferida', regiao:'Dorso do pé direito', duracao:'10', descricao:'Medida da lesão (3 x 2 cm), bordas avermelhadas, sem secreção.'},
+    {nome:'Curativo especial', regiao:'Dorso do pé direito', duracao:'25', descricao:'Limpeza com soro fisiológico em jato, cobertura com hidrogel e gaze, fixação com atadura.'}];
+  a1.medicamentos = [M('Administrado na clínica', 'Hidrogel', 'Gel', '—', '1', 'aplicação(ões)', 'Tópica (na pele)', {horario:'09:20', lote:'HG2291', validade:somarDias(hj, 400)}),
+    M('Prescrito (uso em casa)', 'Paracetamol', 'Comprimido', '750 mg', '1', 'comprimido(s)', 'Oral', {frequencia:'de 6 em 6 horas se dor', periodo:'por até 5 dias', obs:'Não usar Dipirona (alergia)'})];
+  a1.materiais = [{nome:'Soro fisiológico 0,9%', quantidade:'250', unidade:'ml'}, {nome:'Gaze estéril', quantidade:'2', unidade:'pacote(s)'}, {nome:'Atadura', quantidade:'1', unidade:'rolo(s)'}, {nome:'Luva estéril', quantidade:'1', unidade:'par(es)'}];
+  a1.procedimentos = ''; a1.medicacoes = '';
+  a2.procedimentosLista = [{nome:'Aferição de sinais vitais', regiao:'', duracao:'5', descricao:'Febre de 38,2 °C.'}];
+  a2.medicamentos = [M('Administrado na clínica', 'Dipirona', 'Gotas', '500 mg/ml', '40', 'gota(s)', 'Oral', {horario:'10:45'}),
+    M('Prescrito (uso em casa)', 'Dipirona', 'Comprimido', '500 mg', '1', 'comprimido(s)', 'Oral', {frequencia:'de 6 em 6 horas se febre', periodo:'por 3 dias'})];
+  a3.procedimentosLista = [{nome:'Curativo simples', regiao:'Tornozelo esquerdo', duracao:'20', descricao:'Limpeza com soro fisiológico e cobertura com gaze não aderente.'}];
+  a3.medicamentos = [M('Administrado na clínica', 'Sulfadiazina de prata', 'Pomada / creme', '1%', '1', 'aplicação(ões)', 'Tópica (na pele)', {horario:'09:50'})];
+  a3.materiais = [{nome:'Soro fisiológico 0,9%', quantidade:'100', unidade:'ml'}, {nome:'Gaze estéril', quantidade:'1', unidade:'pacote(s)'}];
+  a3.procedimentos = '';
+  a5.procedimentosLista = [{nome:'Glicemia capilar', regiao:'Dedo anelar esquerdo', duracao:'5', descricao:'Resultado 156 mg/dL (pós-café).'}, {nome:'Aferição de sinais vitais', regiao:'', duracao:'10', descricao:'PA 142/90 mmHg.'}];
+  a6.confirmacao = {pedidaEm:new Date().toISOString(), por:'Kárita'};
+  a6.historico = [{em:new Date().toISOString(), por:'Kárita', acao:'Pedido de confirmação enviado', detalhe:'WhatsApp'}];
+  a7.confirmacao = {pedidaEm:new Date().toISOString(), confirmadoEm:new Date().toISOString(), por:'Kárita'};
+  const a9 = novo(p4.id, {data:somarDias(hj, 3), hora:'11:00', tipo:'Consulta', status:'Cancelado', obsAgenda:'',
+    cancelamento:{motivo:'Paciente avisou que não vem — viagem', por:'Kárita', em:new Date().toISOString(), statusAnterior:'Agendado'},
+    historico:[{em:new Date().toISOString(), por:'Kárita', acao:'Cancelado', detalhe:'Paciente avisou que não vem — viagem'}]});
+  const ats = [a1, a2, a3, a4, a5, a6, a7, a8, a9];
   for (const a of ats) await gravar('atendimentos', a);
 
   /* ----- Financeiro fictício ----- */

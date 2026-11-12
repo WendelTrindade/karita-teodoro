@@ -191,7 +191,7 @@ footer a{color:var(--rosa);text-decoration:none;font-weight:600}
       <a href="#sobre">Sobre</a><a href="#laudos">Meus laudos</a><a href="#atendimentos">Atendimentos</a><a href="#como">Como funciona</a><a href="#contato">Contato</a>
     </nav>
     <button class="btn rosa peq btn-area" data-ir-laudos>📄 Meus laudos</button>
-    <button class="btn ouro peq" id="btnArea" title="Área da Kárita">🔒<span class="so-grande"> Área da Kárita</span></button>
+    <button class="btn ouro peq" id="btnArea" title="Área da equipe">🔒<span class="so-grande"> Área da equipe</span></button>
   </div>
 </header>
 
@@ -446,7 +446,7 @@ const campo = document.getElementById('senha');
 const erro = document.getElementById('erro');
 function abrirLogin(){ fundo.classList.add('aberto'); erro.textContent = ''; campo.value = ''; setTimeout(() => campo.focus(), 50); }
 function fecharLogin(){ fundo.classList.remove('aberto'); }
-document.getElementById('btnArea').addEventListener('click', abrirLogin);
+document.getElementById('btnArea').addEventListener('click', () => { location.href = PAGINA_PAINEL; });
 document.getElementById('loginFechar').addEventListener('click', fecharLogin);
 fundo.addEventListener('click', e => { if (e.target === fundo) fecharLogin(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') fecharLogin(); });

@@ -227,6 +227,14 @@ body.bloqueado>*:not(#telaBloqueio){display:none!important}
 .portal-cod small{display:block;font-size:11px;color:var(--ouro-esc);text-transform:uppercase;font-weight:700;letter-spacing:.4px}
 .portal-cod b{font-family:Georgia,serif;font-size:22px;letter-spacing:3px;color:var(--vinho)}
 @media (max-width:520px){.ag-linha>div:nth-child(2){display:none}.ag-selo .selo{white-space:normal;text-align:center}.ag-hora{min-width:64px;font-size:16px}}
+/* Equipe */
+.chip-usuario{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;line-height:1.15;font-size:13px;font-weight:700;color:var(--vinho);background:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.75);border-radius:12px;padding:4px 10px}
+.chip-usuario:empty{display:none}
+.chip-usuario small{font-weight:600;color:var(--ouro-esc);font-size:11px}
+#btnAjustes{margin-left:6px}
+.bq-dica{font-size:12px;color:var(--cinza);text-align:center;margin-top:12px}
+.bq-corpo>input{padding:14px;font-size:17px;border-radius:14px}
+@media (max-width:520px){.topo h1{font-size:15px}.topo small#topoSub{display:none}.chip-usuario{font-size:12px;padding:3px 8px}}
 /* Faixa de teste */
 .faixa-teste{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#fffbea;border:2px dashed var(--ouro);border-radius:14px;padding:12px 14px;margin-bottom:14px;color:#6b4e06}
 /* Agenda */
@@ -314,6 +322,7 @@ body.bloqueado>*:not(#telaBloqueio){display:none!important}
   <div class="topo-in">
     <div class="logo" id="topoLogo">🌸</div>
     <div><h1 id="topoNome">Kárita Teodoro</h1><small id="topoSub">Atendimento ao paciente</small></div>
+    <div id="usuarioChip" class="chip-usuario"></div>
     <button class="engrenagem" id="btnAjustes" title="Ajustes">⚙️</button>
     <button class="engrenagem sair" id="btnSair" title="Sair do painel">🚪</button>
   </div>
@@ -458,13 +467,14 @@ const NOME_DB = 'relatorio_atendimento_paciente';
 let db = null;
 function abrirDB(){
   return new Promise((res, rej) => {
-    const r = indexedDB.open(NOME_DB, 3);
+    const r = indexedDB.open(NOME_DB, 4);
     r.onupgradeneeded = () => {
       const d = r.result;
       if (!d.objectStoreNames.contains('pacientes')) d.createObjectStore('pacientes', {keyPath:'id'});
       if (!d.objectStoreNames.contains('atendimentos')) d.createObjectStore('atendimentos', {keyPath:'id'});
       if (!d.objectStoreNames.contains('financeiro')) d.createObjectStore('financeiro', {keyPath:'id'});
       if (!d.objectStoreNames.contains('midias')) d.createObjectStore('midias', {keyPath:'id'});
+      ['usuarios', 'ponto', 'fotos'].forEach(n => { if (!d.objectStoreNames.contains(n)) d.createObjectStore(n, {keyPath:'id'}); });
       if (!d.objectStoreNames.contains('config')) d.createObjectStore('config', {keyPath:'chave'});
     };
     r.onsuccess = () => { db = r.result; res(db); };
@@ -480,10 +490,208 @@ function operar(store, modo, fn){
     t.onabort = () => rej(t.error);
   });
 }
-const lerTodos = s => operar(s, 'readonly', st => st.getAll());
-const gravar = (s, v) => operar(s, 'readwrite', st => st.put(v));
-const apagar = (s, id) => operar(s, 'readwrite', st => st.delete(id));
-const esvaziar = s => operar(s, 'readwrite', st => st.clear());
+/* =========================================================
+   GUARDA DOS DADOS: no aparelho (modo local) ou na nuvem (equipe)
+   ========================================================= */
+/* >>> Preenchido pelo botão "Baixar painel configurado" (Ajustes › Trabalho em equipe) <<< */
+const NUVEM = {projectId:'', apiKey:'', adminEmail:''};
+const DOMINIO_EQUIPE = 'equipe.karitateodoro.app';
+const emNuvem = () => !!(NUVEM.projectId && NUVEM.apiKey && NUVEM.adminEmail);
+const SO_LOCAL = new Set(['midias', 'fotos']);
+const COLECOES = {pacientes:'karita_pacientes', agenda:'karita_agenda', prontuario:'karita_prontuario', financeiro:'karita_financeiro',
+  usuarios:'karita_usuarios', ponto:'karita_ponto', arquivos:'karita_arquivos', config:'karita_config', contadores:'karita_contadores'};
+const CAMPOS_AGENDA = ['id','numero','pacienteId','data','hora','horaFim','tipo','local','profissional','registro','status','retorno','obsAgenda','criadoEm','atualizadoEm','teste','criadoPor'];
+const CAMPOS_CONFIG_EQUIPE = ['nome','subtitulo','endereco','telefone','email','logo','profissional','registro','local','rodape','testeRemovido','exemploCarregado'];
+const idbLerTodos = s => operar(s, 'readonly', st => st.getAll());
+const idbGravar = (s, v) => operar(s, 'readwrite', st => st.put(v));
+const idbApagar = (s, id) => operar(s, 'readwrite', st => st.delete(id));
+const idbEsvaziar = s => operar(s, 'readwrite', st => st.clear());
+const ehAdmin = () => !!estado.usuario && estado.usuario.papel === 'admin';
+
+/* ----- sessão na nuvem ----- */
+let sessaoNuvem = null;
+try { sessaoNuvem = JSON.parse(sessionStorage.getItem('kt_nuvem') || 'null'); } catch (e) {}
+function guardarSessaoNuvem(){ try { if (sessaoNuvem) sessionStorage.setItem('kt_nuvem', JSON.stringify(sessaoNuvem)); else sessionStorage.removeItem('kt_nuvem'); } catch (e) {} }
+async function tokenSessao(){
+  if (!sessaoNuvem) throw new Error('sessao');
+  if (sessaoNuvem.idToken && Date.now() < sessaoNuvem.expira) return sessaoNuvem.idToken;
+  const r = await fetch('https://securetoken.googleapis.com/v1/token?key=' + encodeURIComponent(NUVEM.apiKey), {method:'POST',
+    headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:'grant_type=refresh_token&refresh_token=' + encodeURIComponent(sessaoNuvem.refreshToken)});
+  if (!r.ok) throw new Error('sessao');
+  const j = await r.json();
+  sessaoNuvem.idToken = j.id_token; sessaoNuvem.refreshToken = j.refresh_token || sessaoNuvem.refreshToken;
+  sessaoNuvem.expira = Date.now() + (parseInt(j.expires_in, 10) - 120) * 1000;
+  guardarSessaoNuvem();
+  return sessaoNuvem.idToken;
+}
+const emailDoLogin = u => { u = String(u || '').trim().toLowerCase(); return u.includes('@') ? u : u.replace(/[^a-z0-9._-]/g, '') + '@' + DOMINIO_EQUIPE; };
+async function chamarAuth(acao, corpo){
+  const r = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:' + acao + '?key=' + encodeURIComponent(NUVEM.apiKey), {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(corpo)});
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error((j.error && j.error.message) || 'rede');
+  return j;
+}
+
+/* ----- Firestore ----- */
+const baseFs = () => `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(NUVEM.projectId)}/databases/(default)/documents`;
+function valorFs(v){
+  if (v === null || v === undefined) return {nullValue:null};
+  if (typeof v === 'boolean') return {booleanValue:v};
+  if (typeof v === 'number') return Number.isInteger(v) ? {integerValue:String(v)} : {doubleValue:v};
+  if (v instanceof Date) return {timestampValue:v.toISOString()};
+  return {stringValue:String(v)};
+}
+function lerValorFs(v){
+  if ('stringValue' in v) return v.stringValue;
+  if ('booleanValue' in v) return v.booleanValue;
+  if ('integerValue' in v) return Number(v.integerValue);
+  if ('doubleValue' in v) return v.doubleValue;
+  if ('timestampValue' in v) return v.timestampValue;
+  return null;
+}
+async function chamarFs(metodo, url, corpo){
+  const r = await fetch(url, {method:metodo, headers:Object.assign({Authorization:'Bearer ' + await tokenSessao()}, corpo ? {'Content-Type':'application/json'} : {}), body: corpo ? JSON.stringify(corpo) : undefined});
+  if (r.status === 404 && metodo !== 'POST') return null;
+  if (!r.ok) throw new Error(r.status === 403 ? 'permissao' : r.status === 401 ? 'sessao' : 'rede');
+  const t = await r.text();
+  return t ? JSON.parse(t) : null;
+}
+const camposFs = o => { const f = {}; for (const [k, v] of Object.entries(o)) f[k] = valorFs(v); return f; };
+const lerDocFs = d => { const o = {}; for (const [k, v] of Object.entries((d && d.fields) || {})) o[k] = lerValorFs(v); if (d && d.name) o._id = d.name.split('/').pop(); return o; };
+async function nuvemPut(col, id, campos, horaServidor){
+  if (!horaServidor) { await chamarFs('PATCH', `${baseFs()}/${col}/${id}`, {fields:camposFs(campos)}); return; }
+  const nome = `projects/${NUVEM.projectId}/databases/(default)/documents/${col}/${id}`;
+  await chamarFs('POST', baseFs() + ':commit', {writes:[{update:{name:nome, fields:camposFs(campos)}, updateMask:{fieldPaths:Object.keys(campos)},
+    updateTransforms:horaServidor.map(c => ({fieldPath:c, setToServerValue:'REQUEST_TIME'}))}]});
+}
+async function nuvemDel(col, id){ await chamarFs('DELETE', `${baseFs()}/${col}/${id}`); }
+async function nuvemGet(col, id){ const d = await chamarFs('GET', `${baseFs()}/${col}/${id}`); return d ? lerDocFs(d) : null; }
+async function nuvemListar(col, filtro){
+  const docs = [];
+  if (filtro) {
+    const r = await chamarFs('POST', baseFs() + ':runQuery', {structuredQuery:{from:[{collectionId:col}],
+      where:{fieldFilter:{field:{fieldPath:filtro[0]}, op:'EQUAL', value:valorFs(filtro[1])}}}});
+    (r || []).forEach(x => { if (x.document) docs.push(x.document); });
+  } else {
+    let pag = '';
+    do {
+      const r = await chamarFs('GET', `${baseFs()}/${col}?pageSize=300` + (pag ? '&pageToken=' + encodeURIComponent(pag) : ''));
+      ((r && r.documents) || []).forEach(d => docs.push(d));
+      pag = r && r.nextPageToken;
+    } while (pag);
+  }
+  return docs.map(lerDocFs);
+}
+const doJson = o => { try { return JSON.parse((o && o.json) || '{}'); } catch (e) { return {}; } };
+
+/* ----- fotos guardadas à parte na nuvem (carregam só quando precisa) ----- */
+const fotoCacheMem = new Map();
+const fotosNuvem = new Map();
+function listasFotos(store, o){
+  if (store === 'pacientes') return [[o.docs, 'equipe']];
+  if (store === 'atendimentos') return [[o.fotos, 'admin']];
+  if (store === 'financeiro') return [[o.comprovantes, o.tipo === 'receita' ? 'equipe' : 'admin']];
+  return [];
+}
+const semSrc = lista => (lista || []).map(f => { const c = Object.assign({}, f); delete c.src; return c; });
+async function enviarFotos(store, o){
+  const dono = store + ':' + o.id, atuais = new Set();
+  for (const [lista, nivel] of listasFotos(store, o)) for (const f of (lista || [])) {
+    if (!f.id) f.id = uid();
+    atuais.add(f.id);
+    if (f.src && !f.enviado) { await nuvemPut(COLECOES.arquivos, f.id, {src:f.src, nivel, dono}); f.enviado = true; fotoCacheMem.set(f.id, f.src); }
+  }
+  if (ehAdmin()) for (const id of (fotosNuvem.get(dono) || [])) if (!atuais.has(id)) { try { await nuvemDel(COLECOES.arquivos, id); } catch (e) {} }
+  fotosNuvem.set(dono, atuais);
+}
+async function garantirSrc(f){
+  if (!f || f.src || !emNuvem() || !f.id) return f;
+  let src = fotoCacheMem.get(f.id);
+  if (!src) { try { const r = await operar('fotos', 'readonly', st => st.get(f.id)); if (r) src = r.src; } catch (e) {} }
+  if (!src) {
+    try { const d = await nuvemGet(COLECOES.arquivos, f.id); if (d && d.src) { src = d.src; operar('fotos', 'readwrite', st => st.put({id:f.id, src})).catch(() => {}); } } catch (e) {}
+  }
+  if (src) { fotoCacheMem.set(f.id, src); f.src = src; }
+  return f;
+}
+async function garantirFotos(...listas){
+  const itens = listas.flat().filter(Boolean).filter(f => !f.src);
+  if (!itens.length) return;
+  toast('Carregando fotos...');
+  await Promise.all(itens.map(garantirSrc));
+}
+
+/* ----- gravar / ler / apagar (decide sozinho: aparelho ou nuvem) ----- */
+async function nuvemGravar(store, o){
+  if (store === 'config') return gravarConfigNuvem(o);
+  if (store === 'pacientes') {
+    await enviarFotos(store, o);
+    await nuvemPut(COLECOES.pacientes, o.id, {json:JSON.stringify(Object.assign({}, o, {docs:semSrc(o.docs)}))});
+  } else if (store === 'atendimentos') {
+    const ag = {}; CAMPOS_AGENDA.forEach(k => { if (o[k] !== undefined) ag[k] = o[k]; });
+    await nuvemPut(COLECOES.agenda, o.id, {json:JSON.stringify(ag), data:o.data || ''});
+    if (ehAdmin()) {
+      await enviarFotos(store, o);
+      const pr = {id:o.id};
+      Object.keys(o).forEach(k => { if (!CAMPOS_AGENDA.includes(k)) pr[k] = o[k]; });
+      pr.fotos = semSrc(o.fotos);
+      await nuvemPut(COLECOES.prontuario, o.id, {json:JSON.stringify(pr)});
+    }
+  } else if (store === 'financeiro') {
+    await enviarFotos(store, o);
+    await nuvemPut(COLECOES.financeiro, o.id, {json:JSON.stringify(Object.assign({}, o, {comprovantes:semSrc(o.comprovantes)})), tipo:o.tipo});
+  } else if (store === 'usuarios') {
+    await nuvemPut(COLECOES.usuarios, o.id, {json:JSON.stringify(o), papel:o.papel || 'secretaria', ativo:o.ativo !== false});
+  } else if (store === 'ponto') {
+    const campos = {json:JSON.stringify(o), uid:o.uid, saida:o.saida || ''};
+    await nuvemPut(COLECOES.ponto, o.id, campos, o.saida ? ['horaServidorSaida'] : ['horaServidorEntrada']);
+  }
+}
+async function nuvemApagar(store, id){
+  if (['pacientes', 'financeiro', 'atendimentos'].includes(store)) {
+    const dono = store + ':' + id;
+    for (const fid of (fotosNuvem.get(dono) || [])) { try { await nuvemDel(COLECOES.arquivos, fid); } catch (e) {} }
+    fotosNuvem.delete(dono);
+  }
+  if (store === 'atendimentos') { await nuvemDel(COLECOES.agenda, id); if (ehAdmin()) await nuvemDel(COLECOES.prontuario, id); return; }
+  if (COLECOES[store]) await nuvemDel(COLECOES[store], id);
+}
+async function nuvemLerTodos(store){
+  const adm = ehAdmin();
+  const marcar = (st, o) => { const s = new Set(); for (const [l] of listasFotos(st, o)) (l || []).forEach(f => s.add(f.id)); fotosNuvem.set(st + ':' + o.id, s); return o; };
+  if (store === 'pacientes') return (await nuvemListar(COLECOES.pacientes)).map(doJson).map(o => marcar(store, o));
+  if (store === 'atendimentos') {
+    const ag = (await nuvemListar(COLECOES.agenda)).map(doJson);
+    if (adm) {
+      const pr = new Map((await nuvemListar(COLECOES.prontuario)).map(x => [x._id, doJson(x)]));
+      ag.forEach(a => { const p = pr.get(a.id); if (p) Object.keys(p).forEach(k => { if (!CAMPOS_AGENDA.includes(k)) a[k] = p[k]; }); marcar(store, a); });
+    }
+    return ag;
+  }
+  if (store === 'financeiro') return (await nuvemListar(COLECOES.financeiro, adm ? null : ['tipo', 'receita'])).map(doJson).map(o => marcar(store, o));
+  if (store === 'usuarios') return adm ? (await nuvemListar(COLECOES.usuarios)).map(doJson) : [];
+  if (store === 'ponto') return (await nuvemListar(COLECOES.ponto, adm ? null : ['uid', sessaoNuvem.uid])).map(x => Object.assign(doJson(x), {servEntrada:x.horaServidorEntrada || '', servSaida:x.horaServidorSaida || ''}));
+  return [];
+}
+async function gravarConfigNuvem(o){
+  await idbGravar('config', Object.assign({}, o));
+  await nuvemPut(COLECOES.contadores, 'geral', {json:JSON.stringify({contador:o.contador || 0, contadorRecibo:o.contadorRecibo || 0})});
+  if (ehAdmin()) { const g = {}; CAMPOS_CONFIG_EQUIPE.forEach(k => { if (o[k] !== undefined) g[k] = o[k]; }); await nuvemPut(COLECOES.config, 'geral', {json:JSON.stringify(g)}); }
+}
+const naNuvem = s => emNuvem() && !SO_LOCAL.has(s) && s !== 'config';
+async function lerTodos(s){ return naNuvem(s) ? nuvemLerTodos(s) : idbLerTodos(s); }
+async function gravar(s, v){ return (emNuvem() && !SO_LOCAL.has(s)) ? nuvemGravar(s, v) : idbGravar(s, v); }
+async function apagar(s, id){ return naNuvem(s) ? nuvemApagar(s, id) : idbApagar(s, id); }
+async function esvaziar(s){
+  if (naNuvem(s)) { for (const o of await nuvemLerTodos(s)) await nuvemApagar(s, o.id); return; }
+  return idbEsvaziar(s);
+}
+async function proximoNumero(chave){
+  if (emNuvem()) { try { const c = await nuvemGet(COLECOES.contadores, 'geral'); const v = c ? doJson(c) : {}; estado.config[chave] = Math.max(v[chave] || 0, estado.config[chave] || 0); } catch (e) {} }
+  estado.config[chave] = (estado.config[chave] || 0) + 1;
+  await salvarConfig();
+  return estado.config[chave];
+}
 
 /* ---------- Estado ---------- */
 const CONFIG_PADRAO = {
@@ -492,19 +700,27 @@ const CONFIG_PADRAO = {
   local:'', rodape:'Documento de uso restrito. As informações deste relatório são confidenciais.',
   contador:0
 };
-const estado = { pacientes:[], atendimentos:[], financeiro:[], fin:{mes:'', aba:'resumo'}, config:copia(CONFIG_PADRAO), tela:'inicio', voltar:'atendimentos', agenda:{data:'', modo:'dia'} };
+const estado = { usuario:null, usuarios:[], ponto:[], pacientes:[], atendimentos:[], financeiro:[], fin:{mes:'', aba:'resumo'}, config:copia(CONFIG_PADRAO), tela:'inicio', voltar:'atendimentos', agenda:{data:'', modo:'dia'} };
 const TIPOS = ['Consulta','Retorno','Urgência / Emergência','Visita domiciliar','Procedimento','Curativo','Aplicação de medicação','Teleatendimento','Avaliação','Outro'];
 const STATUS = ['Concluído','Agendado','Em acompanhamento','Retorno agendado','Encaminhado','Cancelado'];
 const pacientePorId = id => estado.pacientes.find(p => p.id === id);
 
 async function carregar(){
+  const cfgLocal = (await idbLerTodos('config')).find(c => c.chave === 'geral') || {};
+  estado.config = Object.assign(copia(CONFIG_PADRAO), cfgLocal);
+  if (estado.config.nome === 'Clínica Rosa & Ouro') { estado.config.nome = 'Kárita Teodoro'; await idbGravar('config', estado.config); }
+  if (emNuvem()) {
+    if (!estado.usuario) return;
+    const g = await nuvemGet(COLECOES.config, 'geral'); if (g) Object.assign(estado.config, doJson(g));
+    const ct = await nuvemGet(COLECOES.contadores, 'geral');
+    if (ct) { const v = doJson(ct); estado.config.contador = v.contador || 0; estado.config.contadorRecibo = v.contadorRecibo || 0; }
+  }
   estado.pacientes = await lerTodos('pacientes');
   estado.atendimentos = await lerTodos('atendimentos');
   estado.financeiro = await lerTodos('financeiro');
+  estado.usuarios = await lerTodos('usuarios');
+  estado.ponto = await lerTodos('ponto');
   estado.pacientes.forEach(migrarPaciente);
-  const cfg = (await lerTodos('config')).find(c => c.chave === 'geral');
-  estado.config = Object.assign(copia(CONFIG_PADRAO), cfg || {});
-  if (estado.config.nome === 'Clínica Rosa & Ouro') { estado.config.nome = 'Kárita Teodoro'; await gravar('config', estado.config); }
   ordenar();
 }
 function ordenar(){
@@ -841,19 +1057,22 @@ function comprimirImagem(arquivo, max = 1400, qualidade = 0.82){
 const MENU = [
   {id:'inicio', ico:'🏠', nome:'Início'},
   {id:'agenda', ico:'📅', nome:'Agenda'},
-  {id:'atendimentos', ico:'📋', nome:'Atendimentos', curto:'Atend.'},
+  {id:'atendimentos', ico:'📋', nome:'Atendimentos', curto:'Atend.', admin:true},
   {id:'novo', ico:'+', nome:'Novo', mais:true},
   {id:'pacientes', ico:'👥', nome:'Pacientes'},
   {id:'financeiro', ico:'💰', nome:'Financeiro'},
+  {id:'ponto', ico:'🕐', nome:'Ponto', soTopo:true},
   {id:'config', ico:'⚙️', nome:'Ajustes', soTopo:true}
 ];
 function montarMenus(){
   const topo = $('#navTopo'), baixo = $('#navBaixo');
   limpar(topo); limpar(baixo);
-  MENU.forEach(m => {
+  const adm = ehAdmin();
+  MENU.filter(m => !m.admin || adm).forEach(m => {
     const ativo = estado.tela === m.id || (m.id === 'novo' && estado.tela === 'form');
-    topo.appendChild(h('button', {class: ativo ? 'ativo' : '', onclick:() => ir(m.id)}, m.mais ? '＋ Novo atendimento' : m.ico + ' ' + m.nome));
-    if (!m.soTopo) baixo.appendChild(h('button', {class:(ativo ? 'ativo ' : '') + (m.mais ? 'mais' : ''), onclick:() => ir(m.id)}, h('span', null, m.ico), m.curto || m.nome));
+    const nome = m.mais ? (adm ? 'Novo' : 'Agendar') : (m.id === 'ponto' && !adm ? 'Meu ponto' : m.nome);
+    topo.appendChild(h('button', {class: ativo ? 'ativo' : '', onclick:() => ir(m.id)}, m.mais ? (adm ? '＋ Novo atendimento' : '＋ Agendar') : m.ico + ' ' + nome));
+    if (!m.soTopo) baixo.appendChild(h('button', {class:(ativo ? 'ativo ' : '') + (m.mais ? 'mais' : ''), onclick:() => ir(m.id)}, h('span', null, m.ico), m.curto || nome));
   });
 }
 function atualizarTopo(){
@@ -864,7 +1083,9 @@ function atualizarTopo(){
   if (c.logo) lg.appendChild(h('img', {src:c.logo, alt:'logo'})); else lg.textContent = '🌸';
 }
 function ir(tela, param){
-  if (tela === 'novo') { editarAtendimento(null, param); return; }
+  if (tela === 'novo') { novoOuAgendar(param); return; }
+  if (!ehAdmin() && tela === 'atendimentos') tela = 'agenda';
+  if (tela === 'ponto' && !ehAdmin()) estado.pontoFiltro = Object.assign(estado.pontoFiltro || {mes:hojeISO().slice(0, 7)}, {uid:estado.usuario.uid});
   estado.tela = tela;
   montarMenus();
   const area = $('#conteudo'); limpar(area);
@@ -874,11 +1095,35 @@ function ir(tela, param){
   else if (tela === 'atendimentos') telaAtendimentos(area);
   else if (tela === 'pacientes') telaPacientes(area);
   else if (tela === 'financeiro') telaFinanceiro(area);
+  else if (tela === 'ponto') telaPonto(area);
   else if (tela === 'config') telaConfig(area);
 }
 
 /* ---------- Tela: Início ---------- */
+function telaInicioSecretaria(area){
+  const hoje = hojeISO(), ats = estado.atendimentos.filter(a => a.status !== 'Cancelado');
+  let id = null; try { id = sessionStorage.getItem('kt_ponto'); } catch (e) {}
+  const reg = (estado.ponto || []).find(p => p.id === id);
+  const prox = ats.filter(a => a.data > hoje && a.data <= somarDias(hoje, 7)).sort((a, b) => (a.data + (a.hora || '')).localeCompare(b.data + (b.hora || '')));
+  const atrasados = todasParcelas('receita').filter(x => !x.p.pago && x.p.vencimento < hoje).length;
+  area.appendChild(h('div', {class:'cartao', style:'border-left:5px solid var(--ouro)'},
+    h('div', {style:'font-family:Georgia,serif;font-size:21px;color:var(--vinho)'}, `Olá, ${estado.usuario.nome.split(' ')[0]}! 🌸`),
+    h('div', {class:'meta', style:'color:var(--cinza)'}, reg ? `🕐 Sua entrada foi registrada às ${hhmm(horaEntrada(reg))}. Ao terminar o expediente, saia pelo botão 🚪.` : 'Bom trabalho!')));
+  area.appendChild(h('div', {class:'numeros'},
+    h('div', {class:'numero'}, h('b', null, ats.filter(a => a.data === hoje).length), h('span', null, 'Agendados hoje')),
+    h('div', {class:'numero'}, h('b', null, prox.length), h('span', null, 'Próximos 7 dias')),
+    h('div', {class:'numero'}, h('b', null, estado.pacientes.length), h('span', null, 'Pacientes')),
+    h('div', {class:'numero'}, h('b', null, atrasados), h('span', null, 'Parcelas em atraso'))));
+  area.appendChild(h('div', {class:'cartao'}, h('div', {class:'acoes', style:'margin:0'},
+    h('button', {class:'btn rosa grande', style:'flex:1', onclick:() => editarAgendamento(null, {})}, '📅 Novo agendamento'),
+    h('button', {class:'btn ouro grande', style:'flex:1', onclick:() => editarPaciente(null).then(p => { if (p) recarregar(); })}, '👤 Novo paciente'))));
+  area.appendChild(cartaoAgendaHoje());
+  area.appendChild(h('div', {class:'cartao'}, h('h2', null, '🗓️ Próximos agendamentos'),
+    prox.length ? prox.map(a => h('div', null, h('div', {class:'meta', style:'margin:8px 0 4px;font-weight:700;color:var(--rosa-esc)'}, `${DIAS_LONGO[dataDe(a.data).getDay()]}, ${fmtData(a.data)}`), linhaAgenda({retorno:false, at:a})))
+      : h('div', {class:'meta', style:'color:var(--cinza)'}, 'Nenhum agendamento nos próximos 7 dias.')));
+}
 function telaInicio(area){
+  if (!ehAdmin()) { telaInicioSecretaria(area); return; }
   const faixa = faixaTeste(); if (faixa) area.appendChild(faixa);
   const hoje = hojeISO(), mes = hoje.slice(0, 7);
   const ats = estado.atendimentos;
@@ -1087,10 +1332,10 @@ function telaPacientes(area){
         p.alergias ? h('div', {class:'alerta'}, '⚠️ Alergias: ' + p.alergias) : null,
         h('div', {class:'acoes'},
           h('button', {class:'btn ouro peq', onclick:() => fichaPaciente(p.id)}, '🗂️ Ficha completa'),
-          h('button', {class:'btn rosa peq', onclick:() => editarAtendimento(null, p.id)}, '＋ Atendimento'),
+          h('button', {class:'btn rosa peq', onclick:() => novoOuAgendar(p.id)}, ehAdmin() ? '＋ Atendimento' : '＋ Agendar'),
           h('button', {class:'btn peq', onclick:() => editarLancamento(null, {tipo:'receita', pacienteId:p.id})}, '💰 Recebimento'),
           h('button', {class:'btn peq', onclick: async () => { if (await editarPaciente(p.id)) ir('pacientes'); }}, '✏️ Editar'),
-          h('button', {class:'btn perigo peq', onclick:() => excluirPaciente(p.id)}, '🗑️'))
+          ehAdmin() ? h('button', {class:'btn perigo peq', onclick:() => excluirPaciente(p.id)}, '🗑️') : null)
       ));
     });
   };
@@ -1102,6 +1347,7 @@ function telaPacientes(area){
 
 async function editarPaciente(id){
   const orig = id ? pacientePorId(id) : null;
+  if (orig) await garantirFotos(orig.docs);
   const p = orig ? migrarPaciente(copia(orig)) : {id:uid(), criadoEm:Date.now(), docs:[], videos:[]};
   const sec = t => h('h4', {class:'sub-form'}, t);
 
@@ -1250,6 +1496,7 @@ async function excluirPaciente(id){
 async function fichaPaciente(id){
   const original = pacientePorId(id);
   if (!original) return;
+  await garantirFotos(original.docs);
   const p = migrarPaciente(copia(original));
   const ats = estado.atendimentos.filter(a => a.pacienteId === id);
   const fins = estado.financeiro.filter(l => l.tipo === 'receita' && l.pacienteId === id).sort((a, b) => (b.data || '').localeCompare(a.data || ''));
@@ -1279,23 +1526,22 @@ async function fichaPaciente(id){
       h('div', {class:'ok'}, h('small', null, 'Pago'), moeda(r.pago)),
       h('div', {class: r.atrasado > 0 ? 'atr' : ''}, h('small', null, r.atrasado > 0 ? 'Em aberto (há atraso)' : 'Em aberto'), moeda(r.aberto))),
     fins.length ? fins.map(l => cartaoLancamento(l, true)) : h('div', {class:'meta', style:'color:var(--cinza)'}, 'Nenhum lançamento financeiro.'),
-    h('h4', {class:'sub-form'}, '🌐 Portal do paciente (laudos no site)'),
-    blocoPortalPaciente(id),
+    ehAdmin() ? [h('h4', {class:'sub-form'}, '🌐 Portal do paciente (laudos no site)'), blocoPortalPaciente(id)] : null,
     h('h4', {class:'sub-form'}, `📋 Atendimentos (${ats.length})`),
     ats.length ? ats.map(a => h('div', {class:'item'},
       h('div', {class:'item-topo'}, h('div', null, h('b', null, `${fmtData(a.data)} ${a.hora || ''}`), h('div', {class:'meta'}, `Nº ${a.numero} · ${a.tipo}`)), seloStatus(a.status)),
-      a.queixa ? h('div', {class:'prev'}, a.queixa) : null,
-      h('div', {class:'acoes'}, h('button', {class:'btn ouro peq', onclick:() => { fecharModais(); abrirRelatorio(a.id); }}, '📄 Ver relatório'))
+      ehAdmin() && a.queixa ? h('div', {class:'prev'}, a.queixa) : null,
+      h('div', {class:'acoes'}, ehAdmin() ? h('button', {class:'btn ouro peq', onclick:() => { fecharModais(); abrirRelatorio(a.id); }}, '📄 Ver relatório') : h('button', {class:'btn ouro peq', onclick:() => { fecharModais(); editarAgendamento(a.id); }}, '✏️ Agendamento'))
     )) : h('div', {class:'meta', style:'color:var(--cinza)'}, 'Nenhum atendimento ainda.')
   );
   const acao = await modal('🗂️ Ficha do paciente', corpo, [
     {texto:'Fechar', valor:null},
     {texto:'💰 Recebimento', valor:'fin', classe:'ouro'},
-    {texto:'＋ Atendimento', valor:'at', classe:'ouro'},
+    {texto: ehAdmin() ? '＋ Atendimento' : '＋ Agendar', valor:'at', classe:'ouro'},
     {texto:'✏️ Editar', valor:'ed', classe:'rosa'}], 820);
   if (acao === 'ed') { if (await editarPaciente(id)) recarregar(); }
   else if (acao === 'fin') editarLancamento(null, {tipo:'receita', pacienteId:id});
-  else if (acao === 'at') editarAtendimento(null, id);
+  else if (acao === 'at') novoOuAgendar(id);
 }
 
 /* ---------- Formulário de atendimento ---------- */
@@ -1312,8 +1558,10 @@ function novoAtendimento(pre){
     extras:[], fotos:[], videos:[], portal:{liberado:false, validade:''}, status: dataPre > hojeISO() ? 'Agendado' : STATUS[0], retorno:'', assinatura:'', criadoEm:Date.now()
   };
 }
-function editarAtendimento(id, pre){
+async function editarAtendimento(id, pre){
+  if (!ehAdmin()) { editarAgendamento(id, pre); return; }
   const orig = id ? estado.atendimentos.find(a => a.id === id) : null;
+  if (orig) await garantirFotos(orig.fotos);
   const at = orig ? copia(orig) : novoAtendimento(pre);
   if (estado.tela !== 'form') estado.voltar = estado.tela === 'inicio' || estado.tela === 'agenda' || estado.tela === 'pacientes' ? estado.tela : 'atendimentos';
   estado.tela = 'form';
@@ -1518,11 +1766,7 @@ async function salvarAtendimento(at, existente, abrir){
     if (!at.portal.validade) { await aviso('Escolha até quando o laudo fica disponível para o paciente.', 'Portal do paciente'); return; }
     if (!cpfValido(pacPortal.cpf)) { await aviso(erroPortal({message:'cpf'}) + ' Ou mude "Liberar este laudo" para Não.', 'Portal do paciente'); return; }
   }
-  if (!existente || !at.numero) {
-    estado.config.contador = (estado.config.contador || 0) + 1;
-    at.numero = String(estado.config.contador).padStart(4, '0') + '/' + (at.data || hojeISO()).slice(0, 4);
-    await salvarConfig();
-  }
+  if (!existente || !at.numero) at.numero = formatarNumero(await proximoNumero('contador'), at.data);
   at.atualizadoEm = Date.now();
   try { await gravar('atendimentos', at); }
   catch (e) { await aviso('Não foi possível salvar. O armazenamento do aparelho pode estar cheio. Tente remover algumas fotos.', 'Erro ao salvar'); return; }
@@ -1563,9 +1807,11 @@ async function duplicarAtendimento(id){
 }
 
 /* ---------- Relatório (visualização e impressão) ---------- */
-function abrirRelatorio(id){
+async function abrirRelatorio(id){
+  if (!ehAdmin()) return;
   const at = estado.atendimentos.find(a => a.id === id);
   if (!at) return;
+  await garantirFotos(at.fotos);
   const p = pacientePorId(at.pacienteId) || {};
   const c = estado.config;
   const ant = $('#relatorioTela'); if (ant) ant.remove();
@@ -1684,11 +1930,25 @@ function linhaAgenda(ev){
       h('b', null, p.nome || '(paciente removido)'),
       h('div', {class:'meta'}, ev.retorno ? `Retorno do atendimento Nº ${a.numero} (${fmtData(a.data)})` : [a.tipo, a.profissional].filter(Boolean).join(' · ')),
       p.telefone ? h('div', {class:'meta'}, '📞 ' + p.telefone) : null,
-      (!ev.retorno && a.queixa) ? h('div', {class:'prev'}, a.queixa.length > 90 ? a.queixa.slice(0, 90) + '…' : a.queixa) : null),
+      (!ev.retorno && a.queixa && ehAdmin()) ? h('div', {class:'prev'}, a.queixa.length > 90 ? a.queixa.slice(0, 90) + '…' : a.queixa) : null,
+      (!ev.retorno && a.obsAgenda) ? h('div', {class:'meta'}, '📝 ' + a.obsAgenda) : null),
     h('div', {class:'ag-selo'}, ev.retorno ? h('span', {class:'selo ouro'}, 'Retorno') : seloStatus(a.status)));
 }
 async function acoesAgenda(a, retorno){
   const p = pacientePorId(a.pacienteId) || {};
+  if (!ehAdmin()) {
+    const bts = [{texto:'Fechar', valor:null}, {texto:'💰 Recebimento', valor:'fin', classe:'ouro'}];
+    bts.push(retorno ? {texto:'＋ Agendar o retorno', valor:'ret', classe:'rosa'} : {texto:'✏️ Editar agendamento', valor:'ag', classe:'rosa'});
+    const r = await modal(p.nome || 'Agendamento', h('div', null,
+      h('div', {class:'resumo-pac'}, avatar(p, 52),
+        h('b', null, retorno ? `Retorno marcado para ${fmtData(a.retorno)}` : `${fmtData(a.data)} às ${a.hora || '--:--'}${a.horaFim ? ' até ' + a.horaFim : ''}`), h('br'),
+        `Nº ${a.numero} · ${a.tipo || ''} · ${a.status || ''}`, h('br'), p.telefone ? '📞 ' + p.telefone : null),
+      a.obsAgenda ? h('p', {style:'margin:10px 0 0'}, h('b', null, 'Observação: '), a.obsAgenda) : null), bts);
+    if (r === 'fin') editarLancamento(null, {tipo:'receita', pacienteId:a.pacienteId, atendimentoId:a.id});
+    else if (r === 'ag') editarAgendamento(a.id);
+    else if (r === 'ret') editarAgendamento(null, {pacienteId:a.pacienteId, data:a.retorno, tipo:'Retorno'});
+    return;
+  }
   const botoes = [{texto:'Fechar', valor:null}];
   if (retorno) botoes.push({texto:'＋ Registrar o retorno', valor:'ret', classe:'rosa'});
   botoes.push({texto:'📄 Relatório', valor:'rel', classe:'ouro'});
@@ -1699,11 +1959,12 @@ async function acoesAgenda(a, retorno){
       `Nº ${a.numero} · ${a.tipo || ''}`, h('br'),
       p.telefone ? '📞 ' + p.telefone : null),
     p.alergias ? h('div', {class:'alerta'}, '⚠️ Alergias: ' + p.alergias) : null,
-    a.queixa ? h('p', {style:'margin:10px 0 0'}, h('b', null, 'Motivo: '), a.queixa) : null);
+    a.queixa ? h('p', {style:'margin:10px 0 0'}, h('b', null, 'Motivo: '), a.queixa) : null,
+    a.obsAgenda ? h('p', {style:'margin:6px 0 0'}, h('b', null, 'Obs. da agenda: '), a.obsAgenda) : null);
   const r = await modal(p.nome || 'Atendimento', corpo, botoes);
   if (r === 'rel') abrirRelatorio(a.id);
   else if (r === 'ed') editarAtendimento(a.id);
-  else if (r === 'ret') editarAtendimento(null, {pacienteId:a.pacienteId, data:a.retorno, tipo:'Retorno'});
+  else if (r === 'ret') novoOuAgendar({pacienteId:a.pacienteId, data:a.retorno, tipo:'Retorno'});
 }
 function cartaoAgendaHoje(){
   const evs = eventosDoDia(hojeISO());
@@ -1729,7 +1990,7 @@ function telaAgenda(area){
   else rotulo = MESES[d.getMonth()].charAt(0).toUpperCase() + MESES[d.getMonth()].slice(1) + ' de ' + d.getFullYear();
 
   area.appendChild(h('div', {class:'titulo-pag'}, h('h2', null, '📅 Agenda'),
-    h('button', {class:'btn rosa', onclick:() => editarAtendimento(null, {data:ag.data})}, '＋ Agendar atendimento')));
+    h('button', {class:'btn rosa', onclick:() => novoOuAgendar({data:ag.data})}, '＋ Agendar atendimento')));
 
   const pular = h('input', {type:'date', value:ag.data, style:'max-width:170px'});
   pular.addEventListener('change', () => { if (pular.value) { ag.data = pular.value; ir('agenda'); } });
@@ -1747,7 +2008,7 @@ function telaAgenda(area){
   const listaDoDia = iso => {
     const evs = eventosDoDia(iso);
     if (!evs.length) return h('div', {class:'vazio'}, h('span', {class:'ico'}, '🗓️'), 'Nenhum atendimento neste dia.',
-      h('div', {style:'margin-top:10px'}, h('button', {class:'btn rosa', onclick:() => editarAtendimento(null, {data:iso})}, '＋ Agendar neste dia')));
+      h('div', {style:'margin-top:10px'}, h('button', {class:'btn rosa', onclick:() => novoOuAgendar({data:iso})}, '＋ Agendar neste dia')));
     return h('div', null,
       h('div', {class:'meta', style:'margin-bottom:8px;color:var(--cinza)'}, `${evs.length} compromisso(s)`),
       evs.map(linhaAgenda));
@@ -1929,12 +2190,14 @@ function cartaoLancamento(l, compacto){
       h('button', {class:'btn ouro peq', onclick:acao(() => detalhesLancamento(l.id))}, '🔎 Parcelas'),
       h('button', {class:'btn peq', onclick:acao(() => editarLancamento(l.id))}, '✏️ Editar'),
       rec ? h('button', {class:'btn peq', onclick:acao(() => abrirRecibo(l.id))}, '🧾 Recibo') : null,
-      h('button', {class:'btn perigo peq', onclick:acao(() => excluirLancamento(l.id))}, '🗑️')));
+      ehAdmin() ? h('button', {class:'btn perigo peq', onclick:acao(() => excluirLancamento(l.id))}, '🗑️') : null));
 }
 
 async function editarLancamento(id, pre){
   pre = pre || {};
   const orig = id ? estado.financeiro.find(x => x.id === id) : null;
+  if (!ehAdmin() && ((orig && orig.tipo !== 'receita') || (!orig && pre.tipo && pre.tipo !== 'receita'))) return null;
+  if (orig) await garantirFotos(orig.comprovantes);
   const l = orig ? copia(orig) : Object.assign({id:uid(), tipo:'receita', pacienteId:'', atendimentoId:'', descricao:'', categoria:'', fornecedor:'',
     data:hojeISO(), valor:0, desconto:0, forma:'Pix', nParcelas:'1', primeiroVenc:hojeISO(), taxa:0, parcelas:[], comprovantes:[], obs:'', criadoEm:Date.now()}, pre);
   const rec = l.tipo === 'receita';
@@ -2086,6 +2349,7 @@ async function baixarParcela(l, i){
 async function detalhesLancamento(id){
   const l = estado.financeiro.find(x => x.id === id);
   if (!l) return;
+  await garantirFotos(l.comprovantes);
   const rec = l.tipo === 'receita';
   const lista = h('div');
   const desenhar = () => {
@@ -2122,6 +2386,8 @@ async function detalhesLancamento(id){
 /* ---------- Tela: Financeiro ---------- */
 function telaFinanceiro(area){
   const f = estado.fin;
+  const adm = ehAdmin();
+  if (!adm && !['receber', 'receitas'].includes(f.aba)) f.aba = 'receber';
   if (!f.mes) f.mes = hojeISO().slice(0, 7);
   const mes = f.mes, [ano, m] = mes.split('-').map(Number);
   const nomeMes = MESES[m - 1].charAt(0).toUpperCase() + MESES[m - 1].slice(1) + ' de ' + ano;
@@ -2131,7 +2397,7 @@ function telaFinanceiro(area){
   area.appendChild(h('div', {class:'titulo-pag'}, h('h2', null, '💰 Financeiro'),
     h('div', {class:'acoes', style:'margin:0'},
       h('button', {class:'btn rosa', onclick:() => editarLancamento(null, {tipo:'receita'})}, '＋ Recebimento'),
-      h('button', {class:'btn ouro', onclick:() => editarLancamento(null, {tipo:'despesa'})}, '＋ Despesa'))));
+      adm ? h('button', {class:'btn ouro', onclick:() => editarLancamento(null, {tipo:'despesa'})}, '＋ Despesa') : null)));
   area.appendChild(h('div', {class:'cartao'},
     h('div', {class:'ag-topo'},
       h('button', {class:'btn peq', onclick:() => moverMes(-1)}, '◀'),
@@ -2139,7 +2405,7 @@ function telaFinanceiro(area){
       h('button', {class:'btn peq', onclick:() => moverMes(1)}, '▶')),
     h('div', {class:'ag-topo', style:'margin-top:10px;justify-content:space-between'},
       h('button', {class:'btn ouro peq', onclick:() => { f.mes = hoje.slice(0, 7); ir('financeiro'); }}, 'Mês atual'),
-      h('div', {class:'modos'}, [['resumo', 'Resumo'], ['receber', 'A receber / pagar'], ['receitas', 'Receitas'], ['despesas', 'Despesas']].map(([k, t]) =>
+      h('div', {class:'modos'}, (adm ? [['resumo', 'Resumo'], ['receber', 'A receber / pagar'], ['receitas', 'Receitas'], ['despesas', 'Despesas']] : [['receber', 'A receber'], ['receitas', 'Recebimentos']]).map(([k, t]) =>
         h('button', {class: f.aba === k ? 'ativo' : '', onclick:() => { f.aba = k; ir('financeiro'); }}, t))))));
 
   const R = todasParcelas('receita'), D = todasParcelas('despesa');
@@ -2197,7 +2463,7 @@ function telaFinanceiro(area){
     area.appendChild(h('div', {class:'cartao'}, h('h2', null, `📥 Contas a receber (${pr.length})`),
       h('div', {class:'meta', style:'margin-bottom:8px;color:var(--cinza)'}, `Total pendente: ${moeda(somaP(pr))} · em atraso: ${moeda(atrasado)}`),
       pr.length ? pr.map(linha) : h('div', {class:'meta', style:'color:var(--cinza)'}, 'Nada a receber. 🎉')));
-    area.appendChild(h('div', {class:'cartao'}, h('h2', null, `📤 Contas a pagar (${pd.length})`),
+    if (adm) area.appendChild(h('div', {class:'cartao'}, h('h2', null, `📤 Contas a pagar (${pd.length})`),
       h('div', {class:'meta', style:'margin-bottom:8px;color:var(--cinza)'}, `Total pendente: ${moeda(somaP(pd))}`),
       pd.length ? pd.map(linha) : h('div', {class:'meta', style:'color:var(--cinza)'}, 'Nenhuma conta a pagar.')));
   }
@@ -2251,9 +2517,8 @@ async function abrirRecibo(id){
   const pagas = (l.parcelas || []).filter(x => x.pago);
   if (!pagas.length) { await aviso('Nenhuma parcela deste recebimento foi marcada como recebida. Registre o pagamento antes de emitir o recibo.', 'Recibo'); return; }
   if (!l.reciboNum) {
-    c.contadorRecibo = (c.contadorRecibo || 0) + 1;
-    l.reciboNum = String(c.contadorRecibo).padStart(4, '0') + '/' + hojeISO().slice(0, 4);
-    await salvarConfig(); await gravar('financeiro', l);
+    l.reciboNum = formatarNumero(await proximoNumero('contadorRecibo'), hojeISO());
+    await gravar('financeiro', l);
   }
   const valor = pagas.reduce((s, x) => s + x.valor, 0);
   const resta = Math.max(0, valorFinal(l) - valor);
@@ -2318,9 +2583,10 @@ function relatorioFinanceiroMes(mes){
    PORTAL DO PACIENTE — publicação dos laudos no site
    ========================================================= */
 const portalCfg = () => { if (!estado.config.portal) estado.config.portal = {}; return estado.config.portal; };
-const portalModo = () => { const c = portalCfg(); return c.projectId && c.apiKey && c.refreshToken ? 'firebase' : 'teste'; };
+const portalModo = () => { if (emNuvem()) return 'firebase'; const c = portalCfg(); return c.projectId && c.apiKey && c.refreshToken ? 'firebase' : 'teste'; };
 let tokenPortal = {token:'', expira:0};
 async function tokenFirebase(){
+  if (emNuvem()) return tokenSessao();
   const c = portalCfg();
   if (tokenPortal.token && Date.now() < tokenPortal.expira) return tokenPortal.token;
   const r = await fetch('https://securetoken.googleapis.com/v1/token?key=' + encodeURIComponent(c.apiKey), {
@@ -2346,7 +2612,7 @@ async function portalGravarDoc(col, id, campos){
     return;
   }
   const c = portalCfg();
-  const r = await fetch(urlFirestore(c.projectId, col, id), {method:'PATCH',
+  const r = await fetch(urlFirestore(emNuvem() ? NUVEM.projectId : c.projectId, col, id), {method:'PATCH',
     headers:{'Content-Type':'application/json', Authorization:'Bearer ' + await tokenFirebase()},
     body:JSON.stringify(camposFirestore(campos))});
   if (!r.ok) throw new Error(r.status === 403 ? 'regras' : 'rede');
@@ -2355,7 +2621,7 @@ async function portalApagarDoc(col, id){
   if (!id) return;
   if (portalModo() === 'teste') { const o = portalTeste.ler(); delete o[col + '/' + id]; portalTeste.salvar(o); return; }
   const c = portalCfg();
-  const r = await fetch(urlFirestore(c.projectId, col, id), {method:'DELETE', headers:{Authorization:'Bearer ' + await tokenFirebase()}});
+  const r = await fetch(urlFirestore(emNuvem() ? NUVEM.projectId : c.projectId, col, id), {method:'DELETE', headers:{Authorization:'Bearer ' + await tokenFirebase()}});
   if (!r.ok && r.status !== 404) throw new Error(r.status === 403 ? 'regras' : 'rede');
 }
 function gerarCodigoPortal(){
@@ -2382,6 +2648,7 @@ function reduzirImagem(src, max, q){
 const CAMPOS_LAUDO = ['numero','data','hora','horaFim','tipo','local','profissional','registro','status','retorno','pa','fc','fr','temp','spo2','glicemia','peso','altura','dor',
   'queixa','relatoPaciente','relatoAcompanhante','relatoProfissional','procedimentos','medicacoes','conduta','encaminhamentos','observacoes'];
 async function montarLaudo(at, p){
+  await garantirFotos(at.fotos);
   const c = estado.config;
   const a = {};
   CAMPOS_LAUDO.forEach(k => { if (at[k]) a[k] = at[k]; });
@@ -2441,6 +2708,7 @@ function erroPortal(e){
   return 'Não foi possível atualizar o portal agora. Verifique a internet e tente de novo.';
 }
 async function publicarComAviso(pid, mostrarOk){
+  if (!ehAdmin()) return 0;
   try {
     toast('Atualizando o portal do paciente...');
     const n = await publicarPaciente(pid);
@@ -2591,7 +2859,8 @@ function traduzErroFirebase(m){
   return m;
 }
 async function baixarSiteConfigurado(){
-  const c = portalCfg();
+  const c0 = portalCfg();
+  const c = emNuvem() ? {projectId:NUVEM.projectId, apiKey:NUVEM.apiKey} : c0;
   let txt;
   try { const r = await fetch('index.html', {cache:'no-store'}); if (!r.ok) throw 0; txt = await r.text(); }
   catch (e) { await aviso('Para baixar o site configurado, abra o painel pelo endereço do site (Netlify), e não pelo arquivo no aparelho.', 'Baixar site'); return; }
@@ -2605,6 +2874,16 @@ async function baixarSiteConfigurado(){
   toast('Site configurado baixado. Envie ao Netlify junto com o painel.');
 }
 function cartaoPortalAjustes(){
+  if (emNuvem()) {
+    const cp = portalCfg(), fs = {siteUrl:siteDoPortal()};
+    return h('div', {class:'cartao'}, h('h2', null, '🌐 Portal do paciente (laudos no site)'),
+      h('div', {class:'aviso-ok', style:'margin:0 0 12px'}, '✅ Ligado pela nuvem da equipe. Os laudos liberados ficam disponíveis no site para os pacientes.'),
+      h('div', {class:'grade'}, campo(fs, 'siteUrl', 'Endereço do site (vai na mensagem do WhatsApp)', {cheio:true, dica:'https://karitateodoro.netlify.app'})),
+      h('div', {class:'acoes'},
+        h('button', {class:'btn rosa', onclick: async () => { cp.siteUrl = (fs.siteUrl || '').trim(); await salvarConfig(); toast('Endereço salvo'); }}, '💾 Salvar endereço'),
+        h('button', {class:'btn ouro', onclick:republicarTodos}, '☁️ Republicar todos os laudos'),
+        h('button', {class:'btn', onclick:baixarSiteConfigurado}, '⬇️ Baixar site configurado')));
+  }
   const c = portalCfg();
   const f = {siteUrl:siteDoPortal(), projectId:c.projectId || '', apiKey:c.apiKey || '', email:c.email || '', senha:''};
   const modo = portalModo();
@@ -2655,6 +2934,11 @@ function cartaoPortalAjustes(){
 function telaConfig(area){
   const c = copia(estado.config);
   area.appendChild(h('div', {class:'titulo-pag'}, h('h2', null, '⚙️ Ajustes')));
+  if (!ehAdmin()) {
+    area.appendChild(cartaoMinhaConta());
+    area.appendChild(h('div', {class:'cartao'}, h('h2', null, 'ℹ️ Sobre'), h('p', {style:'margin:0;font-size:14px'}, 'Desenvolvido por ', h('b', null, 'Wendel Emílio de Souza Matias'), ' · oficial.respostas@gmail.com')));
+    return;
+  }
 
   const prevLogo = h('div', {style:'display:flex;align-items:center;gap:10px;margin-top:6px'});
   const desenharLogo = () => {
@@ -2683,7 +2967,7 @@ function telaConfig(area){
       campo(c, 'registro', 'Registro profissional padrão'),
       campo(c, 'rodape', 'Texto do rodapé do relatório', {tipo:'textarea', cheio:true, linhas:2})),
     h('div', {class:'acoes'}, h('button', {class:'btn rosa', onclick: async () => {
-      ['contador', 'contadorRecibo', 'senhaHash', 'bloqueioMin', 'portal'].forEach(k => { c[k] = estado.config[k]; });
+      ['contador', 'contadorRecibo', 'senhaHash', 'bloqueioMin', 'portal', 'nuvemPlano', 'adminLogin', 'testeRemovido', 'exemploCarregado'].forEach(k => { c[k] = estado.config[k]; });
       estado.config = c; await salvarConfig(); toast('Ajustes salvos');
     }}, '💾 Salvar ajustes'))));
 
@@ -2692,6 +2976,8 @@ function telaConfig(area){
   const selTempo = h('select', null, [['15', '15 minutos'], ['30', '30 minutos'], ['60', '1 hora'], ['120', '2 horas'], ['0', 'Nunca bloquear sozinho']].map(([v, t]) => h('option', {value:v}, t)));
   selTempo.value = String(estado.config.bloqueioMin === 0 ? 0 : (estado.config.bloqueioMin || 30));
   selTempo.addEventListener('change', async () => { estado.config.bloqueioMin = parseInt(selTempo.value, 10); await salvarConfig(); toast('Tempo de bloqueio salvo'); });
+  area.appendChild(cartaoEquipe());
+  area.appendChild(cartaoNuvem());
   area.appendChild(h('div', {class:'cartao'}, h('h2', null, '🧪 Dados de teste'),
     h('p', {style:'margin:0 0 10px;font-size:14px;color:var(--cinza)'}, temDadosTeste()
       ? 'O sistema está com pacientes, atendimentos, laudos e lançamentos fictícios (marcados com "teste"). Quando terminar de testar, apague só eles: o que você cadastrou de verdade continua.'
@@ -2700,7 +2986,9 @@ function telaConfig(area){
       ? h('button', {class:'btn perigo', onclick:apagarDadosTeste}, '🧹 Apagar dados de teste')
       : h('button', {class:'btn ouro', onclick:() => carregarExemplo()}, '✨ Carregar dados fictícios para teste'))));
   area.appendChild(cartaoPortalAjustes());
-  area.appendChild(h('div', {class:'cartao'}, h('h2', null, '🔒 Senha e segurança'),
+  if (emNuvem()) area.appendChild(cartaoMinhaConta());
+  else area.appendChild(h('div', {class:'cartao'}, h('h2', null, '🔒 Senha e segurança'),
+    h('p', {style:'margin:0 0 10px;font-size:14px'}, 'Usuário da Kárita para entrar: ', h('b', null, loginAdminLocal())),
     h('div', {class:'grade'},
       campo(sen, 'atual', 'Senha atual', {tipo:'password', cheio:true}),
       campo(sen, 'nova', 'Nova senha (mínimo 6 caracteres)', {tipo:'password'}),
@@ -2713,7 +3001,7 @@ function telaConfig(area){
         if (!await confirmar('Trocar a senha? Anote a nova senha num lugar seguro: sem ela não é possível entrar no painel.', 'Trocar senha', 'Trocar')) return;
         estado.config.senhaHash = resumoSenha(sen.nova);
         await salvarConfig();
-        try { sessionStorage.setItem('kt_sessao', estado.config.senhaHash); } catch (e) {}
+        guardarSessaoLocal(estado.usuario);
         toast('Senha alterada'); ir('config');
       }}, '🔑 Trocar senha'),
       h('button', {class:'btn', onclick:() => bloquearPainel('Painel bloqueado. Digite a senha para continuar.')}, '🔒 Bloquear agora')),
@@ -2733,9 +3021,11 @@ function telaConfig(area){
       await esvaziar('financeiro');
       for (const a of dados.atendimentos) await gravar('atendimentos', a);
       for (const l of (dados.financeiro || [])) await gravar('financeiro', l);
+      if (!emNuvem()) for (const u of (dados.usuarios || [])) await gravar('usuarios', u);
+      for (const r of (dados.ponto || [])) await gravar('ponto', r);
       for (const m of (dados.midias || [])) { try { const blob = await (await fetch(m.dados)).blob(); await gravar('midias', {id:m.id, blob, tipo:m.tipo, nome:m.nome, tamanho:m.tamanho, criadoEm:Date.now()}); } catch (e) {} }
       if (dados.config) { dados.config.chave = 'geral'; await gravar('config', dados.config); }
-      await carregar(); atualizarTopo(); try { sessionStorage.setItem('kt_sessao', hashAtual()); } catch (e) {} toast('Cópia restaurada'); ir('inicio');
+      await carregar(); atualizarTopo(); guardarSessaoLocal(estado.usuario); toast('Cópia restaurada'); ir('inicio');
     } catch (e) { aviso('Arquivo inválido. Escolha uma cópia de segurança gerada por este sistema.', 'Erro'); }
   });
   area.appendChild(h('div', {class:'cartao'}, h('h2', null, '💾 Cópia de segurança'),
@@ -2748,12 +3038,13 @@ function telaConfig(area){
     inpImp));
 
   area.appendChild(h('div', {class:'cartao'}, h('h2', null, 'ℹ️ Sobre'),
-    h('p', {style:'margin:0;font-size:14px'}, 'Relatório de Atendimento ao Paciente — versão 1.8', h('br'),
+    h('p', {style:'margin:0;font-size:14px'}, 'Relatório de Atendimento ao Paciente — versão 2.0', h('br'),
       'Desenvolvido por ', h('b', null, 'Wendel Emílio de Souza Matias'), h('br'),
       'Contato: oficial.respostas@gmail.com')));
 }
 async function exportarBackup(comVideos){
-  const dados = {sistema:'relatorio-atendimento', versao:1, geradoEm:new Date().toISOString(),
+  if (emNuvem()) await garantirFotos(...estado.pacientes.map(p => p.docs || []), ...estado.atendimentos.map(a => a.fotos || []), ...estado.financeiro.map(l => l.comprovantes || []));
+  const dados = {usuarios:emNuvem() ? [] : estado.usuarios, ponto:estado.ponto, sistema:'relatorio-atendimento', versao:1, geradoEm:new Date().toISOString(),
     config:Object.assign({}, estado.config, {portal:Object.assign({}, estado.config.portal || {}, {refreshToken:''})}), pacientes:estado.pacientes, atendimentos:estado.atendimentos, financeiro:estado.financeiro};
   if (comVideos) {
     toast('Preparando os vídeos, aguarde...');
@@ -2870,6 +3161,17 @@ async function carregarExemplo(silencioso){
     pagar(lanc({tipo:'despesa', descricao:'Internet e telefone', categoria:'Água / luz / internet', fornecedor:'Operadora (teste)', valor:129.9, forma:'Pix', primeiroVenc:somarDias(hj, -4)}), 0)
   ];
   for (const l of lancs) await gravar('financeiro', l);
+  if (!emNuvem() && !(estado.usuarios || []).some(u => u.login === 'bruna')) {
+    const sec = {id:uid(), nome:'Bruna Costa (teste)', login:'bruna', senhaHash:resumoSenha('bruna123'), papel:'secretaria', ativo:true, criadoEm:Date.now(), teste:true};
+    await gravar('usuarios', sec);
+    for (let i = 1; i <= 6; i++) {
+      const dia = somarDias(hj, -i), dd = dataDe(dia);
+      if (dd.getDay() === 0) continue;
+      const ent = new Date(dd.getFullYear(), dd.getMonth(), dd.getDate(), 7 + (i % 2), 50 + (i % 3) * 3);
+      const sai = new Date(ent.getTime() + (9 * 60 + (i * 7) % 40) * 60000);
+      await gravar('ponto', {id:uid(), uid:sec.id, nome:sec.nome, login:sec.login, data:dia, entrada:ent.toISOString(), saida: i === 3 ? '' : sai.toISOString(), obs:'', teste:true});
+    }
+  }
   estado.config.exemploCarregado = true;
   await salvarConfig();
   await carregar();
@@ -2878,7 +3180,7 @@ async function carregarExemplo(silencioso){
   ir(estado.tela && estado.tela !== 'form' ? estado.tela : 'inicio');
 }
 function temDadosTeste(){
-  return estado.pacientes.some(p => p.teste) || estado.atendimentos.some(a => a.teste) || estado.financeiro.some(l => l.teste);
+  return estado.pacientes.some(p => p.teste) || estado.atendimentos.some(a => a.teste) || estado.financeiro.some(l => l.teste) || (estado.usuarios || []).some(u => u.teste) || (estado.ponto || []).some(r => r.teste);
 }
 async function apagarDadosTeste(){
   const nP = estado.pacientes.filter(p => p.teste).length, nA = estado.atendimentos.filter(a => a.teste).length, nF = estado.financeiro.filter(l => l.teste).length;
@@ -2895,6 +3197,8 @@ async function apagarDadosTeste(){
   for (const a of estado.atendimentos) if (a.teste || idsTeste.has(a.pacienteId)) await apagar('atendimentos', a.id);
   for (const l of estado.financeiro) if (l.teste || idsTeste.has(l.pacienteId)) await apagar('financeiro', l.id);
   for (const p of estado.pacientes) if (p.teste) await apagar('pacientes', p.id);
+  for (const u of (estado.usuarios || [])) if (u.teste) await apagar('usuarios', u.id);
+  for (const r of (estado.ponto || [])) if (r.teste) await apagar('ponto', r.id);
   /* acerta a numeração para continuar do último relatório e recibo de verdade */
   const restantesAt = estado.atendimentos.filter(a => !(a.teste || idsTeste.has(a.pacienteId)));
   const restantesFin = estado.financeiro.filter(l => !(l.teste || idsTeste.has(l.pacienteId)));
@@ -2912,68 +3216,528 @@ async function apagarDadosTeste(){
   aviso('Pronto! Os dados fictícios foram apagados deste painel. Neste aparelho, o site também deixou de mostrar os pacientes de demonstração. Para tirá-los do site publicado, vá em ⚙️ Ajustes › Portal do paciente e toque em "Baixar site configurado", e envie o novo index.html ao Netlify.', 'Limpeza concluída');
 }
 function faixaTeste(){
-  if (!temDadosTeste()) return null;
+  if (!ehAdmin() || !temDadosTeste()) return null;
   return h('div', {class:'faixa-teste'},
-    h('div', null, h('b', null, '🧪 Sistema com dados fictícios de teste'), h('div', {style:'font-size:13px'}, 'Os pacientes marcados com "(teste)" são inventados. Quando terminar de testar, apague tudo de uma vez.')),
+    h('div', null, h('b', null, '🧪 Sistema com dados fictícios de teste'), h('div', {style:'font-size:13px'}, 'Os pacientes marcados com "(teste)" são inventados. Quando terminar de testar, apague tudo de uma vez.', (estado.usuarios || []).some(u => u.teste) ? h('div', {style:'font-size:13px;margin-top:4px'}, '👤 Secretária de teste: usuário ', h('b', null, 'bruna'), ', senha ', h('b', null, 'bruna123'), '.') : null)),
     h('button', {class:'btn perigo peq', onclick:apagarDadosTeste}, '🧹 Apagar dados de teste'));
 }
 
 /* ---------- Início ---------- */
-/* ---------- Acesso com senha ---------- */
+/* =========================================================
+   EQUIPE: login da Kárita e das secretárias, ponto, agendamentos
+   ========================================================= */
 const hashAtual = () => estado.config.senhaHash || SENHA_PADRAO;
+const loginAdminLocal = () => (estado.config.adminLogin || 'karita').toLowerCase();
+const hhmm = iso => { if (!iso) return ''; const d = new Date(iso); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+const formatarNumero = (n, data) => String(n).padStart(4, '0') + '/' + (data || hojeISO()).slice(0, 4);
 let ultimaAtividade = Date.now();
-function sessaoValida(){ try { return sessionStorage.getItem('kt_sessao') === hashAtual(); } catch (e) { return false; } }
-function liberarAcesso(hash){
-  try { sessionStorage.setItem('kt_sessao', hash); sessionStorage.removeItem('kt_tentativa'); } catch (e) {}
+
+async function fazerLogin(login, senha){
+  login = String(login || '').trim();
+  if (!login || !senha) throw new Error('vazio');
+  if (emNuvem()) {
+    const email = emailDoLogin(login);
+    let j;
+    try { j = await chamarAuth('signInWithPassword', {email, password:senha, returnSecureToken:true}); }
+    catch (e) { throw new Error(/INVALID|NOT_FOUND|PASSWORD|DISABLED/.test(e.message) ? 'credenciais' : /TOO_MANY/.test(e.message) ? 'muitas' : 'rede'); }
+    sessaoNuvem = {uid:j.localId, email, idToken:j.idToken, refreshToken:j.refreshToken, expira:Date.now() + (parseInt(j.expiresIn, 10) - 120) * 1000};
+    if (email === NUVEM.adminEmail.toLowerCase()) sessaoNuvem.usuario = {uid:j.localId, nome:'Kárita', login:email, papel:'admin'};
+    else {
+      let d = null;
+      try { const u = await nuvemGet(COLECOES.usuarios, j.localId); d = u ? Object.assign(doJson(u), {ativo:u.ativo}) : null; } catch (e) {}
+      if (!d || d.ativo === false) { sessaoNuvem = null; guardarSessaoNuvem(); throw new Error('inativo'); }
+      sessaoNuvem.usuario = {uid:j.localId, nome:d.nome, login:d.login, papel:'secretaria'};
+    }
+    guardarSessaoNuvem();
+    return sessaoNuvem.usuario;
+  }
+  const l = login.toLowerCase();
+  if (l === loginAdminLocal()) {
+    if (resumoSenha(senha) !== hashAtual()) throw new Error('credenciais');
+    return {uid:'admin', nome:'Kárita', login:l, papel:'admin'};
+  }
+  const u = (estado.usuarios || []).find(x => (x.login || '').toLowerCase() === l);
+  if (!u || u.senhaHash !== resumoSenha(senha)) throw new Error('credenciais');
+  if (u.ativo === false) throw new Error('inativo');
+  return {uid:u.id, nome:u.nome, login:u.login, papel:'secretaria'};
+}
+function guardarSessaoLocal(u){
+  if (emNuvem()) return;
+  const chk = u.papel === 'admin' ? hashAtual() : ((estado.usuarios || []).find(x => x.id === u.uid) || {}).senhaHash;
+  try { sessionStorage.setItem('kt_sessao', JSON.stringify(Object.assign({}, u, {chk}))); } catch (e) {}
+}
+function restaurarSessao(){
+  if (emNuvem()) return sessaoNuvem && sessaoNuvem.usuario ? sessaoNuvem.usuario : null;
+  let s = null;
+  try { s = JSON.parse(sessionStorage.getItem('kt_sessao') || 'null'); } catch (e) {}
+  if (!s || typeof s !== 'object' || !s.uid) return null;
+  if (s.papel === 'admin') return s.chk === hashAtual() ? s : null;
+  const u = (estado.usuarios || []).find(x => x.id === s.uid);
+  return (u && u.ativo !== false && u.senhaHash === s.chk) ? s : null;
+}
+function liberarAcesso(){
   document.body.classList.remove('bloqueado');
   const t = $('#telaBloqueio'); if (t) t.remove();
   ultimaAtividade = Date.now();
 }
+function textoErroLogin(e){
+  const m = e && e.message;
+  if (m === 'vazio') return 'Preencha o usuário e a senha.';
+  if (m === 'credenciais') return 'Usuário ou senha incorretos.';
+  if (m === 'inativo') return 'Este acesso está desativado. Fale com a Kárita.';
+  if (m === 'muitas') return 'Muitas tentativas. Espere alguns minutos.';
+  return 'Não foi possível entrar. Verifique a internet e tente de novo.';
+}
 function telaBloqueio(msgErro){
   document.body.classList.add('bloqueado');
   const ant = $('#telaBloqueio'); if (ant) ant.remove();
-  const inp = h('input', {type:'password', placeholder:'Digite a senha', autocomplete:'current-password'});
+  let ultimo = '';
+  try { ultimo = localStorage.getItem('kt_ultimo_login') || ''; } catch (e) {}
+  const inpU = h('input', {type:'text', placeholder: emNuvem() ? 'Seu usuário (ou e-mail)' : 'Seu usuário', autocomplete:'username', autocapitalize:'none', value:(estado.usuario && estado.usuario.login) || ultimo});
+  const inp = h('input', {type:'password', placeholder:'Sua senha', autocomplete:'current-password'});
   const erro = h('div', {class:'bq-erro'}, msgErro || '');
-  const entrar = () => {
-    const hs = resumoSenha(inp.value);
-    if (hs === hashAtual()) { const primeira = !estado.iniciado; liberarAcesso(hs); if (primeira) iniciarApp(); }
-    else { erro.textContent = inp.value ? 'Senha incorreta. Tente novamente.' : 'Digite a senha.'; inp.value = ''; inp.focus(); }
+  const botao = h('button', {class:'btn rosa grande'}, 'Entrar →');
+  const entrar = async () => {
+    erro.textContent = ''; botao.disabled = true; botao.textContent = 'Entrando...';
+    try {
+      const u = await fazerLogin(inpU.value, inp.value);
+      try { localStorage.setItem('kt_ultimo_login', inpU.value.trim()); } catch (e) {}
+      guardarSessaoLocal(u);
+      if (estado.usuario && estado.usuario.uid !== u.uid) { try { sessionStorage.removeItem('kt_ponto'); } catch (e) {} location.reload(); return; }
+      const primeira = !estado.iniciado;
+      estado.usuario = u;
+      liberarAcesso();
+      if (primeira) await iniciarApp(true);
+    } catch (e) {
+      erro.textContent = textoErroLogin(e); inp.value = ''; inp.focus();
+      botao.disabled = false; botao.textContent = 'Entrar →';
+    }
   };
-  inp.addEventListener('keydown', e => { if (e.key === 'Enter') entrar(); });
+  [inpU, inp].forEach(i => i.addEventListener('keydown', e => { if (e.key === 'Enter') entrar(); }));
+  botao.addEventListener('click', entrar);
   const c = estado.config;
   document.body.appendChild(h('div', {id:'telaBloqueio'},
     h('div', {class:'bq-caixa'},
       h('div', {class:'bq-topo'},
         h('div', {class:'bq-cad'}, c.logo ? h('img', {src:c.logo, alt:''}) : '🔒'),
         h('h2', null, c.nome || 'Kárita Teodoro'),
-        h('p', null, 'Painel administrativo · Relatórios de atendimento')),
+        h('p', null, 'Área da equipe · Painel administrativo')),
       h('div', {class:'bq-corpo'},
-        h('label', null, 'Senha de acesso'),
+        h('label', null, 'Usuário'), inpU,
+        h('label', {style:'margin-top:12px'}, 'Senha'),
         h('div', {class:'bq-senha'}, inp, h('button', {type:'button', title:'Mostrar senha', onclick:() => { inp.type = inp.type === 'password' ? 'text' : 'password'; }}, '👁️')),
-        erro,
-        h('button', {class:'btn rosa grande', onclick:entrar}, 'Entrar no painel →'),
+        erro, botao,
+        h('div', {class:'bq-dica'}, 'Secretárias: o ponto de entrada é registrado ao entrar, e o de saída ao tocar em 🚪 Sair.'),
         h('a', {href:'index.html', class:'bq-voltar'}, '← Voltar ao site')))));
-  setTimeout(() => inp.focus(), 60);
+  setTimeout(() => (inpU.value ? inp : inpU).focus(), 60);
 }
-function bloquearPainel(msg){
-  try { sessionStorage.removeItem('kt_sessao'); } catch (e) {}
-  telaBloqueio(msg || '');
-}
+function bloquearPainel(msg){ telaBloqueio(msg || ''); }
 ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(ev => document.addEventListener(ev, () => { ultimaAtividade = Date.now(); }, {passive:true, capture:true}));
 setInterval(() => {
   if (document.body.classList.contains('bloqueado') || !estado.iniciado) return;
   const min = estado.config.bloqueioMin === 0 ? 0 : (estado.config.bloqueioMin || 30);
   if (min && Date.now() - ultimaAtividade > min * 60000) bloquearPainel('O painel foi bloqueado por falta de uso. Digite a senha para continuar de onde parou.');
 }, 20000);
-async function iniciarApp(){
-  estado.iniciado = true;
-  ir('inicio');
-  if (!estado.pacientes.length && !estado.atendimentos.length && !estado.config.testeRemovido && !estado.config.exemploCarregado) {
-    try { await carregarExemplo(true); toast('Sistema aberto com dados fictícios para teste'); } catch (e) {}
-  }
-  limparVideosSoltos();
-  revisarPortalVencidos();
+
+/* ----- ponto da secretária ----- */
+async function registrarEntrada(){
+  const u = estado.usuario, agora = new Date();
+  const reg = {id:uid(), uid:u.uid, nome:u.nome, login:u.login, data:hojeISO(), entrada:agora.toISOString(), saida:'', obs:''};
+  await gravar('ponto', reg);
+  try { sessionStorage.setItem('kt_ponto', reg.id); } catch (e) {}
+  estado.ponto = (estado.ponto || []).concat(reg);
+  toast(`🕐 Entrada registrada às ${hhmm(reg.entrada)}`);
+  atualizarChipUsuario();
 }
+async function registrarSaida(){
+  let id = null;
+  try { id = sessionStorage.getItem('kt_ponto'); } catch (e) {}
+  const meus = (estado.ponto || []).filter(p => p.uid === estado.usuario.uid && !p.saida);
+  const reg = meus.find(p => p.id === id) || meus.sort((a, b) => b.entrada.localeCompare(a.entrada))[0];
+  if (!reg) return null;
+  reg.saida = new Date().toISOString();
+  await gravar('ponto', reg);
+  return reg;
+}
+const horaEntrada = r => r.ajustado ? r.entrada : (r.servEntrada || r.entrada);
+const horaSaida = r => r.ajustado ? r.saida : (r.servSaida || r.saida);
+function minutosPonto(r){ const e = horaEntrada(r), s = horaSaida(r); return e && s ? Math.max(0, Math.round((new Date(s) - new Date(e)) / 60000)) : 0; }
+const fmtHoras = m => `${Math.floor(m / 60)}h${String(m % 60).padStart(2, '0')}`;
+function atualizarChipUsuario(){
+  const chip = $('#usuarioChip'); if (!chip) return;
+  limpar(chip);
+  const u = estado.usuario; if (!u) return;
+  let id = null; try { id = sessionStorage.getItem('kt_ponto'); } catch (e) {}
+  const reg = (estado.ponto || []).find(p => p.id === id);
+  chip.appendChild(h('span', null, (u.papel === 'admin' ? '👑 ' : '👤 ') + u.nome.split(' ')[0]));
+  if (reg) chip.appendChild(h('small', null, 'entrada ' + hhmm(horaEntrada(reg))));
+}
+async function sairDoPainel(){
+  const sec = estado.usuario && estado.usuario.papel === 'secretaria';
+  if (!await confirmar(sec ? 'Sair do painel e registrar a SAÍDA do ponto agora?' : 'Sair do painel? Para entrar de novo será preciso digitar a senha.', 'Sair', sec ? '🕐 Registrar saída e sair' : 'Sair')) return;
+  if (sec) {
+    try { const r = await registrarSaida(); if (r) toast(`Saída registrada às ${hhmm(r.saida)}`); }
+    catch (e) { if (!await confirmar('Não foi possível registrar a saída (sem internet?). Sair mesmo assim? Avise a Kárita para ajustar o ponto.', 'Ponto', 'Sair mesmo assim', true)) return; }
+  }
+  try { sessionStorage.removeItem('kt_sessao'); sessionStorage.removeItem('kt_nuvem'); sessionStorage.removeItem('kt_ponto'); } catch (e) {}
+  setTimeout(() => { location.href = 'index.html'; }, 600);
+}
+function telaPonto(area){
+  const adm = ehAdmin();
+  const f = estado.pontoFiltro || (estado.pontoFiltro = {mes:hojeISO().slice(0, 7), uid:''});
+  const [ano, m] = f.mes.split('-').map(Number);
+  const nomeMes = MESES[m - 1].charAt(0).toUpperCase() + MESES[m - 1].slice(1) + ' de ' + ano;
+  const mover = n => { f.mes = isoDe(new Date(ano, m - 1 + n, 1, 12)).slice(0, 7); ir('ponto'); };
+  area.appendChild(h('div', {class:'titulo-pag'}, h('h2', null, adm ? '🕐 Ponto da equipe' : '🕐 Meu ponto'),
+    h('button', {class:'btn ouro', onclick:() => imprimirPonto(f.mes, adm ? f.uid : estado.usuario.uid)}, '🖨️ Imprimir')));
+  const selU = h('select', null, h('option', {value:''}, 'Todas as secretárias'), (estado.usuarios || []).map(u => h('option', {value:u.id}, u.nome)));
+  selU.value = f.uid;
+  selU.addEventListener('change', () => { f.uid = selU.value; ir('ponto'); });
+  area.appendChild(h('div', {class:'cartao'},
+    h('div', {class:'ag-topo'}, h('button', {class:'btn peq', onclick:() => mover(-1)}, '◀'), h('div', {class:'rotulo'}, nomeMes), h('button', {class:'btn peq', onclick:() => mover(1)}, '▶')),
+    adm ? h('div', {class:'busca', style:'margin:10px 0 0'}, selU) : null));
+  const regs = (estado.ponto || []).filter(r => (r.data || '').startsWith(f.mes) && (adm ? (!f.uid || r.uid === f.uid) : r.uid === estado.usuario.uid))
+    .sort((a, b) => (b.entrada || '').localeCompare(a.entrada || ''));
+  const porPessoa = {};
+  regs.forEach(r => { porPessoa[r.nome] = (porPessoa[r.nome] || 0) + minutosPonto(r); });
+  area.appendChild(h('div', {class:'numeros g3'},
+    Object.keys(porPessoa).length ? Object.entries(porPessoa).map(([n, min]) => h('div', {class:'numero'}, h('b', null, fmtHoras(min)), h('span', null, n.split(' ')[0] + ' no mês')))
+      : h('div', {class:'numero'}, h('b', null, '0h00'), h('span', null, 'Horas no mês'))));
+  const lista = h('div', {class:'cartao'}, h('h2', null, `Registros (${regs.length})`));
+  if (!regs.length) lista.appendChild(h('div', {class:'vazio'}, h('span', {class:'ico'}, '🕐'), 'Nenhum registro de ponto neste mês.'));
+  regs.forEach(r => {
+    const d = dataDe(r.data);
+    lista.appendChild(h('div', {class:'parc' + (!r.saida ? ' atr' : '')},
+      h('div', {class:'pn', style:'min-width:58px'}, DIAS_SEM[d.getDay()], h('br'), fmtData(r.data).slice(0, 5)),
+      h('div', {style:'flex:1;min-width:0'},
+        adm ? h('b', null, r.nome) : null,
+        h('div', null, `Entrada ${hhmm(horaEntrada(r))}  ·  Saída ${r.saida ? hhmm(horaSaida(r)) : '— sem saída'}`),
+        h('div', {class:'meta'}, r.saida ? 'Total: ' + fmtHoras(minutosPonto(r)) : 'Saída não registrada', r.ajustado ? ' · ✏️ ajustado' + (r.obs ? ': ' + r.obs : '') : '')),
+      adm ? h('button', {class:'btn peq', onclick:() => ajustarPonto(r.id)}, '✏️ Ajustar') : null));
+  });
+  area.appendChild(lista);
+}
+async function ajustarPonto(id){
+  const r = (estado.ponto || []).find(x => x.id === id);
+  if (!r) return;
+  const toLocal = iso => { if (!iso) return ''; const d = new Date(iso); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16); };
+  const f = {entrada:toLocal(horaEntrada(r)), saida:toLocal(horaSaida(r)), obs:r.obs || ''};
+  const ok = await modal('✏️ Ajustar ponto — ' + r.nome, h('div', {class:'grade'},
+    campo(f, 'entrada', 'Entrada', {tipo:'datetime-local'}), campo(f, 'saida', 'Saída', {tipo:'datetime-local'}),
+    campo(f, 'obs', 'Motivo do ajuste', {cheio:true, dica:'Ex.: esqueceu de registrar a saída'}),
+    h('div', {class:'meta campo full', style:'color:var(--cinza)'}, r.servEntrada ? `Registro original do sistema: entrada ${hhmm(r.servEntrada)}${r.servSaida ? ', saída ' + hhmm(r.servSaida) : ''}.` : '')),
+    [{texto:'Cancelar', valor:false}, {texto:'💾 Salvar ajuste', valor:true, classe:'rosa', antes:() => { if (!f.entrada) { toast('Informe a entrada'); return false; } if (!f.obs.trim()) { toast('Informe o motivo do ajuste'); return false; } }}]);
+  if (!ok) return;
+  r.entrada = new Date(f.entrada).toISOString(); r.saida = f.saida ? new Date(f.saida).toISOString() : '';
+  r.data = f.entrada.slice(0, 10); r.obs = f.obs.trim(); r.ajustado = true; r.ajustadoEm = new Date().toISOString();
+  await gravar('ponto', r);
+  toast('Ponto ajustado'); ir('ponto');
+}
+function imprimirPonto(mes, uidFiltro){
+  const [ano, m] = mes.split('-').map(Number);
+  const regs = (estado.ponto || []).filter(r => (r.data || '').startsWith(mes) && (!uidFiltro || r.uid === uidFiltro)).sort((a, b) => (a.entrada || '').localeCompare(b.entrada || ''));
+  const nomes = [...new Set(regs.map(r => r.nome))];
+  const folha = h('div', {class:'folha'},
+    cabecalhoDoc('Período', MESES[m - 1].toUpperCase(), String(ano)),
+    h('div', {class:'rel-tit'}, 'FOLHA DE PONTO — ' + MESES[m - 1].toUpperCase() + ' DE ' + ano),
+    nomes.length ? nomes.map(n => {
+      const meus = regs.filter(r => r.nome === n);
+      const tot = meus.reduce((s, r) => s + minutosPonto(r), 0);
+      return h('div', {class:'rel-sec'}, h('h3', null, n),
+        h('div', {class:'rel-box', style:'padding:0'}, h('table', {class:'rel-tab', style:'margin:0'},
+          h('tr', null, h('th', null, 'Data'), h('th', null, 'Entrada'), h('th', null, 'Saída'), h('th', null, 'Total'), h('th', null, 'Observação')),
+          meus.map(r => h('tr', null, h('td', null, `${DIAS_SEM[dataDe(r.data).getDay()]} ${fmtData(r.data)}`), h('td', null, hhmm(horaEntrada(r))),
+            h('td', null, r.saida ? hhmm(horaSaida(r)) : '—'), h('td', null, r.saida ? fmtHoras(minutosPonto(r)) : '—'), h('td', null, r.ajustado ? 'Ajustado: ' + (r.obs || '') : ''))),
+          h('tr', null, h('td', {colspan:'3', style:'font-weight:700'}, 'Total no mês'), h('td', {style:'font-weight:700'}, fmtHoras(tot)), h('td', null, '')))),
+        h('div', {class:'rel-assin', style:'margin-top:26px;display:flex;gap:30px;justify-content:center'},
+          h('div', {style:'flex:1'}, h('div', {class:'linha'}, n), h('small', null, 'Funcionária')),
+          h('div', {style:'flex:1'}, h('div', {class:'linha'}, estado.config.nome || 'Responsável'), h('small', null, 'Responsável'))));
+    }) : h('p', null, 'Nenhum registro no período.'),
+    h('div', {class:'rel-rod'}, h('span', null, estado.config.nome || ''), h('span', null, 'Emitido em ' + new Date().toLocaleString('pt-BR'))));
+  mostrarDocumento(folha);
+}
+
+/* ----- agendamento (usado pela secretária) ----- */
+function novoOuAgendar(pre){ if (ehAdmin()) editarAtendimento(null, pre); else editarAgendamento(null, pre); }
+async function editarAgendamento(id, pre){
+  pre = typeof pre === 'string' ? {pacienteId:pre} : (pre || {});
+  const orig = id ? estado.atendimentos.find(a => a.id === id) : null;
+  const a = orig ? copia(orig) : Object.assign(novoAtendimento(pre), {hora:'', status:'Agendado', obsAgenda:'', criadoPor:estado.usuario ? estado.usuario.nome : ''});
+  const selPac = h('select');
+  const montarSel = () => {
+    limpar(selPac);
+    selPac.appendChild(h('option', {value:''}, '— Selecione o paciente —'));
+    estado.pacientes.forEach(p => selPac.appendChild(h('option', {value:p.id}, p.nome)));
+    selPac.value = a.pacienteId || '';
+  };
+  montarSel();
+  selPac.addEventListener('change', () => { a.pacienteId = selPac.value; });
+  const corpo = h('div', {class:'grade'},
+    h('div', {class:'campo full'}, h('span', null, 'Paciente', h('b', {class:'req'}, ' *')),
+      h('div', {style:'display:flex;gap:8px'}, selPac, h('button', {class:'btn ouro', type:'button', onclick: async () => { const p = await editarPaciente(null); if (p) { a.pacienteId = p.id; montarSel(); } }}, '＋ Novo'))),
+    campo(a, 'data', 'Data', {tipo:'date', obrig:true}),
+    campo(a, 'hora', 'Horário', {tipo:'time', obrig:true}),
+    campo(a, 'horaFim', 'Até (opcional)', {tipo:'time'}),
+    campo(a, 'tipo', 'Tipo de atendimento', {tipo:'select', opcoes:TIPOS}),
+    campo(a, 'status', 'Situação', {tipo:'select', opcoes:['Agendado', 'Concluído', 'Cancelado', 'Retorno agendado', 'Em acompanhamento', 'Encaminhado']}),
+    campo(a, 'local', 'Local'),
+    campo(a, 'profissional', 'Profissional'),
+    campo(a, 'obsAgenda', 'Observação do agendamento', {tipo:'textarea', cheio:true, linhas:2, dica:'Ex.: paciente pediu para confirmar por WhatsApp'}));
+  const ok = await modal(orig ? `✏️ Agendamento Nº ${orig.numero}` : '📅 Novo agendamento', corpo, [
+    {texto:'Cancelar', valor:false},
+    {texto:'💾 Salvar agendamento', valor:true, classe:'rosa', antes:() => {
+      if (!a.pacienteId) { toast('Escolha o paciente'); return false; }
+      if (!a.data || !a.hora) { toast('Informe a data e o horário'); return false; }
+    }}], 680);
+  if (!ok) return;
+  if (!a.numero) a.numero = formatarNumero(await proximoNumero('contador'), a.data);
+  a.atualizadoEm = Date.now();
+  await gravar('atendimentos', a);
+  const i = estado.atendimentos.findIndex(x => x.id === a.id);
+  if (i >= 0) estado.atendimentos[i] = a; else estado.atendimentos.push(a);
+  ordenar();
+  toast('Agendamento salvo');
+  recarregar();
+}
+
+/* ----- cadastro da equipe (só a Kárita) ----- */
+function cartaoEquipe(){
+  const n = {nome:'', login:'', senha:''};
+  const lista = (estado.usuarios || []).slice().sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+  return h('div', {class:'cartao'}, h('h2', null, '👥 Equipe — secretárias'),
+    h('p', {style:'margin:0 0 10px;font-size:14px;color:var(--cinza)'}, 'A secretária entra com usuário e senha. Ela cuida da agenda, do cadastro de pacientes e dos recebimentos, e não vê relatórios clínicos, fotos, vídeos, laudos, despesas nem o resumo financeiro. O ponto de entrada e saída é registrado sozinho.'),
+    lista.length ? lista.map(u => h('div', {class:'parc' + (u.ativo === false ? ' atr' : '')},
+      h('div', {style:'flex:1;min-width:0'}, h('b', null, u.nome), h('div', {class:'meta'}, 'Usuário: ' + u.login + (u.ativo === false ? ' · DESATIVADO' : ''))),
+      h('div', {class:'acoes', style:'margin:0'},
+        h('button', {class:'btn peq', onclick:() => { estado.pontoFiltro = {mes:hojeISO().slice(0, 7), uid:u.id}; ir('ponto'); }}, '🕐 Ponto'),
+        !emNuvem() ? h('button', {class:'btn peq', onclick:() => trocarSenhaSecretariaLocal(u.id)}, '🔑 Senha') : null,
+        h('button', {class:'btn peq ' + (u.ativo === false ? '' : 'perigo'), onclick: async () => {
+          if (!await confirmar(u.ativo === false ? `Reativar o acesso de ${u.nome}?` : `Desativar o acesso de ${u.nome}? Ela não conseguirá mais entrar. O histórico de ponto continua guardado.`, 'Acesso', u.ativo === false ? 'Reativar' : 'Desativar', u.ativo !== false)) return;
+          u.ativo = u.ativo === false; await gravar('usuarios', u); toast(u.ativo ? 'Acesso reativado' : 'Acesso desativado'); ir('config');
+        }}, u.ativo === false ? 'Reativar' : 'Desativar'))))
+      : h('div', {class:'meta', style:'color:var(--cinza)'}, 'Nenhuma secretária cadastrada.'),
+    h('h4', {class:'sub-form', style:'margin:14px 0 10px'}, '＋ Cadastrar secretária'),
+    h('div', {class:'grade'},
+      campo(n, 'nome', 'Nome completo', {cheio:true}),
+      campo(n, 'login', 'Usuário para entrar (sem espaços)', {dica:'ex.: bruna'}),
+      campo(n, 'senha', 'Senha inicial (mínimo 6)', {tipo:'password'})),
+    h('div', {class:'acoes'}, h('button', {class:'btn rosa', onclick: async () => {
+      const login = String(n.login || '').trim().toLowerCase();
+      if (!n.nome.trim()) { await aviso('Informe o nome da secretária.', 'Equipe'); return; }
+      if (!/^[a-z0-9._-]{3,30}$/.test(login)) { await aviso('O usuário deve ter de 3 a 30 letras minúsculas ou números, sem espaços e sem acento.', 'Equipe'); return; }
+      if (login === loginAdminLocal() || (estado.usuarios || []).some(u => (u.login || '').toLowerCase() === login)) { await aviso('Esse usuário já existe. Escolha outro.', 'Equipe'); return; }
+      if ((n.senha || '').length < 6) { await aviso('A senha precisa ter pelo menos 6 caracteres.', 'Equipe'); return; }
+      const u = {id:uid(), nome:n.nome.trim(), login, papel:'secretaria', ativo:true, criadoEm:Date.now()};
+      if (emNuvem()) {
+        try { const j = await chamarAuth('signUp', {email:emailDoLogin(login), password:n.senha, returnSecureToken:true}); u.id = j.localId; }
+        catch (e) { await aviso(/EMAIL_EXISTS/.test(e.message) ? 'Esse usuário já existe na nuvem. Escolha outro.' : 'Não foi possível criar o acesso: ' + traduzErroFirebase(e.message), 'Equipe'); return; }
+      } else u.senhaHash = resumoSenha(n.senha);
+      await gravar('usuarios', u);
+      estado.usuarios = (estado.usuarios || []).concat(u);
+      await aviso(`Acesso criado!\n\nUsuário: ${login}\nSenha: a que você digitou.\n\nEla entra pelo site, em "Área da equipe".`, 'Secretária cadastrada');
+      ir('config');
+    }}, '＋ Criar acesso'),
+      h('button', {class:'btn ouro', onclick:() => { estado.pontoFiltro = {mes:hojeISO().slice(0, 7), uid:''}; ir('ponto'); }}, '🕐 Ver ponto da equipe')));
+}
+async function trocarSenhaSecretariaLocal(id){
+  const u = (estado.usuarios || []).find(x => x.id === id);
+  const f = {senha:''};
+  const ok = await modal('🔑 Nova senha — ' + u.nome, campo(f, 'senha', 'Nova senha (mínimo 6)', {tipo:'password'}),
+    [{texto:'Cancelar', valor:false}, {texto:'Salvar', valor:true, classe:'rosa', antes:() => { if ((f.senha || '').length < 6) { toast('Mínimo 6 caracteres'); return false; } }}]);
+  if (!ok) return;
+  u.senhaHash = resumoSenha(f.senha); await gravar('usuarios', u); toast('Senha alterada');
+}
+function cartaoMinhaConta(){
+  const u = estado.usuario, f = {atual:'', nova:'', conf:''};
+  return h('div', {class:'cartao'}, h('h2', null, '👤 Minha conta'),
+    h('p', {style:'margin:0 0 10px'}, h('b', null, u.nome), h('br'), h('span', {class:'meta'}, 'Usuário: ' + u.login + (u.papel === 'admin' ? ' · responsável pela clínica' : ' · secretária'))),
+    h('div', {class:'grade'},
+      campo(f, 'atual', 'Senha atual', {tipo:'password', cheio:true}),
+      campo(f, 'nova', 'Nova senha (mínimo 6)', {tipo:'password'}),
+      campo(f, 'conf', 'Repita a nova senha', {tipo:'password'})),
+    h('div', {class:'acoes'},
+      h('button', {class:'btn rosa', onclick: async () => {
+        if ((f.nova || '').length < 6) { await aviso('A nova senha precisa ter pelo menos 6 caracteres.', 'Senha'); return; }
+        if (f.nova !== f.conf) { await aviso('As duas novas senhas não estão iguais.', 'Senha'); return; }
+        try {
+          if (emNuvem()) {
+            await chamarAuth('signInWithPassword', {email:sessaoNuvem.email, password:f.atual, returnSecureToken:true}).catch(() => { throw new Error('atual'); });
+            const j = await chamarAuth('update', {idToken:await tokenSessao(), password:f.nova, returnSecureToken:true});
+            Object.assign(sessaoNuvem, {idToken:j.idToken, refreshToken:j.refreshToken, expira:Date.now() + (parseInt(j.expiresIn, 10) - 120) * 1000});
+            guardarSessaoNuvem();
+          } else {
+            const reg = (estado.usuarios || []).find(x => x.id === u.uid);
+            if (!reg || reg.senhaHash !== resumoSenha(f.atual)) throw new Error('atual');
+            reg.senhaHash = resumoSenha(f.nova); await gravar('usuarios', reg); guardarSessaoLocal(u);
+          }
+          toast('Senha alterada'); ir('config');
+        } catch (e) { await aviso(e.message === 'atual' ? 'A senha atual está errada.' : 'Não foi possível trocar a senha agora.', 'Senha'); }
+      }}, '🔑 Trocar minha senha'),
+      h('button', {class:'btn ouro', onclick:() => { estado.pontoFiltro = {mes:hojeISO().slice(0, 7), uid:u.uid}; ir('ponto'); }}, '🕐 Meu ponto'),
+      h('button', {class:'btn', onclick:sairDoPainel}, '🚪 Sair e registrar saída')));
+}
+
+/* ----- trabalho em equipe na nuvem (configuração, só a Kárita) ----- */
+function regrasNuvem(email){
+  email = email || 'EMAIL_DA_KARITA';
+  return `rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function logado() { return request.auth != null; }
+    function admin() { return logado() && request.auth.token.email == '${email}'; }
+    function equipe() {
+      return admin() || (logado() && exists(/databases/$(database)/documents/karita_usuarios/$(request.auth.uid))
+        && get(/databases/$(database)/documents/karita_usuarios/$(request.auth.uid)).data.ativo == true);
+    }
+    match /karita_usuarios/{id} { allow read: if admin() || (logado() && request.auth.uid == id); allow write: if admin(); }
+    match /karita_config/{id} { allow read: if equipe(); allow write: if admin(); }
+    match /karita_contadores/{id} { allow read, write: if equipe(); }
+    match /karita_pacientes/{id} { allow read, create, update: if equipe(); allow delete: if admin(); }
+    match /karita_agenda/{id} { allow read, create, update: if equipe(); allow delete: if admin(); }
+    match /karita_prontuario/{id} { allow read, write: if admin(); }
+    match /karita_financeiro/{id} {
+      allow read: if admin() || (equipe() && resource.data.tipo == 'receita');
+      allow create: if admin() || (equipe() && request.resource.data.tipo == 'receita');
+      allow update: if admin() || (equipe() && resource.data.tipo == 'receita' && request.resource.data.tipo == 'receita');
+      allow delete: if admin();
+    }
+    match /karita_arquivos/{id} {
+      allow read: if admin() || (equipe() && resource.data.nivel == 'equipe');
+      allow create, update: if admin() || (equipe() && request.resource.data.nivel == 'equipe');
+      allow delete: if admin();
+    }
+    match /karita_ponto/{id} {
+      allow read: if admin() || (logado() && resource.data.uid == request.auth.uid);
+      allow create: if equipe() && request.resource.data.uid == request.auth.uid;
+      allow update: if admin() || (equipe() && resource.data.uid == request.auth.uid && resource.data.saida == '');
+      allow delete: if admin();
+    }
+    match /${PORTAL_COL_LAUDO}/{id} {
+      allow get: if resource.data.validade > request.time;
+      allow list: if false;
+      allow create, update, delete: if admin();
+    }
+    match /${PORTAL_COL_IDX}/{id} {
+      allow get: if resource.data.validade > request.time;
+      allow list: if false;
+      allow create, update, delete: if admin();
+    }
+  }
+}`;
+}
+async function baixarPainelConfigurado(cfg){
+  let txt;
+  try { const r = await fetch('relatorio-atendimento.html', {cache:'no-store'}); if (!r.ok) throw 0; txt = await r.text(); }
+  catch (e) { await aviso('Para baixar o painel configurado, abra o painel pelo endereço do site (Netlify), e não pelo arquivo no aparelho.', 'Baixar painel'); return; }
+  const limpo = s => String(s || '').replace(/['\\]/g, '').trim();
+  if (!/const NUVEM = \{[^}]*\};/.test(txt)) { await aviso('Não encontrei o painel original.', 'Baixar painel'); return; }
+  txt = txt.replace(/const NUVEM = \{[^}]*\};/, `const NUVEM = {projectId:'${limpo(cfg.projectId)}', apiKey:'${limpo(cfg.apiKey)}', adminEmail:'${limpo(cfg.adminEmail).toLowerCase()}'};`);
+  const a = h('a', {href:URL.createObjectURL(new Blob([txt], {type:'text/html'})), download:'relatorio-atendimento.html'});
+  document.body.appendChild(a); a.click(); a.remove();
+  toast('Painel configurado baixado');
+}
+function cartaoNuvem(){
+  if (emNuvem()) {
+    return h('div', {class:'cartao'}, h('h2', null, '☁️ Trabalho em equipe (nuvem)'),
+      h('div', {class:'aviso-ok', style:'margin-bottom:12px'}, `✅ Ligado à nuvem (projeto ${NUVEM.projectId}). A Kárita e as secretárias veem os mesmos dados, cada uma no seu aparelho.`),
+      h('p', {style:'margin:0 0 10px;font-size:14px;color:var(--cinza)'}, 'Se você usava o sistema antes neste mesmo navegador (modo local), pode enviar aqueles dados para a nuvem. Vídeos continuam só no aparelho onde foram gravados.'),
+      h('div', {class:'acoes', style:'margin-top:0'}, h('button', {class:'btn ouro', onclick:enviarLocalParaNuvem}, '⬆️ Enviar dados deste aparelho para a nuvem')));
+  }
+  const c = estado.config.nuvemPlano || (estado.config.nuvemPlano = {});
+  const pc = estado.config.portal || {};
+  const f = {projectId:c.projectId || pc.projectId || '', apiKey:c.apiKey || pc.apiKey || '', adminEmail:c.adminEmail || pc.email || ''};
+  const txtRegras = h('textarea', {rows:12, readonly:true, style:'font-family:monospace;font-size:11.5px;margin-top:8px'});
+  const atualizarRegras = () => { txtRegras.value = regrasNuvem(f.adminEmail.trim().toLowerCase()); };
+  atualizarRegras();
+  const salvarPlano = async () => { Object.assign(c, {projectId:f.projectId.trim(), apiKey:f.apiKey.trim(), adminEmail:f.adminEmail.trim().toLowerCase()}); estado.config.portal = Object.assign(estado.config.portal || {}, {projectId:c.projectId, apiKey:c.apiKey}); await salvarConfig(); };
+  return h('div', {class:'cartao'}, h('h2', null, '☁️ Trabalho em equipe (nuvem)'),
+    h('div', {class:'alerta', style:'margin:0 0 12px'}, '📱 Modo local: os dados ficam só neste aparelho. Uma secretária só consegue usar neste mesmo aparelho. Para cada uma trabalhar no seu, ligue a nuvem (Firebase).'),
+    h('ol', {style:'margin:0 0 12px;padding-left:20px;font-size:14px;line-height:1.7'},
+      h('li', null, 'No Firebase: crie o projeto, ative o Firestore e, em Authentication, o login por E-mail/senha, com o usuário da Kárita.'),
+      h('li', null, 'Preencha abaixo e copie as regras para o Firestore › Regras › Publicar.'),
+      h('li', null, 'Baixe o painel e o site configurados e envie os dois ao GitHub ou Netlify.'),
+      h('li', null, 'Abra o site, entre com o e-mail e a senha da Kárita no Firebase e cadastre as secretárias em Ajustes.')),
+    h('div', {class:'grade'},
+      campo(f, 'projectId', 'ID do projeto Firebase'),
+      campo(f, 'apiKey', 'Chave da web (Web API Key)'),
+      campo(f, 'adminEmail', 'E-mail da Kárita no Firebase', {tipo:'email', cheio:true, aoMudar:atualizarRegras})),
+    h('div', {class:'acoes'},
+      h('button', {class:'btn rosa', onclick: async () => {
+        if (!f.projectId.trim() || !f.apiKey.trim() || !/@/.test(f.adminEmail)) { await aviso('Preencha o ID do projeto, a chave da web e o e-mail da Kárita.', 'Nuvem'); return; }
+        await salvarPlano(); await baixarPainelConfigurado(c);
+      }}, '⬇️ Baixar painel configurado'),
+      h('button', {class:'btn ouro', onclick: async () => {
+        if (!f.projectId.trim() || !f.apiKey.trim()) { await aviso('Preencha o ID do projeto e a chave da web.', 'Nuvem'); return; }
+        await salvarPlano(); await baixarSiteConfigurado();
+      }}, '⬇️ Baixar site configurado')),
+    h('details', {style:'margin-top:12px'},
+      h('summary', {style:'cursor:pointer;font-weight:600;color:var(--rosa-esc)'}, 'Regras de segurança (copiar e colar no Firestore › Regras)'),
+      txtRegras,
+      h('button', {class:'btn peq', style:'margin-top:6px', onclick: async () => { atualizarRegras(); try { await navigator.clipboard.writeText(txtRegras.value); toast('Regras copiadas'); } catch (e) { txtRegras.select(); } }}, '📋 Copiar regras')));
+}
+async function enviarLocalParaNuvem(){
+  let locais;
+  try { locais = {pacientes:await idbLerTodos('pacientes'), atendimentos:await idbLerTodos('atendimentos'), financeiro:await idbLerTodos('financeiro')}; }
+  catch (e) { await aviso('Não encontrei dados locais neste aparelho.', 'Nuvem'); return; }
+  const total = locais.pacientes.length + locais.atendimentos.length + locais.financeiro.length;
+  if (!total) { await aviso('Não há dados guardados só neste aparelho.', 'Nuvem'); return; }
+  if (!await confirmar(`Enviar para a nuvem ${locais.pacientes.length} paciente(s), ${locais.atendimentos.length} atendimento(s) e ${locais.financeiro.length} lançamento(s) que estão neste aparelho? Registros com o mesmo código serão atualizados.`, 'Enviar para a nuvem', 'Enviar')) return;
+  let n = 0;
+  try {
+    for (const st of ['pacientes', 'atendimentos', 'financeiro']) for (const o of locais[st]) {
+      (o.docs || []).concat(o.fotos || [], o.comprovantes || []).forEach(f => { delete f.enviado; });
+      await gravar(st, o); n++;
+      if (n % 5 === 0) toast(`Enviando... ${n} de ${total}`);
+    }
+  } catch (e) { await aviso(`Parou no item ${n + 1} de ${total}: verifique a internet e tente de novo. O que já foi enviado continua na nuvem.`, 'Nuvem'); }
+  await carregar(); toast(`${n} registro(s) enviados para a nuvem`); ir('inicio');
+}
+
+/* ----- início do sistema ----- */
+async function iniciarApp(novoLogin){
+  estado.iniciado = true;
+  if (emNuvem()) {
+    try { toast('Carregando dados da nuvem...'); await carregar(); }
+    catch (e) {
+      estado.iniciado = false; sessaoNuvem = null; guardarSessaoNuvem();
+      telaBloqueio(e.message === 'permissao' ? 'Seu acesso não tem permissão. Fale com a Kárita.' : 'Não foi possível carregar os dados. Verifique a internet e entre de novo.');
+      return;
+    }
+  }
+  atualizarTopo(); atualizarChipUsuario();
+  if (estado.usuario.papel === 'secretaria') {
+    let pontoAtual = null; try { pontoAtual = sessionStorage.getItem('kt_ponto'); } catch (e) {}
+    if (novoLogin || !pontoAtual) { try { await registrarEntrada(); } catch (e) { toast('⚠️ Não foi possível registrar a entrada do ponto'); } }
+    if (estado.agenda) estado.agenda.data = hojeISO();
+  }
+  ir('inicio');
+  if (ehAdmin()) {
+    if (!emNuvem() && !estado.pacientes.length && !estado.atendimentos.length && !estado.config.testeRemovido && !estado.config.exemploCarregado) {
+      try { await carregarExemplo(true); toast('Sistema aberto com dados fictícios para teste'); } catch (e) {}
+    }
+    limparVideosSoltos();
+    revisarPortalVencidos();
+  } else {
+    let id = null; try { id = sessionStorage.getItem('kt_ponto'); } catch (e) {}
+    const abertos = (estado.ponto || []).filter(p => p.uid === estado.usuario.uid && !p.saida && p.id !== id);
+    if (abertos.length) aviso(`Você não registrou a saída em: ${abertos.map(p => fmtData(p.data)).join(', ')}. Avise a Kárita para ajustar o ponto. Lembre-se de sair sempre pelo botão 🚪.`, 'Ponto');
+  }
+}
+function assinaturaDados(){
+  return JSON.stringify([estado.pacientes, estado.atendimentos, estado.financeiro].map(l => l.map(o => o.id + ':' + (o.atualizadoEm || '') + ':' + JSON.stringify(o.parcelas || '').length + ':' + (o.status || ''))));
+}
+setInterval(async () => {
+  if (!emNuvem() || !estado.iniciado || !estado.usuario || document.hidden || document.body.classList.contains('bloqueado')) return;
+  if (estado.tela === 'form' || document.querySelector('.modal-bg') || $('#relatorioTela') || document.querySelector('.vz-fundo')) return;
+  const antes = assinaturaDados();
+  try { await carregar(); } catch (e) { return; }
+  if (assinaturaDados() !== antes) { ir(estado.tela); toast('🔄 Dados atualizados'); }
+}, 40000);
+window.addEventListener('unhandledrejection', e => {
+  const m = e.reason && e.reason.message;
+  if (m === 'permissao') toast('⛔ Sem permissão para esta ação');
+  else if (m === 'rede' || m === 'sessao') toast('⚠️ Sem conexão com a nuvem. Verifique a internet.');
+});
 
 (async function iniciar(){
   try {
@@ -2986,16 +3750,11 @@ async function iniciarApp(){
   }
   atualizarTopo();
   $('#btnAjustes').addEventListener('click', () => ir('config'));
-  $('#btnSair').addEventListener('click', async () => {
-    if (!await confirmar('Sair do painel? Para entrar de novo será preciso digitar a senha.', 'Sair', 'Sair')) return;
-    try { sessionStorage.removeItem('kt_sessao'); } catch (e) {}
-    location.href = 'index.html';
-  });
-  let tentativa = null;
-  try { tentativa = sessionStorage.getItem('kt_tentativa'); sessionStorage.removeItem('kt_tentativa'); } catch (e) {}
-  if (tentativa && tentativa === hashAtual()) liberarAcesso(tentativa);
-  if (sessaoValida()) { liberarAcesso(hashAtual()); iniciarApp(); }
-  else telaBloqueio(tentativa ? 'Senha incorreta. Tente novamente.' : '');
+  $('#btnSair').addEventListener('click', sairDoPainel);
+  try { sessionStorage.removeItem('kt_tentativa'); } catch (e) {}
+  const u = restaurarSessao();
+  if (u) { estado.usuario = u; liberarAcesso(); iniciarApp(false); }
+  else telaBloqueio('');
 })();
 </script>
 </body>

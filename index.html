@@ -6,6 +6,13 @@
 <meta name="theme-color" content="#EBBECB">
 <meta name="description" content="Kárita Teodoro — atendimento com cuidado, atenção e carinho.">
 <meta name="author" content="Wendel Emílio de Souza Matias — oficial.respostas@gmail.com">
+<link rel="manifest" href="site.webmanifest">
+<link rel="icon" type="image/png" href="icones/favicon-64.png">
+<link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Kárita Teodoro">
 <title>Kárita Teodoro</title>
 <style>
 :root{
@@ -19,7 +26,7 @@ h1,h2,h3{font-family:Georgia,"Times New Roman",serif;margin:0;color:var(--vinho)
 a{color:inherit}
 .contido{max-width:1100px;margin:0 auto;padding:0 20px}
 /* Topo */
-.topinho{background:var(--vinho);color:#f3dfe6;font-size:12.5px}
+.topinho{display:none!important;background:var(--vinho);color:#f3dfe6;font-size:12.5px}
 .topinho .contido{display:flex;justify-content:space-between;align-items:center;height:34px;gap:14px}
 .topinho a{color:#f3dfe6;text-decoration:none}
 .tp-info{display:flex;gap:18px;align-items:center;white-space:nowrap;overflow:hidden}
@@ -364,7 +371,7 @@ footer a{color:var(--rosa);text-decoration:none;font-weight:600}
 const SITE = {"especialidade":"","whatsapp":"","telefone":"","email":"","endereco":"","horario":"","mapa":"","instagram":"","facebook":"","tiktok":"","youtube":"","linkedin":""};
 /*SITE_FIM*/
 /* Os dados acima são preenchidos pelo painel: Ajustes › Site: contato e redes sociais › Baixar site atualizado */
-const VERSAO = '2.4';
+const VERSAO = '2.6';
 const PAGINA_PAINEL = 'relatorio-atendimento.html';
 /* Código de segurança da senha (a senha nunca fica escrita no arquivo, só o "resumo" dela) */
 function sha256(texto){
@@ -471,9 +478,10 @@ const REDES = [
 ];
 const redesAtivas = () => REDES.filter(r => SITE[r[0]]).map(r => ({nome:r[1], ico:r[2], url:r[3](String(SITE[r[0]]).trim())}));
 const linkZap = msg => { const n = String(SITE.whatsapp || '').replace(/\D/g, ''); return n ? 'https://wa.me/' + (n.length <= 11 ? '55' + n : n) + '?text=' + encodeURIComponent(msg) : ''; };
-(function montarTopoERedes(){
+function limparEl(id){ const e = document.getElementById(id); if (e) while (e.firstChild) e.removeChild(e.firstChild); return e; }
+function montarTopoERedes(){
   const redes = redesAtivas();
-  const tp = document.getElementById('tpRedes'), mm = document.getElementById('mmRedes'), rc = document.getElementById('redesContato'), rr = document.getElementById('rodRedes');
+  const tp = limparEl('tpRedes'), mm = limparEl('mmRedes'), rc = limparEl('redesContato'), rr = limparEl('rodRedes');
   redes.forEach(r => {
     tp.appendChild(h('a', {href:r.url, target:'_blank', rel:'noopener', title:r.nome}, r.ico));
     mm.appendChild(h('a', {class:'rede', href:r.url, target:'_blank', rel:'noopener'}, h('span', null, r.ico), r.nome));
@@ -481,40 +489,63 @@ const linkZap = msg => { const n = String(SITE.whatsapp || '').replace(/\D/g, ''
   });
   rc.appendChild(h('div', {class:'linha-ctt', style:'margin-top:6px'}, h('span', null, '🌐'), h('div', null, h('small', null, 'Redes sociais'),
     redes.length ? h('div', {class:'redes'}, redes.map(r => h('a', {class:'rede', href:r.url, target:'_blank', rel:'noopener'}, h('span', null, r.ico), r.nome))) : 'Em breve.')));
-  if (SITE.horario) document.getElementById('tpHorario').textContent = '🕐 ' + SITE.horario;
-  if (SITE.telefone || SITE.whatsapp) document.getElementById('tpFone').textContent = '📱 ' + (SITE.telefone || SITE.whatsapp);
-  if (SITE.especialidade) document.getElementById('txtEspecialidade').textContent = SITE.especialidade;
+  document.getElementById('tpHorario').textContent = SITE.horario ? '🕐 ' + SITE.horario : '🌸 Atendimento com hora marcada';
+  document.getElementById('tpFone').textContent = (SITE.telefone || SITE.whatsapp) ? '📱 ' + (SITE.telefone || SITE.whatsapp) : '';
+  document.getElementById('txtEspecialidade').textContent = SITE.especialidade || 'Cuidado e atendimento';
   document.getElementById('versaoSite').textContent = 'Versão ' + VERSAO;
-  /* botão flutuante: fale com a atendente */
+  /* botão flutuante: fale com a atendente (número cadastrado no painel) */
   const zf = document.getElementById('zapFlut');
   const lz = linkZap('Olá! Vim pelo site da Kárita Teodoro e gostaria de falar com a atendente.');
-  if (lz) { zf.href = lz; zf.target = '_blank'; zf.rel = 'noopener'; }
-  setTimeout(() => zf.classList.add('mostra'), 1800);
-  setTimeout(() => zf.classList.remove('mostra'), 9000);
-  /* menu do celular */
-  const mmv = document.getElementById('menuMovel');
-  document.getElementById('btnMenu').addEventListener('click', () => { mmv.classList.toggle('aberto'); document.getElementById('btnMenu').textContent = mmv.classList.contains('aberto') ? '✕' : '☰'; });
-  mmv.querySelectorAll('a[href^="#"]').forEach(a => a.addEventListener('click', () => { mmv.classList.remove('aberto'); document.getElementById('btnMenu').textContent = '☰'; }));
-})();
-(function montarContato(){
-  const lista = document.getElementById('listaContato');
-  const botoes = document.getElementById('botoesContato');
+  if (lz) { zf.href = lz; zf.target = '_blank'; zf.rel = 'noopener'; zf.dataset.ok = '1'; }
+  else { zf.href = '#contato'; zf.removeAttribute('target'); zf.dataset.ok = ''; }
+}
+function montarContato(){
+  const lista = limparEl('listaContato');
+  const botoes = limparEl('botoesContato');
   const zapNum = String(SITE.whatsapp || '').replace(/\D/g, '');
   const zapLink = linkZap('Olá! Gostaria de agendar um atendimento com a Kárita Teodoro.');
   const itens = [
-    ['📱', 'WhatsApp / Telefone', SITE.telefone || (zapNum ? zapNum : '')],
+    ['📱', 'WhatsApp / Telefone', SITE.telefone || (zapNum ? SITE.whatsapp : '')],
     ['✉️', 'E-mail', SITE.email],
     ['📍', 'Endereço', SITE.endereco],
     ['🕐', 'Horário de atendimento', SITE.horario]
   ].filter(i => i[2]);
   if (!itens.length) lista.appendChild(h('div', {class:'linha-ctt'}, h('span', null, '🌸'), h('div', null, h('small', null, 'Contato'), 'As informações de contato serão publicadas em breve.')));
   itens.forEach(([ico, rot, val]) => lista.appendChild(h('div', {class:'linha-ctt'}, h('span', null, ico), h('div', null, h('small', null, rot), val))));
+  const ag = document.getElementById('btnAgendar');
   if (zapLink) {
     botoes.appendChild(h('a', {class:'btn rosa', href:zapLink, target:'_blank', rel:'noopener'}, '💬 Chamar no WhatsApp'));
-    const ag = document.getElementById('btnAgendar'); ag.href = zapLink; ag.target = '_blank'; ag.rel = 'noopener';
-  }
+    ag.href = zapLink; ag.target = '_blank'; ag.rel = 'noopener';
+  } else { ag.href = '#contato'; ag.removeAttribute('target'); }
   if (SITE.email) botoes.appendChild(h('a', {class:'btn linha', href:'mailto:' + SITE.email}, '✉️ E-mail'));
   if (!botoes.children.length) botoes.appendChild(h('span', {style:'color:var(--cinza)'}, 'Em breve, canais de agendamento.'));
+}
+function renderizarDadosSite(){ montarTopoERedes(); montarContato(); }
+/* Dados do site vindos do painel (sem precisar reenviar o arquivo) */
+async function carregarDadosPublicos(){
+  let mudou = false;
+  try { const loc = JSON.parse(localStorage.getItem('kt_site_publico') || 'null'); if (loc && typeof loc === 'object') { Object.assign(SITE, loc); mudou = true; } } catch (e) {}
+  if (PORTAL.projectId) {
+    try {
+      const r = await fetch(urlFirestore(PORTAL.projectId, 'karita_publico', 'site') + (PORTAL.apiKey ? '?key=' + encodeURIComponent(PORTAL.apiKey) : ''), {cache:'no-store'});
+      if (r.ok) { const d = lerFirestore(await r.json()); const dados = JSON.parse(d.json || '{}'); Object.assign(SITE, dados); mudou = true; }
+    } catch (e) {}
+  }
+  if (mudou) renderizarDadosSite();
+}
+renderizarDadosSite();
+(function iniciarInterativos(){
+  const zf = document.getElementById('zapFlut');
+  zf.addEventListener('click', e => {
+    if (zf.dataset.ok) return;
+    e.preventDefault();
+    document.getElementById('contato').scrollIntoView({behavior:'smooth'});
+  });
+  setTimeout(() => zf.classList.add('mostra'), 1800);
+  setTimeout(() => zf.classList.remove('mostra'), 9000);
+  const mmv = document.getElementById('menuMovel');
+  document.getElementById('btnMenu').addEventListener('click', () => { mmv.classList.toggle('aberto'); document.getElementById('btnMenu').textContent = mmv.classList.contains('aberto') ? '✕' : '☰'; });
+  mmv.querySelectorAll('a[href^="#"]').forEach(a => a.addEventListener('click', () => { mmv.classList.remove('aberto'); document.getElementById('btnMenu').textContent = '☰'; }));
 })();
 
 /* Entrada no painel */
@@ -709,6 +740,8 @@ document.querySelectorAll('[data-ir-laudos]').forEach(b => b.addEventListener('c
   setTimeout(() => { const i = document.getElementById('pCpf'); if (i) i.focus({preventScroll:true}); }, 500);
 }));
 telaEntradaPortal();
+carregarDadosPublicos();
+if ('serviceWorker' in navigator && location.protocol === 'https:') { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); }); }
 </script>
 </body>
 </html>

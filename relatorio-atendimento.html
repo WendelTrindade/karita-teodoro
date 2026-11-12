@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#EBBECB">
 <meta name="author" content="Wendel Emílio de Souza Matias — oficial.respostas@gmail.com">
+<link rel="manifest" href="painel.webmanifest">
+<link rel="icon" type="image/png" href="icones/favicon-64.png">
+<link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Painel KT">
 <title>Kárita Teodoro — Relatório de Atendimento</title>
 <style>
 :root{
@@ -368,18 +375,106 @@ body.bloqueado>*:not(#telaBloqueio){display:none!important}
   .folha{box-shadow:none;margin:0;width:auto;max-width:none;min-height:auto;padding:0}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
+/* ===== Acabamento visual v2.5 ===== */
+:root{--sombra:0 1px 2px rgba(94,42,61,.04),0 8px 24px rgba(168,86,111,.07);--raio:16px;--borda:#f1e1e8}
+body{background:#fbf6f8;padding-bottom:90px}
+.topo{background:rgba(255,255,255,.96);backdrop-filter:blur(10px);color:var(--vinho);padding:0;border-bottom:1px solid var(--borda);box-shadow:0 2px 16px rgba(168,86,111,.08)}
+.topo::after{content:"";display:block;height:3px;background:linear-gradient(90deg,var(--rosa),var(--ouro),var(--rosa))}
+.topo-in{max-width:1200px;margin:0 auto;height:64px;padding:0 18px;display:flex;align-items:center;gap:16px}
+.marca-app{display:flex;align-items:center;gap:10px;min-width:0;flex-shrink:0;max-width:260px}
+.topo .logo{width:40px;height:40px;font-size:20px;border:2px solid var(--ouro);background:linear-gradient(135deg,var(--rosa-claro),#fff);box-shadow:0 2px 8px rgba(168,86,111,.15)}
+.marca-txt{min-width:0}
+.topo h1{font-size:18px;color:var(--vinho);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15}
+.topo small#topoSub{display:block;font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--ouro-esc);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.nav{margin:0 auto;padding:0;max-width:none;display:flex;gap:2px;align-items:center}
+.nav button{position:relative;background:none;border:none;color:var(--rosa-esc);padding:8px 12px;border-radius:10px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px;white-space:nowrap;cursor:pointer;transition:.15s}
+.nav button:hover{background:var(--rosa-claro);color:var(--vinho)}
+.nav button.ativo{background:var(--rosa-claro);color:var(--vinho);box-shadow:inset 0 -2px 0 var(--ouro)}
+.nav button.novo{background:linear-gradient(135deg,var(--rosa),var(--rosa-medio));color:var(--vinho);margin-left:4px}
+.nav .badge{top:-2px;right:-2px}
+.topo-dir{display:flex;align-items:center;gap:6px;margin-left:auto;flex-shrink:0}
+.icone-topo{width:38px;height:38px;border-radius:12px;border:1px solid var(--borda);background:#fff;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
+.icone-topo:hover{border-color:var(--ouro);background:#fffbea}
+.chip-usuario{margin:0;display:flex;flex-direction:row;align-items:center;gap:8px;background:#fff;border:1px solid var(--borda);border-radius:999px;padding:3px 12px 3px 3px;color:var(--vinho)}
+.chip-ini{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--rosa),var(--rosa-medio));border:2px solid var(--ouro);display:flex;align-items:center;justify-content:center;font-weight:700;font-family:Georgia,serif;font-size:14px}
+.chip-txt{display:flex;flex-direction:column;line-height:1.1}
+.chip-txt b{font-size:13px}.chip-txt small{font-size:10.5px;color:var(--ouro-esc);font-weight:600}
+@media (max-width:1380px){.nav .nv-txt{display:none}.nav button{padding:9px 11px;font-size:17px}.nav button.novo .nv-txt{display:inline;font-size:14px}}
+@media (max-width:860px){.topo small#topoSub{display:none}.chip-txt small{display:none}}
+@media (max-width:720px){.marca-app{flex-shrink:1;max-width:none}.nav{display:none}.topo-in{height:58px;padding:0 12px;gap:8px}.topo h1{font-size:16px}.topo .logo{width:36px;height:36px;font-size:18px}.icone-topo{width:36px;height:36px;font-size:16px}}
+@media (max-width:400px){.chip-txt{display:none}.chip-usuario{padding:3px}}
+main{max-width:1200px;padding:22px 18px}
+@media (max-width:720px){main{padding:16px 12px}}
+.cartao{border-radius:18px;padding:18px;border:1px solid var(--borda);box-shadow:var(--sombra)}
+.cartao h2{font-size:17px;color:var(--vinho);margin-bottom:14px}
+.cartao h2::after{height:1px;background:linear-gradient(90deg,var(--ouro-claro),transparent)}
+.titulo-pag{margin-bottom:16px}
+.titulo-pag h2{font-size:24px;color:var(--vinho)}
+.numero{border-radius:16px;border:1px solid var(--borda);border-top:none;box-shadow:var(--sombra);position:relative;overflow:hidden;padding:16px}
+.numero::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,var(--ouro),var(--rosa))}
+.numero b{font-size:26px;color:var(--vinho)}
+.numero span{font-size:12.5px}
+.btn{border-radius:12px;padding:9px 16px}
+.btn.peq{border-radius:10px}
+.btn.rosa{background:linear-gradient(135deg,#efc3d0,var(--rosa-medio));box-shadow:0 2px 8px rgba(168,86,111,.18)}
+.btn.ouro{box-shadow:0 2px 8px rgba(201,162,39,.2)}
+.btn:active{transform:translateY(1px)}
+input,select,textarea{border-radius:12px;background:#fff;border-color:#ecdbe2}
+.item{border-radius:14px;border-color:var(--borda);box-shadow:0 1px 2px rgba(94,42,61,.03)}
+.modal{border-radius:20px;overflow:hidden}
+.modal-topo{background:linear-gradient(180deg,var(--rosa-claro),#fff)}
+.navbaixo{background:rgba(255,255,255,.97);backdrop-filter:blur(10px);border-top:1px solid var(--borda);box-shadow:0 -4px 18px rgba(168,86,111,.10);padding:6px 6px calc(8px + env(safe-area-inset-bottom))}
+.navbaixo::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--rosa),var(--ouro),var(--rosa))}
+.navbaixo button{border-radius:12px;padding:5px 0 4px;margin:0 2px}
+.navbaixo button.ativo{background:var(--rosa-claro);color:var(--vinho)}
+.navbaixo .mais.ativo{background:none}
+.rodape-app{padding:24px 10px 14px;font-size:11.5px}
+/* ===== Aparência de aplicativo no celular (v2.6) ===== */
+html{-webkit-text-size-adjust:100%}
+*{-webkit-tap-highlight-color:transparent}
+body{overscroll-behavior-y:none}
+main{animation:entra .22s ease-out}
+@keyframes entra{from{opacity:0;transform:translateY(6px)}}
+@keyframes sobe{from{transform:translateY(60px);opacity:.3}}
+.faixa-app{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#fff,var(--rosa-claro));border:1px solid var(--borda);border-radius:16px;padding:10px 12px;margin-bottom:14px;box-shadow:var(--sombra)}
+.faixa-app b{display:block;color:var(--vinho);font-size:14.5px}.faixa-app small{color:var(--cinza);font-size:12px}
+.fa-ico{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--rosa),var(--rosa-medio));border:2px solid var(--ouro);display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-weight:700;color:var(--vinho);flex-shrink:0}
+.fa-x{background:none;border:none;font-size:22px;color:var(--cinza);cursor:pointer;padding:0 4px}
+.navbaixo{padding-bottom:calc(8px + env(safe-area-inset-bottom))}
+@media (display-mode: standalone){.topo{padding-top:env(safe-area-inset-top)}.rodape-app{display:none}body{padding-bottom:calc(84px + env(safe-area-inset-bottom))}}
+@media (max-width:720px){
+  input,select,textarea{font-size:16px}
+  .modal-bg{align-items:flex-end;padding:0}
+  .modal{max-width:none!important;width:100%;border-radius:22px 22px 0 0;max-height:94vh;animation:sobe .28s ease-out;padding-bottom:env(safe-area-inset-bottom)}
+  .modal::before{content:"";display:block;width:44px;height:5px;border-radius:3px;background:#e3cbd5;margin:8px auto 0;flex-shrink:0}
+  .modal-topo{padding:10px 16px 12px}
+  .modal-acoes{gap:8px}
+  .modal-acoes .btn{flex:1 1 auto;justify-content:center;min-height:46px}
+  .btn{min-height:40px}
+  .cartao{padding:15px;border-radius:16px}
+  .titulo-pag h2{font-size:21px}
+  .toast{bottom:calc(96px + env(safe-area-inset-bottom));max-width:92vw;text-align:center}
+  .item{padding:12px}
+  .acoes .btn.peq{min-height:36px}
+  .linha-parc input{font-size:15px}
+}
+.modal-corpo>p{white-space:pre-line}
 </style>
 </head>
 <body class="bloqueado">
 <header class="topo">
   <div class="topo-in">
-    <div class="logo" id="topoLogo">🌸</div>
-    <div><h1 id="topoNome">Kárita Teodoro</h1><small id="topoSub">Atendimento ao paciente</small></div>
-    <div id="usuarioChip" class="chip-usuario"></div>
-    <button class="engrenagem" id="btnAjustes" title="Ajustes">⚙️</button>
-    <button class="engrenagem sair" id="btnSair" title="Sair do painel">🚪</button>
+    <div class="marca-app">
+      <div class="logo" id="topoLogo">🌸</div>
+      <div class="marca-txt"><h1 id="topoNome">Kárita Teodoro</h1><small id="topoSub">Atendimento ao paciente</small></div>
+    </div>
+    <nav class="nav" id="navTopo"></nav>
+    <div class="topo-dir">
+      <div id="usuarioChip" class="chip-usuario"></div>
+      <button class="icone-topo" id="btnAjustes" title="Ajustes">⚙️</button>
+      <button class="icone-topo sair" id="btnSair" title="Sair do painel">🚪</button>
+    </div>
   </div>
-  <nav class="nav" id="navTopo"></nav>
 </header>
 <main id="conteudo"></main>
 <div class="rodape-app">Sistema desenvolvido por <b>Wendel Emílio de Souza Matias</b> · oficial.respostas@gmail.com<br><span id="versaoApp" style="opacity:.7"></span></div>
@@ -548,7 +643,7 @@ function operar(store, modo, fn){
    ========================================================= */
 /* >>> Preenchido pelo botão "Baixar painel configurado" (Ajustes › Trabalho em equipe) <<< */
 const NUVEM = {projectId:'', apiKey:'', adminEmail:''};
-const VERSAO = '2.4';
+const VERSAO = '2.6';
 const VERSAO_DATA = '12/11/2026';
 const DOMINIO_EQUIPE = 'equipe.karitateodoro.app';
 const emNuvem = () => !!(NUVEM.projectId && NUVEM.apiKey && NUVEM.adminEmail);
@@ -760,7 +855,7 @@ const CONFIG_PADRAO = {
 };
 const estado = { usuario:null, usuarios:[], ponto:[], bloqueios:[], pacientes:[], atendimentos:[], financeiro:[], fin:{mes:'', aba:'resumo'}, config:copia(CONFIG_PADRAO), tela:'inicio', voltar:'atendimentos', agenda:{data:'', modo:'dia'} };
 const TIPOS = ['Consulta','Retorno','Urgência / Emergência','Visita domiciliar','Procedimento','Curativo','Aplicação de medicação','Teleatendimento','Avaliação','Outro'];
-const STATUS = ['Concluído','Agendado','Em acompanhamento','Retorno agendado','Encaminhado','Cancelado','Aguardando autorização'];
+const STATUS = ['Concluído','Agendado','Em acompanhamento','Retorno agendado','Encaminhado','Cancelado','Aguardando autorização','Faltou (sem aviso)'];
 const pacientePorId = id => estado.pacientes.find(p => p.id === id);
 
 async function carregar(){
@@ -1130,7 +1225,9 @@ function montarMenus(){
   MENU.filter(m => !m.admin || adm).forEach(m => {
     const ativo = estado.tela === m.id || (m.id === 'novo' && estado.tela === 'form');
     const nome = m.mais ? (adm ? 'Novo' : 'Agendar') : (m.id === 'ponto' && !adm ? 'Meu ponto' : m.nome);
-    topo.appendChild(h('button', {class: ativo ? 'ativo' : '', onclick:() => ir(m.id)}, m.mais ? (adm ? '＋ Novo atendimento' : '＋ Agendar') : m.ico + ' ' + nome, m.id === 'financeiro' && estado.usuario && contagemAlertas() ? h('i', {class:'badge'}, contagemAlertas()) : null));
+    const nTopo = m.id === 'financeiro' && estado.usuario ? contagemAlertas() : (m.id === 'agenda' && adm ? encaixesPendentes().length : 0);
+    if (m.id !== 'config') topo.appendChild(h('button', {class:(ativo ? 'ativo' : '') + (m.mais ? ' novo' : ''), title: m.mais ? (adm ? 'Novo atendimento' : 'Agendar') : nome, onclick:() => ir(m.id)},
+      h('span', {class:'nv-ico'}, m.mais ? '＋' : m.ico), h('span', {class:'nv-txt'}, m.mais ? (adm ? 'Novo' : 'Agendar') : nome), nTopo ? h('i', {class:'badge'}, nTopo) : null));
     const nAl = m.id === 'financeiro' && estado.usuario ? contagemAlertas() : (m.id === 'agenda' && adm ? encaixesPendentes().length : 0);
     if (!m.soTopo) baixo.appendChild(h('button', {class:(ativo ? 'ativo ' : '') + (m.mais ? 'mais' : ''), onclick:() => ir(m.id)}, h('span', {class:'ico-nav'}, m.ico, nAl ? h('i', {class:'badge'}, nAl) : null), m.curto || nome));
   });
@@ -1150,6 +1247,7 @@ function ir(tela, param){
   montarMenus();
   const area = $('#conteudo'); limpar(area);
   window.scrollTo(0, 0);
+  area.style.animation = 'none'; void area.offsetWidth; area.style.animation = '';
   if (tela === 'inicio') telaInicio(area);
   else if (tela === 'agenda') telaAgenda(area);
   else if (tela === 'atendimentos') telaAtendimentos(area);
@@ -1185,6 +1283,7 @@ function telaInicioSecretaria(area, alertas){
       : h('div', {class:'meta', style:'color:var(--cinza)'}, 'Nenhum agendamento nos próximos 7 dias.')));
 }
 function telaInicio(area){
+  const fApp = faixaInstalar(); if (fApp) area.appendChild(fApp);
   const alertas = painelAlertasPagamento();
   if (!ehAdmin()) { telaInicioSecretaria(area, alertas); return; }
   const faixa = faixaTeste(); if (faixa) area.appendChild(faixa);
@@ -1216,6 +1315,7 @@ function telaInicio(area){
 /* ---------- Cartão de atendimento ---------- */
 function seloStatus(s){
   if (s === 'Aguardando autorização') return h('span', {class:'selo aguarda'}, '⏳ Aguardando autorização');
+  if (s === 'Faltou (sem aviso)') return h('span', {class:'selo vermelho'}, '❌ Faltou sem aviso');
   const cls = s === 'Concluído' ? 'verde' : (s === 'Retorno agendado' || s === 'Em acompanhamento' || s === 'Agendado') ? 'ouro' : '';
   return h('span', {class:'selo ' + cls}, s || '—');
 }
@@ -1396,7 +1496,8 @@ function telaPacientes(area){
               p.cpf || p.documento ? h('div', {class:'meta'}, 'CPF: ' + (p.cpf || p.documento)) : null)),
           h('div', {style:'display:flex;flex-direction:column;gap:4px;align-items:flex-end'},
             h('span', {class:'selo ouro'}, `${qtd} atendimento(s)`),
-            fin.aberto > 0.004 ? h('span', {class:'selo ' + (fin.atrasado > 0 ? 'vermelho' : '')}, '💰 ' + moeda(fin.aberto) + ' em aberto') : null)),
+            fin.aberto > 0.004 ? h('span', {class:'selo ' + (fin.atrasado > 0 ? 'vermelho' : '')}, '💰 ' + moeda(fin.aberto) + ' em aberto') : null,
+            seloFaltas(p))),
         p.alergias ? h('div', {class:'alerta'}, '⚠️ Alergias: ' + p.alergias) : null,
         h('div', {class:'acoes'},
           h('button', {class:'btn ouro peq', onclick:() => fichaPaciente(p.id)}, '🗂️ Ficha completa'),
@@ -1579,6 +1680,8 @@ async function fichaPaciente(id){
         p.nomeSocial ? h('div', {class:'meta'}, '“' + p.nomeSocial + '”') : null,
         h('div', {class:'meta'}, [idade(p.nascimento), p.sexo, p.telefone].filter(Boolean).join(' · ')))),
     painelEmergencia(p),
+    h('h4', {class:'sub-form'}, `📌 Observações automáticas — faltas sem aviso (${qtdFaltas(pacientePorId(id))})`),
+    blocoFaltasFicha(id),
     h('div', {class:'ficha-dados'},
       lin('Nascimento', fmtData(p.nascimento)), lin('CPF', p.cpf), lin('RG', p.rg),
       lin('Estado civil', p.estadoCivil), lin('Profissão', p.profissao), lin('Nome da mãe', p.mae), lin('E-mail', p.email),
@@ -1843,6 +1946,13 @@ async function salvarAtendimento(at, existente, abrir){
   try { await gravar('atendimentos', at); }
   catch (e) { await aviso('Não foi possível salvar. O armazenamento do aparelho pode estar cheio. Tente remover algumas fotos.', 'Erro ao salvar'); return; }
   const i = estado.atendimentos.findIndex(x => x.id === at.id);
+  if (i < 0) {
+    for (const ag of estado.atendimentos.filter(x => x.id !== at.id && x.pacienteId === at.pacienteId && x.data === at.data && (x.status === 'Agendado' || x.status === ST_FALTA))) {
+      if (ag.status === ST_FALTA) { try { await desfazerFalta(ag.id); } catch (e) {} }
+      ag.status = 'Concluído'; ag.obsAgenda = ((ag.obsAgenda || '') + ' (atendido — relatório registrado)').trim(); ag.atualizadoEm = Date.now();
+      try { await gravar('atendimentos', ag); } catch (e) {}
+    }
+  }
   if (i >= 0) estado.atendimentos[i] = at; else estado.atendimentos.push(at);
   limparVideosSoltos();
   ordenar();
@@ -2009,13 +2119,19 @@ function linhaAgenda(ev){
 async function acoesAgenda(a, retorno){
   const p = pacientePorId(a.pacienteId) || {};
   if (!ehAdmin()) {
-    const bts = [{texto:'Fechar', valor:null}, {texto:'💰 Recebimento', valor:'fin', classe:'ouro'}];
+    const bts = [{texto:'Fechar', valor:null}];
+    if (!retorno && a.status === 'Agendado' && a.data <= hojeISO()) { bts.push({texto:'✅ Compareceu', valor:'veio'}); bts.push({texto:'❌ Faltou', valor:'falta', classe:'perigo'}); }
+    if (!retorno && a.status === ST_FALTA) bts.push({texto:'↩ Compareceu', valor:'desf'});
+    bts.push({texto:'💰 Recebimento', valor:'fin', classe:'ouro'});
     bts.push(retorno ? {texto:'＋ Agendar o retorno', valor:'ret', classe:'rosa'} : {texto:'✏️ Editar agendamento', valor:'ag', classe:'rosa'});
     const r = await modal(p.nome || 'Agendamento', h('div', null,
       h('div', {class:'resumo-pac'}, avatar(p, 52),
         h('b', null, retorno ? `Retorno marcado para ${fmtData(a.retorno)}` : `${fmtData(a.data)} às ${a.hora || '--:--'}${a.horaFim ? ' até ' + a.horaFim : ''}`), h('br'),
         `Nº ${a.numero} · ${a.tipo || ''} · ${a.status || ''}`, h('br'), p.telefone ? '📞 ' + p.telefone : null),
-      a.obsAgenda ? h('p', {style:'margin:10px 0 0'}, h('b', null, 'Observação: '), a.obsAgenda) : null), bts);
+      a.obsAgenda ? h('p', {style:'margin:10px 0 0'}, h('b', null, 'Observação: '), a.obsAgenda) : null, alertaFaltas(p)), bts);
+    if (r === 'veio') { a.status = 'Concluído'; a.atualizadoEm = Date.now(); await gravar('atendimentos', a); toast('Marcado como compareceu'); recarregar(); return; }
+    if (r === 'falta') { if (await confirmar('Registrar que o paciente faltou SEM avisar? Fica anotado na ficha dele.', 'Falta', 'Registrar falta', true)) { await registrarFalta(a, false); toast('Falta registrada na ficha'); recarregar(); } return; }
+    if (r === 'desf') { await desfazerFalta(a.id); recarregar(); return; }
     if (r === 'fin') editarLancamento(null, {tipo:'receita', pacienteId:a.pacienteId, atendimentoId:a.id});
     else if (r === 'ag') editarAgendamento(a.id);
     else if (r === 'ret') editarAgendamento(null, {pacienteId:a.pacienteId, data:a.retorno, tipo:'Retorno'});
@@ -2025,6 +2141,8 @@ async function acoesAgenda(a, retorno){
   const botoes = [{texto:'Fechar', valor:null}];
   if (retorno) botoes.push({texto:'＋ Registrar o retorno', valor:'ret', classe:'rosa'});
   botoes.push({texto:'📄 Relatório', valor:'rel', classe:'ouro'});
+  if (!retorno && a.status === 'Agendado' && a.data <= hojeISO()) botoes.push({texto:'❌ Faltou', valor:'falta', classe:'perigo'});
+  if (!retorno && a.status === ST_FALTA) botoes.push({texto:'↩ Compareceu', valor:'desf'});
   if (!retorno) botoes.push({texto:'📅 Remarcar', valor:'rem'});
   botoes.push({texto:'✏️ Editar', valor:'ed', classe: retorno ? '' : 'rosa'});
   const corpo = h('div', null,
@@ -2034,8 +2152,11 @@ async function acoesAgenda(a, retorno){
       p.telefone ? '📞 ' + p.telefone : null),
     p.alergias ? h('div', {class:'alerta'}, '⚠️ Alergias: ' + p.alergias) : null,
     a.queixa ? h('p', {style:'margin:10px 0 0'}, h('b', null, 'Motivo: '), a.queixa) : null,
-    a.obsAgenda ? h('p', {style:'margin:6px 0 0'}, h('b', null, 'Obs. da agenda: '), a.obsAgenda) : null);
+    a.obsAgenda ? h('p', {style:'margin:6px 0 0'}, h('b', null, 'Obs. da agenda: '), a.obsAgenda) : null,
+    alertaFaltas(p));
   const r = await modal(p.nome || 'Atendimento', corpo, botoes);
+  if (r === 'falta') { if (await confirmar('Registrar que o paciente faltou SEM avisar? Fica anotado na ficha dele.', 'Falta', 'Registrar falta', true)) { await registrarFalta(a, false); toast('Falta registrada na ficha'); recarregar(); } return; }
+  if (r === 'desf') { await desfazerFalta(a.id); recarregar(); return; }
   if (r === 'rel') abrirRelatorio(a.id);
   else if (r === 'ed') editarAtendimento(a.id);
   else if (r === 'rem') editarAgendamento(a.id);
@@ -3237,6 +3358,81 @@ function cartaoHorariosAtendimento(){
 }
 
 /* =========================================================
+   FALTAS SEM AVISO (registro automático na ficha)
+   ========================================================= */
+const ST_FALTA = 'Faltou (sem aviso)';
+function fimAgendamentoMin(a){
+  const dur = cfgAgenda().duracao || 30;
+  return a.horaFim && minutos(a.horaFim) > minutos(a.hora) ? minutos(a.horaFim) : minutos(a.hora || '23:00') + dur;
+}
+function agendamentoVencido(a){
+  if (a.status !== 'Agendado' || !a.data) return false;
+  const hoje = hojeISO();
+  if (a.data < hoje) return true;
+  if (a.data > hoje || !a.hora) return false;
+  const agora = new Date().getHours() * 60 + new Date().getMinutes();
+  return agora > fimAgendamentoMin(a) + 120;
+}
+async function registrarFalta(a, auto){
+  a.status = ST_FALTA;
+  a.falta = {auto:!!auto, em:new Date().toISOString(), por: auto ? 'Sistema (automático)' : (estado.usuario ? estado.usuario.nome : '')};
+  a.atualizadoEm = Date.now();
+  await gravar('atendimentos', a);
+  const p = pacientePorId(a.pacienteId);
+  if (!p) return;
+  p.faltas = Array.isArray(p.faltas) ? p.faltas : [];
+  if (!p.faltas.some(f => f.atendimentoId === a.id)) {
+    p.faltas.push({id:'falta-' + a.id, atendimentoId:a.id, data:a.data, hora:a.hora || '', tipo:a.tipo || '', numero:a.numero || '', auto:!!auto, registradoEm:new Date().toISOString(), por:a.falta.por});
+    p.atualizadoEm = Date.now();
+    await gravar('pacientes', p);
+  }
+}
+async function desfazerFalta(atId){
+  const a = estado.atendimentos.find(x => x.id === atId);
+  if (a) { a.status = 'Concluído'; delete a.falta; a.atualizadoEm = Date.now(); await gravar('atendimentos', a); }
+  const p = a ? pacientePorId(a.pacienteId) : estado.pacientes.find(x => (x.faltas || []).some(f => f.atendimentoId === atId));
+  if (p && Array.isArray(p.faltas)) { p.faltas = p.faltas.filter(f => f.atendimentoId !== atId); p.atualizadoEm = Date.now(); await gravar('pacientes', p); }
+  toast('Falta removida: marcado como compareceu');
+}
+let verificandoFaltas = false;
+async function verificarFaltas(){
+  if (!estado.usuario || verificandoFaltas) return;
+  const venc = estado.atendimentos.filter(agendamentoVencido);
+  if (!venc.length) return;
+  verificandoFaltas = true;
+  let n = 0;
+  for (const a of venc) { try { await registrarFalta(a, true); n++; } catch (e) {} }
+  verificandoFaltas = false;
+  if (n) {
+    toast(`📌 ${n} falta(s) sem aviso registrada(s) na ficha do paciente`);
+    if (estado.tela !== 'form' && !document.querySelector('.modal-bg')) recarregar();
+  }
+}
+setInterval(() => { if (estado.iniciado && !document.hidden && !document.body.classList.contains('bloqueado')) verificarFaltas(); }, 5 * 60000);
+const qtdFaltas = p => (p && Array.isArray(p.faltas)) ? p.faltas.length : 0;
+function seloFaltas(p){ const n = qtdFaltas(p); return n ? h('span', {class:'selo vermelho'}, `❌ ${n} falta${n > 1 ? 's' : ''} sem aviso`) : null; }
+function alertaFaltas(p){
+  const n = qtdFaltas(p); if (!n) return null;
+  const ult = p.faltas.slice().sort((x, y) => (y.data || '').localeCompare(x.data || ''))[0];
+  return h('div', {class:'alerta'}, `⚠️ Este paciente já faltou ${n} vez${n > 1 ? 'es' : ''} sem avisar (última em ${fmtData(ult.data)}). Confirme o horário com ele.`);
+}
+function blocoFaltasFicha(pid){
+  const p = pacientePorId(pid);
+  const lista = (p && Array.isArray(p.faltas) ? p.faltas : []).slice().sort((x, y) => (y.data || '').localeCompare(x.data || ''));
+  if (!lista.length) return h('div', {class:'meta', style:'color:var(--cinza)'}, '✔ Nenhuma falta sem aviso registrada.');
+  return h('div', null, lista.map(f => h('div', {class:'parc v-vencido'},
+    h('div', {class:'pn'}, '❌'),
+    h('div', {style:'flex:1;min-width:0'},
+      h('b', null, `Faltou sem avisar — ${DIAS_SEM[dataDe(f.data).getDay()]} ${fmtData(f.data)}${f.hora ? ' às ' + f.hora : ''}`),
+      h('div', {class:'meta'}, [f.tipo, f.numero ? 'Nº ' + f.numero : ''].filter(Boolean).join(' · ')),
+      h('div', {class:'meta'}, (f.auto ? '🤖 Observação automática do sistema' : '✍️ Registrado por ' + (f.por || '')) + ' em ' + new Date(f.registradoEm).toLocaleString('pt-BR').slice(0, 16))),
+    h('button', {class:'btn peq', onclick: async () => {
+      if (!await confirmar('O paciente compareceu? A falta será removida da ficha e o agendamento ficará como Concluído.', 'Desfazer falta', 'Sim, compareceu')) return;
+      fecharModais(); await desfazerFalta(f.atendimentoId); recarregar();
+    }}, '↩ Compareceu'))));
+}
+
+/* =========================================================
    ENCAIXES PEDIDOS PELA SECRETÁRIA (autorização da Kárita)
    ========================================================= */
 const encaixesPendentes = () => estado.atendimentos.filter(a => a.status === 'Aguardando autorização').sort((x, y) => (x.data + x.hora).localeCompare(y.data + y.hora));
@@ -3434,10 +3630,18 @@ function cartaoConsultorio(){
     }}, '💾 Salvar regra')));
 }
 
+async function publicarDadosSite(silencioso){
+  const dados = Object.assign({}, estado.config.site || {});
+  try { localStorage.setItem('kt_site_publico', JSON.stringify(dados)); } catch (e) {}
+  if (emNuvem()) {
+    try { await nuvemPut('karita_publico', 'site', {json:JSON.stringify(dados)}); if (!silencioso) toast('✅ Salvo e já publicado no site'); }
+    catch (e) { await aviso('Os dados foram salvos no painel, mas não foi possível publicá-los no site agora (internet ou regras do Firebase). Tente de novo.', 'Site'); }
+  } else if (!silencioso) toast('Salvo. Neste aparelho o site já usa os novos dados; para publicar, baixe o site atualizado.');
+}
 function cartaoSite(){
   const f = Object.assign({especialidade:'', whatsapp:'', telefone:'', email:'', endereco:'', horario:'', mapa:'', instagram:'', facebook:'', tiktok:'', youtube:'', linkedin:''}, estado.config.site || {});
   return h('div', {class:'cartao'}, h('h2', null, '🌐 Site: contato, WhatsApp e redes sociais'),
-    h('p', {style:'margin:0 0 10px;font-size:14px;color:var(--cinza)'}, 'Estes dados aparecem no site (topo, contato, rodapé e no botão flutuante "Fale com a atendente"). Depois de salvar, toque em "Baixar site atualizado" e envie o index.html ao GitHub/Netlify.'),
+    h('p', {style:'margin:0 0 10px;font-size:14px;color:var(--cinza)'}, emNuvem() ? 'Estes dados aparecem no site (contato, rodapé e botão flutuante "Fale com a atendente"). Ao tocar em Salvar, o site já passa a usar os novos dados na hora — o botão de WhatsApp vai direto para o número cadastrado aqui.' : 'Estes dados aparecem no site (contato, rodapé e botão flutuante "Fale com a atendente"). Com a nuvem ligada, o site atualiza sozinho ao salvar. Sem a nuvem, toque em "Baixar site atualizado" e envie o index.html ao GitHub/Netlify.'),
     h('div', {class:'grade'},
       campo(f, 'especialidade', 'Especialidade (aparece abaixo do nome)', {cheio:true, dica:'Ex.: Enfermagem · Cuidados com feridas'}),
       campo(f, 'whatsapp', 'WhatsApp da atendente (com DDD)', {tipo:'tel', im:'tel', dica:'62 9 9999-9999'}),
@@ -3455,12 +3659,45 @@ function cartaoSite(){
     h('div', {class:'acoes'},
       h('button', {class:'btn rosa', onclick: async () => {
         Object.keys(f).forEach(k => { f[k] = String(f[k] || '').trim(); });
-        estado.config.site = f; await salvarConfig(); toast('Dados do site salvos');
+        estado.config.site = f; await salvarConfig(); await publicarDadosSite();
       }}, '💾 Salvar'),
       h('button', {class:'btn ouro', onclick: async () => {
         Object.keys(f).forEach(k => { f[k] = String(f[k] || '').trim(); });
-        estado.config.site = f; await salvarConfig(); await baixarSiteConfigurado();
+        estado.config.site = f; await salvarConfig(); await publicarDadosSite(true); await baixarSiteConfigurado();
       }}, '⬇️ Baixar site atualizado')));
+}
+
+/* ---------- Aplicativo no celular ---------- */
+let pedidoInstalar = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); pedidoInstalar = e; });
+window.addEventListener('appinstalled', () => toast('📲 Aplicativo instalado na tela inicial!'));
+const emApp = () => (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+const ehIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
+async function instalarApp(){
+  if (pedidoInstalar) {
+    pedidoInstalar.prompt();
+    try { const r = await pedidoInstalar.userChoice; if (r.outcome === 'accepted') toast('📲 Instalando o aplicativo...'); } catch (e) {}
+    pedidoInstalar = null; return;
+  }
+  if (emApp()) { aviso('O sistema já está aberto como aplicativo. 🌸', 'Aplicativo'); return; }
+  aviso(ehIOS()
+    ? 'No iPhone (Safari):\n\n1. Toque no botão Compartilhar (o quadrado com uma seta para cima).\n2. Role e toque em "Adicionar à Tela de Início".\n3. Toque em "Adicionar".\n\nO ícone KT aparece na tela do celular, igual a um aplicativo.'
+    : 'No Android (Chrome):\n\n1. Toque nos três pontinhos ⋮ no canto de cima.\n2. Toque em "Instalar aplicativo" (ou "Adicionar à tela inicial").\n3. Confirme.\n\nO ícone KT aparece na tela do celular, igual a um aplicativo.\n\nObs.: funciona com o sistema aberto pelo endereço do site (Netlify).', '📲 Instalar o aplicativo');
+}
+function faixaInstalar(){
+  let dispensou = false; try { dispensou = !!localStorage.getItem('kt_sem_instalar'); } catch (e) {}
+  if (emApp() || dispensou || !(window.matchMedia && matchMedia('(max-width:720px)').matches)) return null;
+  const faixa = h('div', {class:'faixa-app'},
+    h('div', {class:'fa-ico'}, 'KT'),
+    h('div', {style:'flex:1;min-width:0'}, h('b', null, 'Use como aplicativo'), h('small', null, 'Instale o painel na tela inicial do celular')),
+    h('button', {class:'btn rosa peq', onclick:instalarApp}, '📲 Instalar'),
+    h('button', {class:'fa-x', title:'Agora não', onclick:() => { try { localStorage.setItem('kt_sem_instalar', '1'); } catch (e) {} faixa.remove(); }}, '×'));
+  return faixa;
+}
+function cartaoApp(){
+  return h('div', {class:'cartao'}, h('h2', null, '📲 Aplicativo no celular'),
+    h('p', {style:'margin:0 0 10px;font-size:14px;color:var(--cinza)'}, emApp() ? '✅ Você está usando o sistema como aplicativo.' : 'Instale o painel na tela inicial do celular: ele abre em tela cheia, com o ícone KT, igual a um aplicativo.'),
+    h('div', {class:'acoes', style:'margin-top:0'}, h('button', {class:'btn rosa', onclick:instalarApp}, '📲 Instalar o aplicativo')));
 }
 
 /* ---------- Tela: Configurações ---------- */
@@ -3469,6 +3706,7 @@ function telaConfig(area){
   area.appendChild(h('div', {class:'titulo-pag'}, h('h2', null, '⚙️ Ajustes')));
   if (!ehAdmin()) {
     area.appendChild(cartaoMinhaConta());
+    area.appendChild(cartaoApp());
     area.appendChild(h('div', {class:'cartao'}, h('h2', null, 'ℹ️ Sobre'), h('p', {style:'margin:0;font-size:14px'}, 'Versão ' + VERSAO + ' (' + VERSAO_DATA + ')', h('br'), 'Desenvolvido por ', h('b', null, 'Wendel Emílio de Souza Matias'), ' · oficial.respostas@gmail.com')));
     return;
   }
@@ -3509,6 +3747,7 @@ function telaConfig(area){
   const selTempo = h('select', null, [['15', '15 minutos'], ['30', '30 minutos'], ['60', '1 hora'], ['120', '2 horas'], ['0', 'Nunca bloquear sozinho']].map(([v, t]) => h('option', {value:v}, t)));
   selTempo.value = String(estado.config.bloqueioMin === 0 ? 0 : (estado.config.bloqueioMin || 30));
   selTempo.addEventListener('change', async () => { estado.config.bloqueioMin = parseInt(selTempo.value, 10); await salvarConfig(); toast('Tempo de bloqueio salvo'); });
+  area.appendChild(cartaoApp());
   area.appendChild(cartaoSite());
   area.appendChild(cartaoHorariosAtendimento());
   area.appendChild(cartaoEquipe());
@@ -3680,7 +3919,8 @@ async function carregarExemplo(silencioso){
     portal:{liberado:true, validade:somarDias(hj, 90)}});
   const a6 = novo(p5.id, {data:somarDias(hj, 1), hora:'15:00', tipo:'Avaliação', status:'Agendado', queixa:'Primeira avaliação.'});
   const a7 = novo(p2.id, {data:somarDias(hj, 2), hora:'09:00', tipo:'Retorno', status:'Agendado', queixa:'Retorno da consulta.'});
-  const ats = [a1, a2, a3, a4, a5, a6, a7];
+  const a8 = novo(p5.id, {data:somarDias(hj, -1), hora:'10:00', tipo:'Consulta', status:'Agendado', obsAgenda:'Agendamento fictício: paciente não veio e não avisou'});
+  const ats = [a1, a2, a3, a4, a5, a6, a7, a8];
   for (const a of ats) await gravar('atendimentos', a);
 
   /* ----- Financeiro fictício ----- */
@@ -3924,8 +4164,8 @@ function atualizarChipUsuario(){
   const u = estado.usuario; if (!u) return;
   let id = null; try { id = sessionStorage.getItem('kt_ponto'); } catch (e) {}
   const reg = (estado.ponto || []).find(p => p.id === id);
-  chip.appendChild(h('span', null, (u.papel === 'admin' ? '👑 ' : '👤 ') + u.nome.split(' ')[0]));
-  if (reg) chip.appendChild(h('small', null, 'entrada ' + hhmm(horaEntrada(reg))));
+  chip.appendChild(h('span', {class:'chip-ini'}, (u.nome || '?').trim().charAt(0).toUpperCase()));
+  chip.appendChild(h('span', {class:'chip-txt'}, h('b', null, u.nome.split(' ')[0]), h('small', null, reg ? 'entrada ' + hhmm(horaEntrada(reg)) : (u.papel === 'admin' ? 'responsável' : 'secretária'))));
 }
 async function sairDoPainel(){
   const sec = estado.usuario && estado.usuario.papel === 'secretaria';
@@ -4029,10 +4269,14 @@ async function editarAgendamento(id, pre){
     selPac.value = a.pacienteId || '';
   };
   montarSel();
-  selPac.addEventListener('change', () => { a.pacienteId = selPac.value; });
+  const avisoFaltas = h('div', {class:'campo full'});
+  const mostrarAvisoFaltas = () => { limpar(avisoFaltas); const al = alertaFaltas(pacientePorId(a.pacienteId)); if (al) avisoFaltas.appendChild(al); };
+  selPac.addEventListener('change', () => { a.pacienteId = selPac.value; mostrarAvisoFaltas(); });
+  mostrarAvisoFaltas();
   const corpo = h('div', {class:'grade'},
     h('div', {class:'campo full'}, h('span', null, 'Paciente', h('b', {class:'req'}, ' *')),
       h('div', {style:'display:flex;gap:8px'}, selPac, h('button', {class:'btn ouro', type:'button', onclick: async () => { const p = await editarPaciente(null); if (p) { a.pacienteId = p.id; montarSel(); } }}, '＋ Novo'))),
+    avisoFaltas,
     seletorHorario(a, orig ? orig.id : null),
     campo(a, 'tipo', 'Tipo de atendimento', {tipo:'select', opcoes:TIPOS}),
     (!ehAdmin() && a.status === 'Aguardando autorização') ? h('div', {class:'campo'}, h('span', null, 'Situação'), h('div', {class:'alerta', style:'margin:0'}, '⏳ Encaixe aguardando a autorização da Kárita')) :
@@ -4162,6 +4406,7 @@ service cloud.firestore {
     match /karita_usuarios/{id} { allow read: if admin() || (logado() && request.auth.uid == id); allow write: if admin(); }
     match /karita_config/{id} { allow read: if equipe(); allow write: if admin(); }
     match /karita_contadores/{id} { allow read, write: if equipe(); }
+    match /karita_publico/{id} { allow read: if true; allow write: if admin(); }
     match /karita_bloqueios/{id} { allow read, write: if equipe(); }
     match /karita_pacientes/{id} { allow read, create, update: if equipe(); allow delete: if admin(); }
     match /karita_agenda/{id} { allow read, create, update: if equipe(); allow delete: if admin(); }
@@ -4282,6 +4527,7 @@ async function iniciarApp(novoLogin){
     if (estado.agenda) estado.agenda.data = hojeISO();
   }
   ir('inicio');
+  setTimeout(verificarFaltas, 1500);
   if (ehAdmin()) {
     if (!emNuvem() && !estado.pacientes.length && !estado.atendimentos.length && !estado.config.testeRemovido && !estado.config.exemploCarregado) {
       try { await carregarExemplo(true); toast('Sistema aberto com dados fictícios para teste'); } catch (e) {}
@@ -4310,6 +4556,7 @@ window.addEventListener('unhandledrejection', e => {
   else if (m === 'rede' || m === 'sessao') toast('⚠️ Sem conexão com a nuvem. Verifique a internet.');
 });
 
+if ('serviceWorker' in navigator && location.protocol === 'https:') { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); }); }
 (async function iniciar(){
   try {
     await abrirDB();

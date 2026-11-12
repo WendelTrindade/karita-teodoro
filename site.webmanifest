@@ -1,0 +1,17 @@
+{
+  "name": "Kárita Teodoro",
+  "short_name": "Kárita Teodoro",
+  "description": "Atendimento com cuidado, atenção e carinho. Acesse seus laudos.",
+  "start_url": "index.html",
+  "scope": "./",
+  "id": "site-karita-teodoro",
+  "display": "standalone",
+  "background_color": "#FFF8FA",
+  "theme_color": "#EBBECB",
+  "lang": "pt-BR",
+  "icons": [
+    {"src": "icones/icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icones/icon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "icones/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

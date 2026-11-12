@@ -284,6 +284,10 @@ body.bloqueado>*:not(#telaBloqueio){display:none!important}
 .linha-hor input{padding:7px 6px;font-size:13.5px}
 .linha-hor.cab span{font-size:11.5px;font-weight:700;color:var(--ouro-esc)}
 @media (max-width:520px){.linha-hor{grid-template-columns:1.2fr 1fr 1fr;}.linha-hor>*:nth-child(4),.linha-hor>*:nth-child(5){grid-column:auto}.linha-hor.cab{display:none}}
+.selo.aguarda{background:#ffecd6;color:#b45309;border-color:#f0a04b}
+.ag-linha.pendente{border:2px dashed #f0a04b;background:#fffaf3}
+.ag-linha.pendente .ag-hora{background:linear-gradient(135deg,#ffd7a8,#f0a04b);color:#5a2c00}
+.cartao-encaixe{border:2px solid #f0a04b;background:#fffaf3}
 /* Faixa de teste */
 .faixa-teste{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#fffbea;border:2px dashed var(--ouro);border-radius:14px;padding:12px 14px;margin-bottom:14px;color:#6b4e06}
 /* Agenda */
@@ -378,7 +382,7 @@ body.bloqueado>*:not(#telaBloqueio){display:none!important}
   <nav class="nav" id="navTopo"></nav>
 </header>
 <main id="conteudo"></main>
-<div class="rodape-app">Sistema desenvolvido por <b>Wendel Emílio de Souza Matias</b> · oficial.respostas@gmail.com</div>
+<div class="rodape-app">Sistema desenvolvido por <b>Wendel Emílio de Souza Matias</b> · oficial.respostas@gmail.com<br><span id="versaoApp" style="opacity:.7"></span></div>
 <nav class="navbaixo" id="navBaixo"></nav>
 
 <script>
@@ -544,13 +548,15 @@ function operar(store, modo, fn){
    ========================================================= */
 /* >>> Preenchido pelo botão "Baixar painel configurado" (Ajustes › Trabalho em equipe) <<< */
 const NUVEM = {projectId:'', apiKey:'', adminEmail:''};
+const VERSAO = '2.4';
+const VERSAO_DATA = '12/11/2026';
 const DOMINIO_EQUIPE = 'equipe.karitateodoro.app';
 const emNuvem = () => !!(NUVEM.projectId && NUVEM.apiKey && NUVEM.adminEmail);
 const SO_LOCAL = new Set(['midias', 'fotos']);
 const COLECOES = {pacientes:'karita_pacientes', agenda:'karita_agenda', prontuario:'karita_prontuario', financeiro:'karita_financeiro',
   usuarios:'karita_usuarios', ponto:'karita_ponto', arquivos:'karita_arquivos', config:'karita_config', contadores:'karita_contadores', bloqueios:'karita_bloqueios'};
 const CAMPOS_AGENDA = ['id','numero','pacienteId','data','hora','horaFim','tipo','local','profissional','registro','status','retorno','obsAgenda','criadoEm','atualizadoEm','teste','criadoPor'];
-const CAMPOS_CONFIG_EQUIPE = ['agendaCfg','consultorio','nome','subtitulo','endereco','telefone','email','logo','profissional','registro','local','rodape','testeRemovido','exemploCarregado'];
+const CAMPOS_CONFIG_EQUIPE = ['site','agendaCfg','consultorio','nome','subtitulo','endereco','telefone','email','logo','profissional','registro','local','rodape','testeRemovido','exemploCarregado'];
 const idbLerTodos = s => operar(s, 'readonly', st => st.getAll());
 const idbGravar = (s, v) => operar(s, 'readwrite', st => st.put(v));
 const idbApagar = (s, id) => operar(s, 'readwrite', st => st.delete(id));
@@ -754,7 +760,7 @@ const CONFIG_PADRAO = {
 };
 const estado = { usuario:null, usuarios:[], ponto:[], bloqueios:[], pacientes:[], atendimentos:[], financeiro:[], fin:{mes:'', aba:'resumo'}, config:copia(CONFIG_PADRAO), tela:'inicio', voltar:'atendimentos', agenda:{data:'', modo:'dia'} };
 const TIPOS = ['Consulta','Retorno','Urgência / Emergência','Visita domiciliar','Procedimento','Curativo','Aplicação de medicação','Teleatendimento','Avaliação','Outro'];
-const STATUS = ['Concluído','Agendado','Em acompanhamento','Retorno agendado','Encaminhado','Cancelado'];
+const STATUS = ['Concluído','Agendado','Em acompanhamento','Retorno agendado','Encaminhado','Cancelado','Aguardando autorização'];
 const pacientePorId = id => estado.pacientes.find(p => p.id === id);
 
 async function carregar(){
@@ -1125,7 +1131,7 @@ function montarMenus(){
     const ativo = estado.tela === m.id || (m.id === 'novo' && estado.tela === 'form');
     const nome = m.mais ? (adm ? 'Novo' : 'Agendar') : (m.id === 'ponto' && !adm ? 'Meu ponto' : m.nome);
     topo.appendChild(h('button', {class: ativo ? 'ativo' : '', onclick:() => ir(m.id)}, m.mais ? (adm ? '＋ Novo atendimento' : '＋ Agendar') : m.ico + ' ' + nome, m.id === 'financeiro' && estado.usuario && contagemAlertas() ? h('i', {class:'badge'}, contagemAlertas()) : null));
-    const nAl = m.id === 'financeiro' && estado.usuario ? contagemAlertas() : 0;
+    const nAl = m.id === 'financeiro' && estado.usuario ? contagemAlertas() : (m.id === 'agenda' && adm ? encaixesPendentes().length : 0);
     if (!m.soTopo) baixo.appendChild(h('button', {class:(ativo ? 'ativo ' : '') + (m.mais ? 'mais' : ''), onclick:() => ir(m.id)}, h('span', {class:'ico-nav'}, m.ico, nAl ? h('i', {class:'badge'}, nAl) : null), m.curto || nome));
   });
 }
@@ -1168,6 +1174,7 @@ function telaInicioSecretaria(area, alertas){
     h('div', {class:'numero'}, h('b', null, prox.length), h('span', null, 'Próximos 7 dias')),
     h('div', {class:'numero'}, h('b', null, estado.pacientes.length), h('span', null, 'Pacientes')),
     h('div', {class:'numero'}, h('b', null, atrasados), h('span', null, 'Parcelas em atraso'))));
+  const me = meusEncaixes(); if (me) area.appendChild(me);
   if (alertas) area.appendChild(alertas);
   area.appendChild(h('div', {class:'cartao'}, h('div', {class:'acoes', style:'margin:0'},
     h('button', {class:'btn rosa grande', style:'flex:1', onclick:() => editarAgendamento(null, {})}, '📅 Novo agendamento'),
@@ -1181,6 +1188,7 @@ function telaInicio(area){
   const alertas = painelAlertasPagamento();
   if (!ehAdmin()) { telaInicioSecretaria(area, alertas); return; }
   const faixa = faixaTeste(); if (faixa) area.appendChild(faixa);
+  const pe = painelEncaixes(); if (pe) area.appendChild(pe);
   if (alertas) area.appendChild(alertas);
   const hoje = hojeISO(), mes = hoje.slice(0, 7);
   const ats = estado.atendimentos;
@@ -1207,6 +1215,7 @@ function telaInicio(area){
 
 /* ---------- Cartão de atendimento ---------- */
 function seloStatus(s){
+  if (s === 'Aguardando autorização') return h('span', {class:'selo aguarda'}, '⏳ Aguardando autorização');
   const cls = s === 'Concluído' ? 'verde' : (s === 'Retorno agendado' || s === 'Em acompanhamento' || s === 'Agendado') ? 'ouro' : '';
   return h('span', {class:'selo ' + cls}, s || '—');
 }
@@ -1985,7 +1994,7 @@ function eventosDoDia(iso){
 }
 function linhaAgenda(ev){
   const a = ev.at, p = pacientePorId(a.pacienteId) || {};
-  return h('div', {class:'ag-linha' + (ev.retorno ? ' retorno' : ''), onclick:() => acoesAgenda(a, ev.retorno)},
+  return h('div', {class:'ag-linha' + (ev.retorno ? ' retorno' : '') + (!ev.retorno && a.status === 'Aguardando autorização' ? ' pendente' : ''), onclick:() => acoesAgenda(a, ev.retorno)},
     h('div', {class:'ag-hora'}, ev.retorno ? '↩' : (a.hora || '--:--'),
       h('small', null, ev.retorno ? 'Retorno' : (a.horaFim ? 'até ' + a.horaFim : ''))),
     h('div', {style:'align-self:center'}, avatar(p, 42)),
@@ -2012,6 +2021,7 @@ async function acoesAgenda(a, retorno){
     else if (r === 'ret') editarAgendamento(null, {pacienteId:a.pacienteId, data:a.retorno, tipo:'Retorno'});
     return;
   }
+  if (!retorno && a.status === 'Aguardando autorização') { await revisarEncaixe(a.id); return; }
   const botoes = [{texto:'Fechar', valor:null}];
   if (retorno) botoes.push({texto:'＋ Registrar o retorno', valor:'ret', classe:'rosa'});
   botoes.push({texto:'📄 Relatório', valor:'rel', classe:'ouro'});
@@ -2055,6 +2065,7 @@ function telaAgenda(area){
   else if (ag.modo === 'semana') rotulo = `${fmtData(iniSemana).slice(0, 5)} a ${fmtData(somarDias(iniSemana, 6))}`;
   else rotulo = MESES[d.getMonth()].charAt(0).toUpperCase() + MESES[d.getMonth()].slice(1) + ' de ' + d.getFullYear();
 
+  { const pe = ehAdmin() ? painelEncaixes() : meusEncaixes(); if (pe) area.appendChild(pe); }
   area.appendChild(h('div', {class:'titulo-pag'}, h('h2', null, '📅 Agenda'),
     h('div', {class:'acoes', style:'margin:0'},
       h('button', {class:'btn', onclick:gerenciarBloqueios}, '🚫 Dias sem atendimento'),
@@ -3001,6 +3012,9 @@ async function baixarSiteConfigurado(){
   if (estado.config.testeRemovido || !temDadosTeste()) {
     txt = txt.replace(/const DEMONSTRACAO = (true|false);/, 'const DEMONSTRACAO = false;').replace(/const DEMO_DOCS = .*;\n/, 'const DEMO_DOCS = {};\n');
   }
+  const sc = Object.assign({especialidade:'', whatsapp:'', telefone:'', email:'', endereco:'', horario:'', mapa:'', instagram:'', facebook:'', tiktok:'', youtube:'', linkedin:''}, estado.config.site || {});
+  if (/\/\*SITE_INICIO\*\/[\s\S]*?\/\*SITE_FIM\*\//.test(txt)) txt = txt.replace(/\/\*SITE_INICIO\*\/[\s\S]*?\/\*SITE_FIM\*\//, '/*SITE_INICIO*/\nconst SITE = ' + JSON.stringify(sc).replace(/</g, '\\u003c') + ';\n/*SITE_FIM*/');
+  txt = txt.replace(/const VERSAO = '[^']*';/, `const VERSAO = '${VERSAO}';`);
   const a = h('a', {href:URL.createObjectURL(new Blob([txt], {type:'text/html'})), download:'index.html'});
   document.body.appendChild(a); a.click(); a.remove();
   toast('Site configurado baixado. Envie ao Netlify junto com o painel.');
@@ -3166,7 +3180,7 @@ function seletorHorario(a, ignorarId){
       const iso = somarDias(hoje, i);
       if (!diaAtende(iso)) continue;
       const livres = horariosLivres(iso, ignorarId), dd = dataDe(iso), bloq = diaBloqueadoInteiro(iso);
-      const bt = h('button', {type:'button', class:'dia-chip' + (iso === a.data ? ' sel' : '') + (bloq ? ' bloq' : !livres.length ? ' cheio' : ''), disabled: !livres.length && !(ehAdmin() && encaixe),
+      const bt = h('button', {type:'button', class:'dia-chip' + (iso === a.data ? ' sel' : '') + (bloq ? ' bloq' : !livres.length ? ' cheio' : ''), disabled: !livres.length && !encaixe,
         onclick:() => { a.data = iso; a.hora = ''; desenhar(); }},
         h('small', null, i === 0 ? 'Hoje' : i === 1 ? 'Amanhã' : DIAS_SEM[dd.getDay()]),
         h('b', null, String(dd.getDate()).padStart(2, '0') + '/' + String(dd.getMonth() + 1).padStart(2, '0')),
@@ -3181,7 +3195,7 @@ function seletorHorario(a, ignorarId){
       if (encaixe) {
         const inp = h('input', {type:'time', value:a.hora || ''});
         inp.addEventListener('change', () => { a.hora = inp.value; a.horaFim = a.hora ? hmDe(minutos(a.hora) + (cfg.duracao || 30)) : ''; desenhar(); });
-        caixa.appendChild(h('div', {class:'alerta', style:'margin-top:6px'}, '⚠️ Encaixe: escolha qualquer horário, mesmo fora dos horários livres.', inp));
+        caixa.appendChild(h('div', {class:'alerta', style:'margin-top:6px'}, ehAdmin() ? '⚠️ Encaixe: escolha qualquer horário, mesmo fora dos horários livres.' : '⏳ Pedido de encaixe: escolha o horário desejado e escreva o MOTIVO na observação. O agendamento fica aguardando a autorização da Kárita.', inp));
       } else {
         caixa.appendChild(h('div', {class:'horas-livres'}, livres.length ? livres.map(t => h('button', {type:'button', class:'hora-chip' + (t === a.hora ? ' sel' : ''),
           onclick:() => { a.hora = t; a.horaFim = hmDe(minutos(t) + (cfg.duracao || 30)); desenhar(); }}, t))
@@ -3189,9 +3203,9 @@ function seletorHorario(a, ignorarId){
       }
     }
     if (a.data && a.hora) caixa.appendChild(h('div', {class:'aviso-ok', style:'margin-top:10px'}, `✅ ${DIAS_LONGO[dataDe(a.data).getDay()]}, ${fmtData(a.data)}, das ${a.hora} às ${a.horaFim}`));
-    if (ehAdmin()) caixa.appendChild(h('label', {class:'ck', style:'margin-top:8px;padding:0'},
+    caixa.appendChild(h('label', {class:'ck', style:'margin-top:8px;padding:0;white-space:normal'},
       (() => { const c = h('input', {type:'checkbox', checked:encaixe}); c.addEventListener('change', () => { encaixe = c.checked; a.encaixe = encaixe; desenhar(); }); return c; })(),
-      'Encaixe (somente a Kárita)'));
+      ehAdmin() ? 'Encaixe (fora dos horários livres)' : 'Pedir encaixe — precisa da autorização da Kárita'));
   };
   desenhar();
   return caixa;
@@ -3207,6 +3221,7 @@ function cartaoHorariosAtendimento(){
   const selDur = h('select', null, [15, 20, 30, 40, 45, 50, 60, 90, 120].map(m => h('option', {value:String(m)}, m + ' minutos')));
   selDur.value = String(cfg.duracao || 30);
   selDur.addEventListener('change', () => { cfg.duracao = parseInt(selDur.value, 10); });
+  const fz = {w:cfg.whatsKarita || ''};
   const selAte = h('select', null, [[30, '30 dias'], [60, '60 dias'], [90, '90 dias'], [180, '6 meses']].map(([v, t]) => h('option', {value:String(v)}, t)));
   selAte.value = String(cfg.diasAFrente || 60);
   selAte.addEventListener('change', () => { cfg.diasAFrente = parseInt(selAte.value, 10); });
@@ -3216,8 +3231,83 @@ function cartaoHorariosAtendimento(){
     linhas,
     h('div', {class:'grade', style:'margin-top:12px'},
       h('div', {class:'campo'}, h('span', null, 'Duração de cada atendimento'), selDur),
-      h('div', {class:'campo'}, h('span', null, 'Mostrar horários para os próximos'), selAte)),
+      h('div', {class:'campo'}, h('span', null, 'Mostrar horários para os próximos'), selAte),
+      campo(fz, 'w', 'WhatsApp da Kárita para avisos de pedido de encaixe (opcional)', {tipo:'tel', cheio:true, dica:'62 9 9999-9999', aoMudar:v => { cfg.whatsKarita = v; }})),
     h('div', {class:'acoes'}, h('button', {class:'btn rosa', onclick: async () => { estado.config.agendaCfg = cfg; await salvarConfig(); toast('Horários salvos'); }}, '💾 Salvar horários')));
+}
+
+/* =========================================================
+   ENCAIXES PEDIDOS PELA SECRETÁRIA (autorização da Kárita)
+   ========================================================= */
+const encaixesPendentes = () => estado.atendimentos.filter(a => a.status === 'Aguardando autorização').sort((x, y) => (x.data + x.hora).localeCompare(y.data + y.hora));
+function linhaPedidoEncaixe(a, admin){
+  const p = pacientePorId(a.pacienteId) || {}, pd = a.encaixePedido || {}, dc = a.encaixeDecisao;
+  const st = a.status === 'Aguardando autorização' ? h('span', {class:'selo aguarda'}, '⏳ Aguardando') : dc && dc.decisao === 'autorizado' ? h('span', {class:'selo verde'}, '✅ Autorizado') : h('span', {class:'selo vermelho'}, '❌ Recusado');
+  return h('div', {class:'parc ' + (a.status === 'Aguardando autorização' ? 'v-hoje' : dc && dc.decisao === 'autorizado' ? 'v-pago' : 'v-vencido')},
+    h('div', {class:'pn', style:'min-width:56px'}, DIAS_SEM[dataDe(a.data).getDay()], h('br'), fmtData(a.data).slice(0, 5), h('br'), a.hora),
+    h('div', {style:'flex:1;min-width:0'},
+      h('b', null, p.nome || '(paciente)'),
+      h('div', {class:'meta'}, `${a.tipo || ''} · pedido por ${pd.por || '—'} em ${pd.em ? new Date(pd.em).toLocaleString('pt-BR').slice(0, 16) : ''}`),
+      pd.motivo ? h('div', {class:'meta'}, '📝 Motivo: ' + pd.motivo) : null,
+      pd.anterior ? h('div', {class:'meta'}, `↪ Era em ${fmtData(pd.anterior.data)} às ${pd.anterior.hora}`) : null,
+      dc ? h('div', {class:'meta'}, `${dc.decisao === 'autorizado' ? '✅ Autorizado' : '❌ Recusado'} por ${dc.por}${dc.motivo ? ': ' + dc.motivo : ''}`) : null,
+      h('div', {style:'margin-top:4px'}, st)),
+    admin && a.status === 'Aguardando autorização' ? h('div', {style:'display:flex;flex-direction:column;gap:6px'},
+      h('button', {class:'btn rosa peq', onclick:() => decidirEncaixe(a.id, true)}, '✅ Autorizar'),
+      h('button', {class:'btn perigo peq', onclick:() => decidirEncaixe(a.id, false)}, '❌ Recusar')) : null);
+}
+function painelEncaixes(){
+  if (!ehAdmin()) return null;
+  const pend = encaixesPendentes();
+  if (!pend.length) return null;
+  return h('div', {class:'cartao cartao-encaixe'}, h('h2', null, `⏳ Encaixes aguardando sua autorização (${pend.length})`),
+    h('p', {class:'meta', style:'margin:0 0 8px;color:var(--cinza)'}, 'A secretária pediu estes horários fora da agenda livre. O horário fica reservado até você decidir.'),
+    pend.map(a => linhaPedidoEncaixe(a, true)));
+}
+function meusEncaixes(){
+  if (ehAdmin() || !estado.usuario) return null;
+  const limite = somarDias(hojeISO(), -7);
+  const meus = estado.atendimentos.filter(a => a.encaixePedido && a.encaixePedido.porUid === estado.usuario.uid &&
+    (a.status === 'Aguardando autorização' || (a.encaixeDecisao && a.encaixeDecisao.em.slice(0, 10) >= limite))).sort((x, y) => (y.encaixePedido.em || '').localeCompare(x.encaixePedido.em || ''));
+  if (!meus.length) return null;
+  return h('div', {class:'cartao cartao-encaixe'}, h('h2', null, '⏳ Meus pedidos de encaixe'), meus.map(a => linhaPedidoEncaixe(a, false)));
+}
+async function revisarEncaixe(id){
+  const a = estado.atendimentos.find(x => x.id === id); if (!a) return;
+  const r = await modal('⏳ Pedido de encaixe', linhaPedidoEncaixe(a, false),
+    [{texto:'Fechar', valor:null}, {texto:'❌ Recusar', valor:'nao', classe:'perigo'}, {texto:'✅ Autorizar', valor:'sim', classe:'rosa'}]);
+  if (r === 'sim') decidirEncaixe(id, true); else if (r === 'nao') decidirEncaixe(id, false);
+}
+async function decidirEncaixe(id, autorizar){
+  const a = estado.atendimentos.find(x => x.id === id); if (!a || !ehAdmin()) return;
+  let motivo = '';
+  if (!autorizar) {
+    const fr = {m:''};
+    const ok = await modal('❌ Recusar encaixe', h('div', null,
+      h('p', {style:'margin-top:0'}, 'A secretária verá a recusa e o motivo. ' + ((a.encaixePedido || {}).anterior ? 'O agendamento volta para o horário anterior.' : 'O agendamento será cancelado.')),
+      campo(fr, 'm', 'Motivo (opcional)', {cheio:true, dica:'Ex.: neste horário tenho outro compromisso'})),
+      [{texto:'Voltar', valor:false}, {texto:'❌ Recusar', valor:true, classe:'perigo'}]);
+    if (!ok) return;
+    motivo = fr.m.trim();
+  }
+  const pd = a.encaixePedido || {};
+  a.encaixeDecisao = {decisao: autorizar ? 'autorizado' : 'recusado', por:estado.usuario.nome, em:new Date().toISOString(), motivo};
+  if (autorizar) a.status = 'Agendado';
+  else if (pd.anterior) Object.assign(a, {data:pd.anterior.data, hora:pd.anterior.hora, horaFim:pd.anterior.horaFim, status:pd.anterior.status, obsAgenda:pd.anterior.obsAgenda || ''});
+  else a.status = 'Cancelado';
+  a.atualizadoEm = Date.now();
+  await gravar('atendimentos', a);
+  toast(autorizar ? '✅ Encaixe autorizado' : '❌ Encaixe recusado');
+  recarregar();
+}
+function avisarKaritaEncaixe(a){
+  const n = soDigitos(cfgAgenda().whatsKarita || '');
+  if (!n) return;
+  const p = pacientePorId(a.pacienteId) || {};
+  const msg = `⏳ *Pedido de encaixe*\n\nPaciente: ${p.nome || ''}\nDia: ${DIAS_LONGO[dataDe(a.data).getDay()]}, ${fmtData(a.data)} às ${a.hora}\nTipo: ${a.tipo || ''}\nMotivo: ${(a.encaixePedido || {}).motivo || ''}\nPedido por: ${estado.usuario.nome}\n\nAutorize ou recuse no painel (Início › Encaixes aguardando).`;
+  confirmar('Pedido enviado. Quer avisar a Kárita pelo WhatsApp agora?', 'Avisar a Kárita', '💬 Avisar no WhatsApp').then(ok => {
+    if (ok) window.open('https://wa.me/' + (n.length <= 11 ? '55' + n : n) + '?text=' + encodeURIComponent(msg), '_blank');
+  });
 }
 
 /* =========================================================
@@ -3344,13 +3434,42 @@ function cartaoConsultorio(){
     }}, '💾 Salvar regra')));
 }
 
+function cartaoSite(){
+  const f = Object.assign({especialidade:'', whatsapp:'', telefone:'', email:'', endereco:'', horario:'', mapa:'', instagram:'', facebook:'', tiktok:'', youtube:'', linkedin:''}, estado.config.site || {});
+  return h('div', {class:'cartao'}, h('h2', null, '🌐 Site: contato, WhatsApp e redes sociais'),
+    h('p', {style:'margin:0 0 10px;font-size:14px;color:var(--cinza)'}, 'Estes dados aparecem no site (topo, contato, rodapé e no botão flutuante "Fale com a atendente"). Depois de salvar, toque em "Baixar site atualizado" e envie o index.html ao GitHub/Netlify.'),
+    h('div', {class:'grade'},
+      campo(f, 'especialidade', 'Especialidade (aparece abaixo do nome)', {cheio:true, dica:'Ex.: Enfermagem · Cuidados com feridas'}),
+      campo(f, 'whatsapp', 'WhatsApp da atendente (com DDD)', {tipo:'tel', im:'tel', dica:'62 9 9999-9999'}),
+      campo(f, 'telefone', 'Telefone para exibir', {tipo:'tel', dica:'(62) 99999-9999'}),
+      campo(f, 'email', 'E-mail', {tipo:'email'}),
+      campo(f, 'horario', 'Horário de atendimento', {dica:'Seg a sex, 8h às 18h'}),
+      campo(f, 'endereco', 'Endereço', {cheio:true}),
+      campo(f, 'mapa', 'Link do Google Maps (ou o endereço)', {cheio:true, dica:'https://maps.app.goo.gl/...'}),
+      h('h4', {class:'sub-form'}, 'Redes sociais (usuário ou link completo)'),
+      campo(f, 'instagram', '📸 Instagram', {dica:'@karitateodoro'}),
+      campo(f, 'facebook', '👍 Facebook', {dica:'karitateodoro ou link'}),
+      campo(f, 'tiktok', '🎵 TikTok', {dica:'@karitateodoro'}),
+      campo(f, 'youtube', '▶️ YouTube', {dica:'@canal ou link'}),
+      campo(f, 'linkedin', '💼 LinkedIn', {dica:'link do perfil'})),
+    h('div', {class:'acoes'},
+      h('button', {class:'btn rosa', onclick: async () => {
+        Object.keys(f).forEach(k => { f[k] = String(f[k] || '').trim(); });
+        estado.config.site = f; await salvarConfig(); toast('Dados do site salvos');
+      }}, '💾 Salvar'),
+      h('button', {class:'btn ouro', onclick: async () => {
+        Object.keys(f).forEach(k => { f[k] = String(f[k] || '').trim(); });
+        estado.config.site = f; await salvarConfig(); await baixarSiteConfigurado();
+      }}, '⬇️ Baixar site atualizado')));
+}
+
 /* ---------- Tela: Configurações ---------- */
 function telaConfig(area){
   const c = copia(estado.config);
   area.appendChild(h('div', {class:'titulo-pag'}, h('h2', null, '⚙️ Ajustes')));
   if (!ehAdmin()) {
     area.appendChild(cartaoMinhaConta());
-    area.appendChild(h('div', {class:'cartao'}, h('h2', null, 'ℹ️ Sobre'), h('p', {style:'margin:0;font-size:14px'}, 'Desenvolvido por ', h('b', null, 'Wendel Emílio de Souza Matias'), ' · oficial.respostas@gmail.com')));
+    area.appendChild(h('div', {class:'cartao'}, h('h2', null, 'ℹ️ Sobre'), h('p', {style:'margin:0;font-size:14px'}, 'Versão ' + VERSAO + ' (' + VERSAO_DATA + ')', h('br'), 'Desenvolvido por ', h('b', null, 'Wendel Emílio de Souza Matias'), ' · oficial.respostas@gmail.com')));
     return;
   }
 
@@ -3381,7 +3500,7 @@ function telaConfig(area){
       campo(c, 'registro', 'Registro profissional padrão'),
       campo(c, 'rodape', 'Texto do rodapé do relatório', {tipo:'textarea', cheio:true, linhas:2})),
     h('div', {class:'acoes'}, h('button', {class:'btn rosa', onclick: async () => {
-      ['contador', 'contadorRecibo', 'senhaHash', 'bloqueioMin', 'portal', 'nuvemPlano', 'adminLogin', 'testeRemovido', 'exemploCarregado', 'agendaCfg', 'consultorio'].forEach(k => { c[k] = estado.config[k]; });
+      ['contador', 'contadorRecibo', 'senhaHash', 'bloqueioMin', 'portal', 'nuvemPlano', 'adminLogin', 'testeRemovido', 'exemploCarregado', 'agendaCfg', 'consultorio', 'site'].forEach(k => { c[k] = estado.config[k]; });
       estado.config = c; await salvarConfig(); toast('Ajustes salvos');
     }}, '💾 Salvar ajustes'))));
 
@@ -3390,6 +3509,7 @@ function telaConfig(area){
   const selTempo = h('select', null, [['15', '15 minutos'], ['30', '30 minutos'], ['60', '1 hora'], ['120', '2 horas'], ['0', 'Nunca bloquear sozinho']].map(([v, t]) => h('option', {value:v}, t)));
   selTempo.value = String(estado.config.bloqueioMin === 0 ? 0 : (estado.config.bloqueioMin || 30));
   selTempo.addEventListener('change', async () => { estado.config.bloqueioMin = parseInt(selTempo.value, 10); await salvarConfig(); toast('Tempo de bloqueio salvo'); });
+  area.appendChild(cartaoSite());
   area.appendChild(cartaoHorariosAtendimento());
   area.appendChild(cartaoEquipe());
   area.appendChild(cartaoConsultorio());
@@ -3454,7 +3574,7 @@ function telaConfig(area){
     inpImp));
 
   area.appendChild(h('div', {class:'cartao'}, h('h2', null, 'ℹ️ Sobre'),
-    h('p', {style:'margin:0;font-size:14px'}, 'Relatório de Atendimento ao Paciente — versão 2.2', h('br'),
+    h('p', {style:'margin:0;font-size:14px'}, `Relatório de Atendimento ao Paciente — versão ${VERSAO} (${VERSAO_DATA})`, h('br'),
       'Desenvolvido por ', h('b', null, 'Wendel Emílio de Souza Matias'), h('br'),
       'Contato: oficial.respostas@gmail.com')));
 }
@@ -3760,6 +3880,7 @@ function telaBloqueio(msgErro){
         h('div', {class:'bq-senha'}, inp, h('button', {type:'button', title:'Mostrar senha', onclick:() => { inp.type = inp.type === 'password' ? 'text' : 'password'; }}, '👁️')),
         erro, botao,
         h('div', {class:'bq-dica'}, 'Secretárias: o ponto de entrada é registrado ao entrar, e o de saída ao tocar em 🚪 Sair.'),
+        h('div', {class:'bq-dica', style:'margin-top:4px;opacity:.7'}, 'Versão ' + VERSAO),
         h('a', {href:'index.html', class:'bq-voltar'}, '← Voltar ao site')))));
   setTimeout(() => (inpU.value ? inp : inpU).focus(), 60);
 }
@@ -3914,7 +4035,8 @@ async function editarAgendamento(id, pre){
       h('div', {style:'display:flex;gap:8px'}, selPac, h('button', {class:'btn ouro', type:'button', onclick: async () => { const p = await editarPaciente(null); if (p) { a.pacienteId = p.id; montarSel(); } }}, '＋ Novo'))),
     seletorHorario(a, orig ? orig.id : null),
     campo(a, 'tipo', 'Tipo de atendimento', {tipo:'select', opcoes:TIPOS}),
-    campo(a, 'status', 'Situação', {tipo:'select', opcoes:['Agendado', 'Concluído', 'Cancelado', 'Retorno agendado', 'Em acompanhamento', 'Encaminhado']}),
+    (!ehAdmin() && a.status === 'Aguardando autorização') ? h('div', {class:'campo'}, h('span', null, 'Situação'), h('div', {class:'alerta', style:'margin:0'}, '⏳ Encaixe aguardando a autorização da Kárita')) :
+      campo(a, 'status', 'Situação', {tipo:'select', opcoes:['Agendado', 'Concluído', 'Cancelado', 'Retorno agendado', 'Em acompanhamento', 'Encaminhado'].concat(a.status === 'Aguardando autorização' ? ['Aguardando autorização'] : [])}),
     campo(a, 'local', 'Local'),
     campo(a, 'profissional', 'Profissional'),
     campo(a, 'obsAgenda', 'Observação do agendamento', {tipo:'textarea', cheio:true, linhas:2, dica:'Ex.: paciente pediu para confirmar por WhatsApp'}));
@@ -3924,8 +4046,18 @@ async function editarAgendamento(id, pre){
       if (!a.pacienteId) { toast('Escolha o paciente'); return false; }
       if (!a.data || !a.hora) { toast('Escolha o dia e um horário livre'); return false; }
       if (!a.encaixe && !horariosLivres(a.data, a.id).includes(a.hora) && !(orig && orig.data === a.data && orig.hora === a.hora)) { toast('Esse horário acabou de ser ocupado. Escolha outro.'); return false; }
+      if (a.encaixe && !ehAdmin() && !String(a.obsAgenda || '').trim()) { toast('Escreva o motivo do encaixe no campo Observação'); return false; }
     }}], 680);
   if (!ok) return;
+  let pediuEncaixe = false;
+  if (a.encaixe && !ehAdmin()) {
+    const jaPendente = orig && orig.status === 'Aguardando autorização' && orig.encaixePedido;
+    a.encaixePedido = {por:estado.usuario.nome, porUid:estado.usuario.uid, em:new Date().toISOString(), motivo:String(a.obsAgenda || '').trim(),
+      anterior: jaPendente ? orig.encaixePedido.anterior : (orig ? {data:orig.data, hora:orig.hora, horaFim:orig.horaFim, status:orig.status, obsAgenda:orig.obsAgenda || ''} : null)};
+    delete a.encaixeDecisao;
+    a.status = 'Aguardando autorização';
+    pediuEncaixe = true;
+  }
   delete a.encaixe;
   if (!a.numero) a.numero = formatarNumero(await proximoNumero('contador'), a.data);
   a.atualizadoEm = Date.now();
@@ -3933,8 +4065,9 @@ async function editarAgendamento(id, pre){
   const i = estado.atendimentos.findIndex(x => x.id === a.id);
   if (i >= 0) estado.atendimentos[i] = a; else estado.atendimentos.push(a);
   ordenar();
-  toast('Agendamento salvo');
+  toast(pediuEncaixe ? '⏳ Pedido de encaixe enviado para a Kárita' : 'Agendamento salvo');
   recarregar();
+  if (pediuEncaixe) avisarKaritaEncaixe(a);
 }
 
 /* ----- cadastro da equipe (só a Kárita) ----- */
@@ -4187,6 +4320,7 @@ window.addEventListener('unhandledrejection', e => {
     return;
   }
   atualizarTopo();
+  $('#versaoApp').textContent = 'Versão ' + VERSAO;
   $('#btnAjustes').addEventListener('click', () => ir('config'));
   $('#btnSair').addEventListener('click', sairDoPainel);
   try { sessionStorage.removeItem('kt_tentativa'); } catch (e) {}

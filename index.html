@@ -19,25 +19,42 @@ h1,h2,h3{font-family:Georgia,"Times New Roman",serif;margin:0;color:var(--vinho)
 a{color:inherit}
 .contido{max-width:1100px;margin:0 auto;padding:0 20px}
 /* Topo */
-.topo{position:sticky;top:0;z-index:20;background:rgba(255,248,250,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--borda)}
-.topo .contido{display:flex;align-items:center;gap:14px;height:70px}
-.marca{display:flex;align-items:center;gap:10px;text-decoration:none}
-.marca .selo{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--rosa),var(--rosa-medio));border:2px solid var(--ouro);display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-weight:700;color:var(--vinho);font-size:17px}
-.marca b{font-family:Georgia,serif;font-size:20px;color:var(--vinho);display:block;line-height:1.1}
-.marca small{color:var(--ouro-esc);font-size:12px;font-weight:600;letter-spacing:.5px}
-.menu{display:flex;gap:4px;margin-left:auto}
-.menu a{text-decoration:none;padding:8px 12px;border-radius:999px;font-weight:600;font-size:14.5px;color:var(--rosa-esc)}
-.menu a:hover{background:var(--rosa-claro)}
+.topinho{background:var(--vinho);color:#f3dfe6;font-size:12.5px}
+.topinho .contido{display:flex;justify-content:space-between;align-items:center;height:34px;gap:14px}
+.topinho a{color:#f3dfe6;text-decoration:none}
+.tp-info{display:flex;gap:18px;align-items:center;white-space:nowrap;overflow:hidden}
+.tp-redes{display:flex;gap:6px}
+.tp-redes a{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:12px;transition:.2s}
+.tp-redes a:hover{background:var(--ouro)}
+.topo{position:sticky;top:0;z-index:20;background:rgba(255,248,250,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--borda);box-shadow:0 4px 20px rgba(168,86,111,.06)}
+.topo .contido{display:flex;align-items:center;gap:20px;height:76px;max-width:1200px}
+.marca{display:flex;align-items:center;gap:12px;text-decoration:none;flex-shrink:0}
+.marca .selo{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--rosa),var(--rosa-medio));border:2px solid var(--ouro);display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-weight:700;color:var(--vinho);font-size:18px;box-shadow:0 4px 12px rgba(168,86,111,.2)}
+.marca b{font-family:Georgia,serif;font-size:21px;color:var(--vinho);display:block;line-height:1.1;white-space:nowrap}
+.marca small{display:block;color:var(--ouro-esc);font-size:10.5px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;white-space:nowrap;margin-top:3px}
+.menu{display:flex;gap:2px;margin:0 auto}
+.menu a{position:relative;text-decoration:none;padding:8px 14px;font-weight:600;font-size:14.5px;color:var(--rosa-esc);white-space:nowrap;border-radius:999px;transition:.2s}
+.menu a::after{content:"";position:absolute;left:14px;right:14px;bottom:3px;height:2px;background:var(--ouro);transform:scaleX(0);transition:.25s;border-radius:2px}
+.menu a:hover{color:var(--vinho)}.menu a:hover::after{transform:scaleX(1)}
+.topo-acoes{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.hamb{display:none;width:44px;height:44px;border-radius:12px;border:1.5px solid var(--borda);background:#fff;font-size:22px;color:var(--vinho);cursor:pointer;align-items:center;justify-content:center}
+.menu-movel{display:none;flex-direction:column;padding:8px 20px 16px;border-top:1px solid var(--borda);background:#fff}
+.menu-movel.aberto{display:flex}
+.menu-movel a{padding:12px 4px;border-bottom:1px solid var(--borda);text-decoration:none;font-weight:600;color:var(--vinho)}
+.menu-movel .mm-redes{display:flex;gap:8px;flex-wrap:wrap;padding-top:12px}
+@media (max-width:1040px){.menu{display:none}.hamb{display:flex}.topo-acoes{margin-left:auto}}
+@media (max-width:760px){.topinho{display:none}.topo .contido{height:68px;gap:10px}}
+@media (max-width:520px){.so-grande{display:none}.marca b{font-size:17px}.marca small{font-size:9px;letter-spacing:1px}.marca .selo{width:40px;height:40px;font-size:15px}.topo .btn{padding:9px 12px;font-size:13.5px}.hamb{width:40px;height:40px}}
+@media (max-width:440px){.marca small{display:none}.topo-acoes{gap:6px}.topo .btn{padding:8px 10px}}
+@media (max-width:400px){.topo .contido{padding:0 10px;gap:6px}.marca{gap:7px}.marca b{font-size:15px}.marca .selo{width:36px;height:36px;font-size:13px}.topo-acoes{gap:5px}.topo .btn{padding:7px 9px;font-size:12.5px}.hamb{width:36px;height:36px;font-size:19px}}
+html,body{overflow-x:hidden}
 .btn{display:inline-flex;align-items:center;gap:8px;border:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:15px;padding:12px 22px;border-radius:999px;text-decoration:none;transition:.2s}
 .btn.rosa{background:linear-gradient(135deg,var(--rosa),var(--rosa-medio));color:var(--vinho);box-shadow:0 6px 18px rgba(168,86,111,.25)}
 .btn.rosa:hover{transform:translateY(-2px)}
 .btn.ouro{background:linear-gradient(135deg,#f0d168,var(--ouro));color:#4a3505;box-shadow:0 6px 18px rgba(201,162,39,.25)}
 .btn.linha{background:#fff;color:var(--rosa-esc);border:1.5px solid var(--rosa-medio)}
 .btn.peq{padding:9px 16px;font-size:14px}
-.btn-area{margin-left:8px}
-@media (max-width:520px){.so-grande{display:none}.marca b{font-size:16px}.topo .btn{padding:9px 12px;font-size:13.5px}.marca .selo{width:38px;height:38px;font-size:15px}}
 .btn{white-space:nowrap}
-@media (max-width:760px){.menu{display:none}.btn-area{margin-left:auto}.marca small{display:none}}
 /* Abertura */
 .abertura{position:relative;overflow:hidden;padding:80px 0 90px;background:radial-gradient(circle at 85% 20%,rgba(235,190,203,.75),transparent 55%),radial-gradient(circle at 10% 90%,rgba(246,231,176,.55),transparent 50%),var(--rosa-bg)}
 .abertura .contido{display:grid;grid-template-columns:1.2fr 1fr;gap:40px;align-items:center}
@@ -93,7 +110,23 @@ section{padding:70px 0}
 footer{background:var(--vinho);color:#f3dfe6;padding:30px 0;text-align:center;font-size:14px;border-top:4px solid var(--ouro)}
 footer b{color:var(--ouro-claro)}
 footer a{color:var(--rosa);text-decoration:none;font-weight:600}
-.zap{position:fixed;right:18px;bottom:18px;width:58px;height:58px;border-radius:50%;background:#25D366;color:#fff;display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 8px 20px rgba(0,0,0,.25);text-decoration:none;z-index:30;border:3px solid #fff}
+.zap-flut{position:fixed;right:18px;bottom:18px;z-index:60;display:flex;align-items:center;gap:10px;text-decoration:none}
+.zap-ico{position:relative;width:62px;height:62px;border-radius:50%;background:linear-gradient(135deg,#2bd46b,#1fa855);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 24px rgba(31,168,85,.45);border:3px solid #fff;animation:flutua 3s ease-in-out infinite}
+.zap-ico::before{content:"";position:absolute;inset:-8px;border-radius:50%;border:2px solid rgba(43,212,107,.55);animation:pulso 2s ease-out infinite}
+.zap-balao{background:#fff;border:1px solid var(--borda);border-radius:14px 14px 4px 14px;padding:8px 12px;box-shadow:0 8px 24px rgba(0,0,0,.12);display:flex;flex-direction:column;opacity:0;transform:translateX(10px);transition:.35s;pointer-events:none}
+.zap-balao b{color:var(--vinho);font-size:14px;white-space:nowrap}.zap-balao small{color:var(--cinza);font-size:11.5px;white-space:nowrap}
+.zap-flut.mostra .zap-balao,.zap-flut:hover .zap-balao{opacity:1;transform:none}
+@keyframes flutua{50%{transform:translateY(-6px)}}
+@keyframes pulso{0%{transform:scale(.9);opacity:1}100%{transform:scale(1.35);opacity:0}}
+.redes{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.rede{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;border:1.5px solid var(--borda);background:#fff;text-decoration:none;color:var(--vinho);font-weight:700;font-size:14px;transition:.2s}
+.rede span{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--rosa),var(--rosa-medio));display:flex;align-items:center;justify-content:center;font-size:14px}
+.rede:hover{border-color:var(--ouro);transform:translateY(-2px)}
+.rod-redes{display:flex;gap:10px;justify-content:center;margin:12px 0}
+.rod-redes a{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:18px;text-decoration:none;transition:.2s}
+.rod-redes a:hover{background:var(--ouro)}
+.versao{margin-top:8px;font-size:11.5px;opacity:.75}
+@media (max-width:520px){.zap-ico{width:56px;height:56px}.zap-flut{right:12px;bottom:12px}}
 /* Login */
 .login-fundo{position:fixed;inset:0;background:rgba(61,36,48,.6);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center;padding:16px}
 .login-fundo.aberto{display:flex}
@@ -184,15 +217,26 @@ footer a{color:var(--rosa);text-decoration:none;font-weight:600}
 </style>
 </head>
 <body>
+<div class="topinho"><div class="contido">
+  <div class="tp-info"><span id="tpHorario">🌸 Atendimento com hora marcada</span><span id="tpFone"></span></div>
+  <div class="tp-redes" id="tpRedes"></div>
+</div></div>
 <header class="topo">
   <div class="contido">
-    <a class="marca" href="#inicio"><div class="selo">KT</div><div><b>Kárita Teodoro</b><small id="txtEspecialidade">CUIDADO E ATENDIMENTO</small></div></a>
+    <a class="marca" href="#inicio"><div class="selo">KT</div><div><b>Kárita Teodoro</b><small id="txtEspecialidade">Cuidado e atendimento</small></div></a>
     <nav class="menu">
-      <a href="#sobre">Sobre</a><a href="#laudos">Meus laudos</a><a href="#atendimentos">Atendimentos</a><a href="#como">Como funciona</a><a href="#contato">Contato</a>
+      <a href="#sobre">Sobre</a><a href="#atendimentos">Atendimentos</a><a href="#como">Como funciona</a><a href="#laudos">Área do paciente</a><a href="#contato">Contato</a>
     </nav>
-    <button class="btn rosa peq btn-area" data-ir-laudos>📄 Meus laudos</button>
-    <button class="btn ouro peq" id="btnArea" title="Área da equipe">🔒<span class="so-grande"> Área da equipe</span></button>
+    <div class="topo-acoes">
+      <button class="btn rosa peq" data-ir-laudos>📄<span><span class="so-grande">Meus </span>laudos</span></button>
+      <button class="btn ouro peq" id="btnArea" title="Área da equipe">🔒<span class="so-grande">&nbsp;Equipe</span></button>
+      <button class="hamb" id="btnMenu" aria-label="Abrir menu">☰</button>
+    </div>
   </div>
+  <nav class="menu-movel" id="menuMovel">
+    <a href="#sobre">Sobre</a><a href="#atendimentos">Atendimentos</a><a href="#como">Como funciona</a><a href="#laudos">📄 Meus laudos</a><a href="#contato">Contato</a>
+    <div class="mm-redes" id="mmRedes"></div>
+  </nav>
 </header>
 
 <section class="abertura" id="inicio">
@@ -261,7 +305,7 @@ footer a{color:var(--rosa);text-decoration:none;font-weight:600}
   <div class="contido">
     <div class="titulo"><small>Contato</small><h2>Vamos conversar?</h2></div>
     <div class="caixa">
-      <div id="listaContato"></div>
+      <div><div id="listaContato"></div><div id="redesContato"></div></div>
       <div class="chamada">
         <h3>Agende seu atendimento</h3>
         <p style="color:#5c4350;margin:0 0 16px">Fale diretamente com a Kárita e tire suas dúvidas.</p>
@@ -274,12 +318,17 @@ footer a{color:var(--rosa);text-decoration:none;font-weight:600}
 <footer>
   <div class="contido">
     <div style="font-family:Georgia,serif;font-size:20px;color:#fff;margin-bottom:4px">Kárita Teodoro</div>
+    <div class="rod-redes" id="rodRedes"></div>
     <div>© <span id="ano"></span> Kárita Teodoro · Todos os direitos reservados</div>
     <div style="margin-top:10px;font-size:12.5px">Site e sistema desenvolvidos por <b>Wendel Emílio de Souza Matias</b> · <a href="mailto:oficial.respostas@gmail.com">oficial.respostas@gmail.com</a></div>
+    <div class="versao" id="versaoSite"></div>
   </div>
 </footer>
 
-<a class="zap" id="zap" href="#" target="_blank" rel="noopener" title="Falar no WhatsApp" style="display:none">💬</a>
+<a class="zap-flut" id="zapFlut" href="#contato" title="Fale com a atendente pelo WhatsApp">
+  <span class="zap-balao" id="zapBalao"><b>Fale com a atendente</b><small>Respondemos pelo WhatsApp</small></span>
+  <span class="zap-ico" aria-hidden="true"><svg viewBox="0 0 32 32" width="30" height="30"><path fill="#fff" d="M16 4C9.4 4 4 8.9 4 15c0 3.3 1.6 6.3 4.2 8.3L7 28.5l5.4-2.6c1.1.3 2.3.5 3.6.5 6.6 0 12-4.9 12-11S22.6 4 16 4z"/><circle cx="10.5" cy="15" r="1.9" fill="#1fa855"/><circle cx="16" cy="15" r="1.9" fill="#1fa855"/><circle cx="21.5" cy="15" r="1.9" fill="#1fa855"/></svg></span>
+</a>
 
 <div class="login-fundo" id="loginFundo">
   <div class="login" role="dialog" aria-modal="true" aria-labelledby="loginTitulo">
@@ -311,15 +360,11 @@ footer a{color:var(--rosa);text-decoration:none;font-weight:600}
    ========================================================= */
 
 /* >>> DADOS DE CONTATO DO SITE — preencha e o site mostra automaticamente <<< */
-const SITE = {
-  especialidade: '',        // ex.: 'Enfermeira · Estomaterapia'
-  whatsapp: '',             // só números com DDD, ex.: '62999999999'
-  telefone: '',             // ex.: '(62) 99999-9999'
-  email: '',                // ex.: 'contato@karitateodoro.com.br'
-  instagram: '',            // ex.: 'karitateodoro' (sem @)
-  endereco: '',             // ex.: 'Rua X, 123 — Centro, Trindade - GO'
-  horario: ''               // ex.: 'Segunda a sexta, das 8h às 18h'
-};
+/*SITE_INICIO*/
+const SITE = {"especialidade":"","whatsapp":"","telefone":"","email":"","endereco":"","horario":"","mapa":"","instagram":"","facebook":"","tiktok":"","youtube":"","linkedin":""};
+/*SITE_FIM*/
+/* Os dados acima são preenchidos pelo painel: Ajustes › Site: contato e redes sociais › Baixar site atualizado */
+const VERSAO = '2.4';
 const PAGINA_PAINEL = 'relatorio-atendimento.html';
 /* Código de segurança da senha (a senha nunca fica escrita no arquivo, só o "resumo" dela) */
 function sha256(texto){
@@ -413,18 +458,52 @@ function h(tag, attrs, ...filhos){
   return el;
 }
 document.getElementById('ano').textContent = new Date().getFullYear();
-if (SITE.especialidade) document.getElementById('txtEspecialidade').textContent = SITE.especialidade.toUpperCase();
+
 
 /* Contato */
+const REDES = [
+  ['instagram', 'Instagram', '📸', v => /^https?:/.test(v) ? v : 'https://instagram.com/' + v.replace(/^@/, '')],
+  ['facebook', 'Facebook', '👍', v => /^https?:/.test(v) ? v : 'https://facebook.com/' + v.replace(/^@/, '')],
+  ['tiktok', 'TikTok', '🎵', v => /^https?:/.test(v) ? v : 'https://www.tiktok.com/@' + v.replace(/^@/, '')],
+  ['youtube', 'YouTube', '▶️', v => /^https?:/.test(v) ? v : 'https://youtube.com/@' + v.replace(/^@/, '')],
+  ['linkedin', 'LinkedIn', '💼', v => /^https?:/.test(v) ? v : 'https://linkedin.com/in/' + v.replace(/^@/, '')],
+  ['mapa', 'Como chegar', '📍', v => /^https?:/.test(v) ? v : 'https://maps.google.com/?q=' + encodeURIComponent(v)]
+];
+const redesAtivas = () => REDES.filter(r => SITE[r[0]]).map(r => ({nome:r[1], ico:r[2], url:r[3](String(SITE[r[0]]).trim())}));
+const linkZap = msg => { const n = String(SITE.whatsapp || '').replace(/\D/g, ''); return n ? 'https://wa.me/' + (n.length <= 11 ? '55' + n : n) + '?text=' + encodeURIComponent(msg) : ''; };
+(function montarTopoERedes(){
+  const redes = redesAtivas();
+  const tp = document.getElementById('tpRedes'), mm = document.getElementById('mmRedes'), rc = document.getElementById('redesContato'), rr = document.getElementById('rodRedes');
+  redes.forEach(r => {
+    tp.appendChild(h('a', {href:r.url, target:'_blank', rel:'noopener', title:r.nome}, r.ico));
+    mm.appendChild(h('a', {class:'rede', href:r.url, target:'_blank', rel:'noopener'}, h('span', null, r.ico), r.nome));
+    rr.appendChild(h('a', {href:r.url, target:'_blank', rel:'noopener', title:r.nome}, r.ico));
+  });
+  rc.appendChild(h('div', {class:'linha-ctt', style:'margin-top:6px'}, h('span', null, '🌐'), h('div', null, h('small', null, 'Redes sociais'),
+    redes.length ? h('div', {class:'redes'}, redes.map(r => h('a', {class:'rede', href:r.url, target:'_blank', rel:'noopener'}, h('span', null, r.ico), r.nome))) : 'Em breve.')));
+  if (SITE.horario) document.getElementById('tpHorario').textContent = '🕐 ' + SITE.horario;
+  if (SITE.telefone || SITE.whatsapp) document.getElementById('tpFone').textContent = '📱 ' + (SITE.telefone || SITE.whatsapp);
+  if (SITE.especialidade) document.getElementById('txtEspecialidade').textContent = SITE.especialidade;
+  document.getElementById('versaoSite').textContent = 'Versão ' + VERSAO;
+  /* botão flutuante: fale com a atendente */
+  const zf = document.getElementById('zapFlut');
+  const lz = linkZap('Olá! Vim pelo site da Kárita Teodoro e gostaria de falar com a atendente.');
+  if (lz) { zf.href = lz; zf.target = '_blank'; zf.rel = 'noopener'; }
+  setTimeout(() => zf.classList.add('mostra'), 1800);
+  setTimeout(() => zf.classList.remove('mostra'), 9000);
+  /* menu do celular */
+  const mmv = document.getElementById('menuMovel');
+  document.getElementById('btnMenu').addEventListener('click', () => { mmv.classList.toggle('aberto'); document.getElementById('btnMenu').textContent = mmv.classList.contains('aberto') ? '✕' : '☰'; });
+  mmv.querySelectorAll('a[href^="#"]').forEach(a => a.addEventListener('click', () => { mmv.classList.remove('aberto'); document.getElementById('btnMenu').textContent = '☰'; }));
+})();
 (function montarContato(){
   const lista = document.getElementById('listaContato');
   const botoes = document.getElementById('botoesContato');
   const zapNum = String(SITE.whatsapp || '').replace(/\D/g, '');
-  const zapLink = zapNum ? 'https://wa.me/' + (zapNum.length <= 11 ? '55' + zapNum : zapNum) + '?text=' + encodeURIComponent('Olá, Kárita! Gostaria de agendar um atendimento.') : '';
+  const zapLink = linkZap('Olá! Gostaria de agendar um atendimento com a Kárita Teodoro.');
   const itens = [
     ['📱', 'WhatsApp / Telefone', SITE.telefone || (zapNum ? zapNum : '')],
     ['✉️', 'E-mail', SITE.email],
-    ['📸', 'Instagram', SITE.instagram ? '@' + SITE.instagram.replace(/^@/, '') : ''],
     ['📍', 'Endereço', SITE.endereco],
     ['🕐', 'Horário de atendimento', SITE.horario]
   ].filter(i => i[2]);
@@ -432,10 +511,8 @@ if (SITE.especialidade) document.getElementById('txtEspecialidade').textContent 
   itens.forEach(([ico, rot, val]) => lista.appendChild(h('div', {class:'linha-ctt'}, h('span', null, ico), h('div', null, h('small', null, rot), val))));
   if (zapLink) {
     botoes.appendChild(h('a', {class:'btn rosa', href:zapLink, target:'_blank', rel:'noopener'}, '💬 Chamar no WhatsApp'));
-    const z = document.getElementById('zap'); z.href = zapLink; z.style.display = '';
     const ag = document.getElementById('btnAgendar'); ag.href = zapLink; ag.target = '_blank'; ag.rel = 'noopener';
   }
-  if (SITE.instagram) botoes.appendChild(h('a', {class:'btn linha', href:'https://instagram.com/' + SITE.instagram.replace(/^@/, ''), target:'_blank', rel:'noopener'}, '📸 Instagram'));
   if (SITE.email) botoes.appendChild(h('a', {class:'btn linha', href:'mailto:' + SITE.email}, '✉️ E-mail'));
   if (!botoes.children.length) botoes.appendChild(h('span', {style:'color:var(--cinza)'}, 'Em breve, canais de agendamento.'));
 })();

@@ -551,6 +551,13 @@ h1,h2,h3,.cartao h2{font-family:Georgia,"Times New Roman",serif;color:var(--vinh
 .linha-sal span small{display:block;color:var(--cinza);font-size:12px}
 .linha-sal.total{border-bottom:none;border-top:2px solid var(--ouro);margin-top:4px;font-size:17px}.linha-sal.total b{color:var(--ouro-esc);font-size:20px}
 .selo.vermelho{background:#fdecea;color:#b3261e;border-color:#f3c3be}
+
+.mp-grade{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mp-linha{display:flex;align-items:center;gap:8px;border:1px solid var(--borda);border-radius:12px;padding:10px 12px;background:#fff;color:var(--cinza)}
+.mp-linha b{margin-left:auto;font-size:17px;color:var(--cinza)}
+.mp-linha.feito{border-color:var(--ouro);background:#FBF7EE;color:var(--vinho)}.mp-linha.feito b{color:var(--vinho)}
+.meu-ponto .acoes .btn{flex:1;justify-content:center;min-height:48px}
+.dia-ponto.ausencia{border-color:#b9cde6;background:#f6f9fd}
 </style>
 </head>
 <body class="bloqueado">
@@ -735,7 +742,7 @@ function operar(store, modo, fn){
    ========================================================= */
 /* >>> Preenchido pelo botão "Baixar painel configurado" (Ajustes › Trabalho em equipe) <<< */
 const NUVEM = {projectId:'', apiKey:'', adminEmail:''};
-const VERSAO = '2.10';
+const VERSAO = '2.11';
 const VERSAO_DATA = '13/11/2026';
 const DOMINIO_EQUIPE = 'equipe.karitateodoro.app';
 const emNuvem = () => !!(NUVEM.projectId && NUVEM.apiKey && NUVEM.adminEmail);
@@ -888,7 +895,8 @@ async function nuvemGravar(store, o){
     await nuvemPut(COLECOES.bloqueios, o.id, {json:JSON.stringify(o)});
   } else if (store === 'ponto') {
     const campos = {json:JSON.stringify(o), uid:o.uid, saida:o.saida || ''};
-    await nuvemPut(COLECOES.ponto, o.id, campos, o.saida ? ['horaServidorSaida'] : ['horaServidorEntrada']);
+    const marca = o.saida ? 'horaServidorSaida' : o.almocoRetorno ? 'horaServidorAlmocoRetorno' : o.almocoSaida ? 'horaServidorAlmocoSaida' : 'horaServidorEntrada';
+    await nuvemPut(COLECOES.ponto, o.id, campos, o.ajustado ? null : [marca]);
   }
 }
 async function nuvemApagar(store, id){
@@ -915,7 +923,7 @@ async function nuvemLerTodos(store){
   if (store === 'financeiro') return (await nuvemListar(COLECOES.financeiro, adm ? null : ['tipo', 'receita'])).map(doJson).map(o => marcar(store, o));
   if (store === 'usuarios') { if (adm) return (await nuvemListar(COLECOES.usuarios)).map(doJson); try { const d = await nuvemGet(COLECOES.usuarios, sessaoNuvem.uid); return d ? [doJson(d)] : []; } catch (e) { return []; } }
   if (store === 'bloqueios') return (await nuvemListar(COLECOES.bloqueios)).map(doJson);
-  if (store === 'ponto') return (await nuvemListar(COLECOES.ponto, adm ? null : ['uid', sessaoNuvem.uid])).map(x => Object.assign(doJson(x), {servEntrada:x.horaServidorEntrada || '', servSaida:x.horaServidorSaida || ''}));
+  if (store === 'ponto') return (await nuvemListar(COLECOES.ponto, adm ? null : ['uid', sessaoNuvem.uid])).map(x => Object.assign(doJson(x), {servEntrada:x.horaServidorEntrada || '', servSaida:x.horaServidorSaida || '', servAlmSaida:x.horaServidorAlmocoSaida || '', servAlmRetorno:x.horaServidorAlmocoRetorno || ''}));
   return [];
 }
 async function gravarConfigNuvem(o){
@@ -1378,7 +1386,8 @@ function telaInicioSecretaria(area, alertas){
   const atrasados = todasParcelas('receita').filter(x => !x.p.pago && x.p.vencimento < hoje).length;
   area.appendChild(h('div', {class:'cartao', style:'border-left:5px solid var(--ouro)'},
     h('div', {style:'font-family:Georgia,serif;font-size:21px;color:var(--vinho)'}, `Olá, ${estado.usuario.nome.split(' ')[0]}! 👋`),
-    h('div', {class:'meta', style:'color:var(--cinza)'}, reg ? `🕐 Sua entrada foi registrada às ${hhmm(horaEntrada(reg))}. Ao terminar o expediente, saia pelo botão 🚪.` : 'Bom trabalho!')));
+    h('div', {class:'meta', style:'color:var(--cinza)'}, 'Bom trabalho! Use os botões abaixo para o almoço e para fechar o ponto.')));
+  area.appendChild(cartaoMeuPonto());
   area.appendChild(h('div', {class:'numeros'},
     h('div', {class:'numero'}, h('b', null, ats.filter(a => a.data === hoje).length), h('span', null, 'Agendados hoje')),
     h('div', {class:'numero'}, h('b', null, prox.length), h('span', null, 'Próximos 7 dias')),
@@ -4421,13 +4430,17 @@ async function carregarExemplo(silencioso){
       const dia = somarDias(hj, -i), dd = dataDe(dia);
       if (dd.getDay() === 0 || dd.getDay() === 6) continue;
       if (i === 9) continue;   /* falta sem aviso */
+      if (i === 22 || i === 23) continue;   /* atestado */
       if (i === 16) { const m2 = dia.slice(0, 7); sec.folhas[m2] = sec.folhas[m2] || {ajustes:[], abonos:{}}; sec.folhas[m2].abonos[dia] = 'Atestado médico'; continue; }
       const ent = new Date(dd.getFullYear(), dd.getMonth(), dd.getDate(), 7, 52 + (i * 7) % 16);
       const extraMin = i === 5 ? 75 : i === 12 ? 40 : i === 7 ? -50 : (i % 4) * 3;
       const sai = new Date(dd.getFullYear(), dd.getMonth(), dd.getDate(), 17, 0 + Math.max(0, extraMin));
       const saiF = extraMin < 0 ? new Date(sai.getTime() + extraMin * 60000) : sai;
-      await gravar('ponto', {id:uid(), uid:sec.id, nome:sec.nome, login:sec.login, data:dia, entrada:ent.toISOString(), saida: i === 3 ? '' : saiF.toISOString(), obs:'', teste:true});
+      const almS = i % 2 ? new Date(dd.getFullYear(), dd.getMonth(), dd.getDate(), 12, 2 + i % 5) : null;
+      const almR = almS ? new Date(almS.getTime() + (58 + i % 6) * 60000) : null;
+      await gravar('ponto', {id:uid(), uid:sec.id, nome:sec.nome, login:sec.login, data:dia, entrada:ent.toISOString(), almocoSaida:almS ? almS.toISOString() : '', almocoRetorno:almR ? almR.toISOString() : '', saida: i === 3 ? '' : saiF.toISOString(), obs:'', teste:true});
     }
+    sec.ausencias = [{id:uid(), tipo:'Atestado médico', inicio:somarDias(hj, -23), fim:somarDias(hj, -22), obs:'Atestado de 2 dias (teste)'}, {id:uid(), tipo:'Férias', inicio:somarDias(hj, 40), fim:somarDias(hj, 69), obs:'Férias 2025/2026 (teste)'}];
     await gravar('usuarios', sec);
   }
   if (!(estado.bloqueios || []).some(b => b.teste)) {
@@ -4617,6 +4630,14 @@ setInterval(() => {
 /* ----- ponto da secretária ----- */
 async function registrarEntrada(){
   const u = estado.usuario, agora = new Date();
+  const aberto = (estado.ponto || []).filter(p => p.uid === u.uid && !p.saida && p.data === hojeISO() && p.almocoSaida && !p.almocoRetorno)[0];
+  if (aberto) {
+    aberto.almocoRetorno = agora.toISOString();
+    await gravar('ponto', aberto);
+    try { sessionStorage.setItem('kt_ponto', aberto.id); } catch (e) {}
+    toast(`↩ Retorno do almoço registrado às ${hhmm(aberto.almocoRetorno)}`);
+    atualizarChipUsuario(); return;
+  }
   const v = estado.localLogin;
   const reg = {id:uid(), uid:u.uid, nome:u.nome, login:u.login, data:hojeISO(), entrada:agora.toISOString(), saida:'', obs:'',
     local: v && !v.semRegra ? {distancia:v.distancia, precisao:v.precisao, lat:v.lat, lng:v.lng} : null};
@@ -4638,7 +4659,52 @@ async function registrarSaida(){
 }
 const horaEntrada = r => r.ajustado ? r.entrada : (r.servEntrada || r.entrada);
 const horaSaida = r => r.ajustado ? r.saida : (r.servSaida || r.saida);
-function minutosPonto(r){ const e = horaEntrada(r), s = horaSaida(r); return e && s ? Math.max(0, Math.round((new Date(s) - new Date(e)) / 60000)) : 0; }
+const horaAlmSaida = r => r.ajustado ? (r.almocoSaida || '') : (r.servAlmSaida || r.almocoSaida || '');
+const horaAlmRetorno = r => r.ajustado ? (r.almocoRetorno || '') : (r.servAlmRetorno || r.almocoRetorno || '');
+function minutosAlmoco(r){ const a = horaAlmSaida(r), b = horaAlmRetorno(r); return a && b ? Math.max(0, Math.round((new Date(b) - new Date(a)) / 60000)) : 0; }
+function minutosPonto(r){ const e = horaEntrada(r), s = horaSaida(r); return e && s ? Math.max(0, Math.round((new Date(s) - new Date(e)) / 60000) - minutosAlmoco(r)) : 0; }
+function situacaoPonto(r){ if (!r) return 'fora'; if (r.saida) return 'fechado'; if (r.almocoSaida && !r.almocoRetorno) return 'almoco'; return r.almocoRetorno ? 'voltou' : 'trabalhando'; }
+function meuRegistroAberto(){
+  let id = null; try { id = sessionStorage.getItem('kt_ponto'); } catch (e) {}
+  const meus = (estado.ponto || []).filter(p => estado.usuario && p.uid === estado.usuario.uid && !p.saida);
+  return meus.find(p => p.id === id) || meus.sort((a, b) => (b.entrada || '').localeCompare(a.entrada || ''))[0] || null;
+}
+async function marcarAlmoco(qual){
+  const r = meuRegistroAberto();
+  if (!r) { await aviso('Não encontrei sua entrada de hoje. Saia e entre de novo no painel para registrar a entrada.', 'Ponto'); return; }
+  if (qual === 'saida') {
+    if (!await confirmar('Registrar agora a SAÍDA PARA O ALMOÇO?', 'Almoço', '🍽️ Registrar saída')) return;
+    r.almocoSaida = new Date().toISOString(); r.almocoRetorno = '';
+  } else {
+    r.almocoRetorno = new Date().toISOString();
+  }
+  try { await gravar('ponto', r); }
+  catch (e) { await aviso('Não foi possível registrar agora (sem internet?). Tente de novo em instantes.', 'Ponto'); return; }
+  toast(qual === 'saida' ? `🍽️ Saída para almoço às ${hhmm(r.almocoSaida)} — bom almoço!` : `↩ Retorno do almoço às ${hhmm(r.almocoRetorno)}`);
+  atualizarChipUsuario(); recarregar();
+}
+async function fecharPonto(){
+  const r = meuRegistroAberto();
+  if (r && r.almocoSaida && !r.almocoRetorno) { await aviso('Você está no horário de almoço. Registre primeiro o retorno do almoço.', 'Ponto'); return; }
+  sairDoPainel(true);
+}
+function cartaoMeuPonto(){
+  const r = meuRegistroAberto(), st = situacaoPonto(r);
+  const linha = (ico, rot, iso) => h('div', {class:'mp-linha' + (iso ? ' feito' : '')}, h('span', null, ico), h('span', null, rot), h('b', null, iso ? hhmm(iso) : '—'));
+  const botoes = [];
+  if (st === 'trabalhando') botoes.push(h('button', {class:'btn ouro', onclick:() => marcarAlmoco('saida')}, '🍽️ Saída para almoço'));
+  if (st === 'almoco') botoes.push(h('button', {class:'btn rosa', onclick:() => marcarAlmoco('retorno')}, '↩ Retorno do almoço'));
+  if (st === 'trabalhando' || st === 'voltou') botoes.push(h('button', {class:'btn rosa', onclick:fecharPonto}, '🏁 Fechar o ponto do dia'));
+  return h('div', {class:'cartao meu-ponto'}, h('h2', null, '🕐 Meu ponto de hoje'),
+    st === 'almoco' ? h('div', {class:'aviso-ok', style:'margin:0 0 10px'}, `🍽️ Em horário de almoço desde ${hhmm(horaAlmSaida(r))}`) : null,
+    h('div', {class:'mp-grade'},
+      linha('🟢', 'Entrada', r && horaEntrada(r)),
+      linha('🍽️', 'Saída almoço', r && horaAlmSaida(r)),
+      linha('↩', 'Retorno almoço', r && horaAlmRetorno(r)),
+      linha('🏁', 'Saída final', r && r.saida && horaSaida(r))),
+    r ? null : h('p', {class:'meta'}, 'Nenhuma entrada aberta. A entrada é registrada quando você entra no painel.'),
+    botoes.length ? h('div', {class:'acoes'}, botoes) : null);
+}
 const fmtHoras = m => `${Math.floor(m / 60)}h${String(m % 60).padStart(2, '0')}`;
 function atualizarChipUsuario(){
   const chip = $('#usuarioChip'); if (!chip) return;
@@ -4647,11 +4713,35 @@ function atualizarChipUsuario(){
   let id = null; try { id = sessionStorage.getItem('kt_ponto'); } catch (e) {}
   const reg = (estado.ponto || []).find(p => p.id === id);
   chip.appendChild(h('span', {class:'chip-ini'}, (u.nome || '?').trim().charAt(0).toUpperCase()));
-  chip.appendChild(h('span', {class:'chip-txt'}, h('b', null, u.nome.split(' ')[0]), h('small', null, reg ? 'entrada ' + hhmm(horaEntrada(reg)) : (u.papel === 'admin' ? 'responsável' : 'secretária'))));
+  chip.appendChild(h('span', {class:'chip-txt'}, h('b', null, u.nome.split(' ')[0]), h('small', null, reg ? (situacaoPonto(reg) === 'almoco' ? 'no almoço' : 'entrada ' + hhmm(horaEntrada(reg))) : (u.papel === 'admin' ? 'responsável' : 'secretária'))));
 }
-async function sairDoPainel(){
+async function sairDoPainel(fechamento){
   const sec = estado.usuario && estado.usuario.papel === 'secretaria';
-  if (!await confirmar(sec ? 'Sair do painel e registrar a SAÍDA do ponto agora?' : 'Sair do painel? Para entrar de novo será preciso digitar a senha.', 'Sair', sec ? '🕐 Registrar saída e sair' : 'Sair')) return;
+  if (sec && fechamento !== true) {
+    const r = meuRegistroAberto();
+    if (r && situacaoPonto(r) === 'trabalhando' && !r.almocoSaida) {
+      const esc = await modal('Sair do painel', h('p', null, 'Você está saindo para o almoço ou encerrando o expediente?'),
+        [{texto:'Cancelar', valor:null}, {texto:'🍽️ Almoço (sair do painel)', valor:'almoco', classe:'ouro'}, {texto:'🏁 Fechar o ponto e sair', valor:'fim', classe:'rosa'}]);
+      if (!esc) return;
+      if (esc === 'almoco') {
+        r.almocoSaida = new Date().toISOString(); r.almocoRetorno = '';
+        try { await gravar('ponto', r); toast('🍽️ Saída para almoço às ' + hhmm(r.almocoSaida)); } catch (e) { await aviso('Não foi possível registrar a saída para almoço (sem internet?).', 'Ponto'); return; }
+        try { sessionStorage.removeItem('kt_sessao'); sessionStorage.removeItem('kt_nuvem'); } catch (e) {}
+        setTimeout(() => { location.href = 'index.html'; }, 700);
+        return;
+      }
+      fechamento = 'ok';
+    }
+    if (r && situacaoPonto(r) === 'almoco') {
+      const esc = await modal('Sair do painel', h('p', null, 'Você está em horário de almoço. O que deseja fazer?'),
+        [{texto:'Cancelar', valor:null}, {texto:'Só sair (continuo no almoço)', valor:'sair', classe:'ouro'}]);
+      if (!esc) return;
+      try { sessionStorage.removeItem('kt_sessao'); sessionStorage.removeItem('kt_nuvem'); } catch (e) {}
+      location.href = 'index.html'; return;
+    }
+  }
+  if (fechamento !== 'ok' && !(fechamento === true && sec) && !await confirmar(sec ? 'Fechar o ponto (registrar a SAÍDA FINAL) e sair do painel?' : 'Sair do painel? Para entrar de novo será preciso digitar a senha.', 'Sair', sec ? '🏁 Fechar ponto e sair' : 'Sair')) return;
+  if (fechamento === true && sec && !await confirmar('Fechar o ponto do dia agora? A saída final será registrada e você sairá do painel.', 'Fechar ponto', '🏁 Fechar ponto')) return;
   if (sec) {
     try { const r = await registrarSaida(); if (r) toast(`Saída registrada às ${hhmm(r.saida)}`); }
     catch (e) { if (!await confirmar('Não foi possível registrar a saída (sem internet?). Sair mesmo assim? Avise a Kárita para ajustar o ponto.', 'Ponto', 'Sair mesmo assim', true)) return; }
@@ -4663,14 +4753,16 @@ async function ajustarPonto(id){
   const r = (estado.ponto || []).find(x => x.id === id);
   if (!r) return;
   const toLocal = iso => { if (!iso) return ''; const d = new Date(iso); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16); };
-  const f = {entrada:toLocal(horaEntrada(r)), saida:toLocal(horaSaida(r)), obs:r.obs || ''};
+  const f = {entrada:toLocal(horaEntrada(r)), almocoSaida:toLocal(horaAlmSaida(r)), almocoRetorno:toLocal(horaAlmRetorno(r)), saida:toLocal(horaSaida(r)), obs:r.obs || ''};
   const ok = await modal('✏️ Ajustar ponto — ' + r.nome, h('div', {class:'grade'},
-    campo(f, 'entrada', 'Entrada', {tipo:'datetime-local'}), campo(f, 'saida', 'Saída', {tipo:'datetime-local'}),
+    campo(f, 'entrada', 'Entrada', {tipo:'datetime-local'}), campo(f, 'almocoSaida', 'Saída para almoço', {tipo:'datetime-local'}),
+    campo(f, 'almocoRetorno', 'Retorno do almoço', {tipo:'datetime-local'}), campo(f, 'saida', 'Saída final', {tipo:'datetime-local'}),
     campo(f, 'obs', 'Motivo do ajuste', {cheio:true, dica:'Ex.: esqueceu de registrar a saída'}),
     h('div', {class:'meta campo full', style:'color:var(--cinza)'}, r.servEntrada ? `Registro original do sistema: entrada ${hhmm(r.servEntrada)}${r.servSaida ? ', saída ' + hhmm(r.servSaida) : ''}.` : '')),
     [{texto:'Cancelar', valor:false}, {texto:'💾 Salvar ajuste', valor:true, classe:'rosa', antes:() => { if (!f.entrada) { toast('Informe a entrada'); return false; } if (!f.obs.trim()) { toast('Informe o motivo do ajuste'); return false; } }}]);
   if (!ok) return;
   r.entrada = new Date(f.entrada).toISOString(); r.saida = f.saida ? new Date(f.saida).toISOString() : '';
+  r.almocoSaida = f.almocoSaida ? new Date(f.almocoSaida).toISOString() : ''; r.almocoRetorno = f.almocoSaida && f.almocoRetorno ? new Date(f.almocoRetorno).toISOString() : '';
   r.data = f.entrada.slice(0, 10); r.obs = f.obs.trim(); r.ajustado = true; r.ajustadoEm = new Date().toISOString();
   await gravar('ponto', r);
   toast('Ponto ajustado'); ir('ponto');
@@ -4705,21 +4797,23 @@ function calcularMes(u, mes){
   const regs = (estado.ponto || []).filter(r => r.uid === u.id && (r.data || '').startsWith(mes));
   const jd = jornadaDia(c), tol = Number(c.tolerancia) || 0;
   const dias = [];
-  let trab = 0, diasTrab = 0, extra = 0, deficit = 0, faltas = 0, abonos = 0, previstos = 0, semSaida = 0;
+  let trab = 0, diasTrab = 0, extra = 0, deficit = 0, faltas = 0, abonos = 0, previstos = 0, semSaida = 0, ferias = 0, atestados = 0;
   for (let d = 1; d <= ultimo; d++) {
     const iso = `${mes}-${String(d).padStart(2, '0')}`;
     const ds = dataDe(iso).getDay();
     const previsto = (c.dias || []).includes(ds) && (!c.inicio || iso >= c.inicio);
     const rs = regs.filter(r => r.data === iso).sort((a, b) => (horaEntrada(a) || '').localeCompare(horaEntrada(b) || ''));
     const bruto = rs.reduce((s, r) => s + minutosPonto(r), 0);
-    const almoco = rs.length === 1 && bruto > 360 ? (Number(c.intervalo) || 0) : 0;   /* entrada e saída únicas: desconta o almoço */
+    const almoco = rs.length === 1 && bruto > 360 && !minutosAlmoco(rs[0]) ? (Number(c.intervalo) || 0) : 0;   /* sem registro de almoço: desconta o intervalo combinado */
     const min = Math.max(0, bruto - almoco);
-    const abono = fl.abonos[iso];
+    const aus = ausenciaNoDia(u, iso);
+    const abono = fl.abonos[iso] || (aus ? aus.tipo + (aus.obs ? ' — ' + aus.obs : '') : '');
     const futuro = iso > hoje;
     let st = '', ex = 0, df = 0;
     if (rs.some(r => !r.saida) && iso < hoje) { semSaida++; }
     const aberto = rs.some(r => !r.saida);
-    if (abono) { st = 'abono'; abonos++; }
+    if (aus && !rs.length) { st = 'ausencia'; if (aus.tipo === 'Férias') ferias++; else if (/Atestado/.test(aus.tipo)) atestados++; else abonos++; }
+    else if (abono) { st = 'abono'; abonos++; }
     else if (aberto && iso < hoje) { st = 'aberto'; diasTrab++; }
     else if (rs.length) {
       diasTrab++;
@@ -4728,9 +4822,9 @@ function calcularMes(u, mes){
     } else if (previsto && !futuro && iso !== hoje) { st = 'falta'; faltas++; }
     else if (previsto) st = 'previsto';
     else st = 'folga';
-    if (previsto) previstos++;
+    if (previsto && st !== 'ausencia') previstos++;
     trab += min; extra += ex; deficit += df;
-    dias.push({iso, ds, previsto, regs:rs, min, almoco, st, ex, df, abono});
+    dias.push({iso, ds, previsto, regs:rs, min, almoco, st, ex, df, abono, aus});
   }
   const vh = valorHora(c);
   const apExtras = fl.aplicarExtras === null || fl.aplicarExtras === undefined ? c.contarExtras : fl.aplicarExtras;
@@ -4743,9 +4837,80 @@ function calcularMes(u, mes){
   const vVale = Math.round(diasTrab * (Number(c.valeDia) || 0) * 100) / 100;
   const vAjustes = (fl.ajustes || []).reduce((s, a) => s + (Number(a.valor) || 0), 0);
   const total = Math.round((salario + vExtras - vFaltas - vAtrasos + vVale + vAjustes) * 100) / 100;
-  return {c, fl, dias, trab, diasTrab, extra, deficit, faltas, abonos, previstos, semSaida, jd, vh, salario, vExtras, vFaltas, vAtrasos, vVale, vAjustes, total, apExtras, apFaltas, apAtrasos, regs};
+  return {c, fl, dias, trab, diasTrab, extra, deficit, faltas, abonos, ferias, atestados, previstos, semSaida, jd, vh, salario, vExtras, vFaltas, vAtrasos, vVale, vAjustes, total, apExtras, apFaltas, apAtrasos, regs};
 }
 
+const TIPOS_AUSENCIA = ['Férias', 'Atestado médico', 'Licença maternidade', 'Licença (outra)', 'Folga combinada', 'Afastamento', 'Outro'];
+function ausenciaNoDia(u, iso){ return (u.ausencias || []).find(a => a.inicio <= iso && (a.fim || a.inicio) >= iso) || null; }
+function diasEntre(a, b){ return Math.round((dataDe(b) - dataDe(a)) / 86400000) + 1; }
+function cartaoAusencias(u, mes){
+  const lista = (u.ausencias || []).slice().sort((a, b) => b.inicio.localeCompare(a.inicio));
+  const doMes = lista.filter(a => a.inicio.slice(0, 7) <= mes && (a.fim || a.inicio).slice(0, 7) >= mes);
+  const hoje = hojeISO(), atual = ausenciaNoDia(u, hoje);
+  return h('div', {class:'cartao'}, h('h2', null, '🏖️ Férias e atestados'),
+    atual ? h('div', {class:'aviso-ok', style:'margin:0 0 10px'}, `Hoje: ${atual.tipo} até ${fmtData(atual.fim || atual.inicio)}`) : null,
+    doMes.length ? doMes.map(a => h('div', {class:'parc'},
+      h('div', {style:'flex:1;min-width:0'}, h('b', null, (a.tipo === 'Férias' ? '🏖️ ' : /Atestado/.test(a.tipo) ? '🩺 ' : '📌 ') + a.tipo),
+        h('div', {class:'meta'}, `${fmtData(a.inicio)} a ${fmtData(a.fim || a.inicio)} · ${diasEntre(a.inicio, a.fim || a.inicio)} dia(s)`), a.obs ? h('div', {class:'meta'}, a.obs) : null),
+      ehAdmin() ? h('button', {class:'btn peq', onclick:() => editarAusencia(u, a.id)}, '✏️') : null,
+      ehAdmin() ? h('button', {class:'btn peq perigo', onclick: async () => { if (!await confirmar(`Excluir ${a.tipo} de ${fmtData(a.inicio)} a ${fmtData(a.fim || a.inicio)}?`, 'Excluir', '🗑️ Excluir', true)) return; u.ausencias = (u.ausencias || []).filter(x => x.id !== a.id); await salvarUsuario(u); toast('Excluído'); ir('ponto'); }}, '🗑️') : null))
+      : h('div', {class:'meta', style:'color:var(--cinza)'}, 'Nenhuma férias ou atestado neste mês.'),
+    lista.length > doMes.length ? h('div', {class:'meta', style:'margin-top:6px'}, `Outros períodos cadastrados: ${lista.length - doMes.length} (aparecem nos meses deles).`) : null,
+    ehAdmin() ? h('div', {class:'acoes'}, h('button', {class:'btn ouro', onclick:() => editarAusencia(u)}, '＋ Lançar férias / atestado')) : null);
+}
+async function editarAusencia(u, id){
+  const orig = id ? (u.ausencias || []).find(a => a.id === id) : null;
+  const f = orig ? copia(orig) : {id:uid(), tipo:'Férias', inicio:hojeISO(), fim:somarDias(hojeISO(), 29), obs:''};
+  const info = h('div', {class:'meta campo full'});
+  const atual = () => { limpar(info); if (f.inicio && f.fim && f.fim >= f.inicio) info.appendChild(document.createTextNode(`Total: ${diasEntre(f.inicio, f.fim)} dia(s) corridos. Esses dias não contam como falta e não geram desconto.`)); };
+  const corpo = h('div', {class:'grade'},
+    campo(f, 'tipo', 'Tipo', {tipo:'select', opcoes:TIPOS_AUSENCIA, cheio:true, aoMudar:() => { if (orig) return; f.fim = f.tipo === 'Férias' ? somarDias(f.inicio, 29) : f.inicio; const ds = corpo.querySelectorAll('input[type=date]'); if (ds[1]) ds[1].value = f.fim; atual(); }}),
+    campo(f, 'inicio', 'Primeiro dia', {tipo:'date', aoMudar:atual}), campo(f, 'fim', 'Último dia', {tipo:'date', aoMudar:atual}),
+    campo(f, 'obs', 'Observação', {cheio:true, dica:'Ex.: CID não obrigatório; atestado do Dr. ...; férias referentes a 2025/2026'}), info);
+  atual();
+  const ok = await modal((orig ? '✏️ ' : '＋ ') + 'Férias / atestado — ' + u.nome.split(' ')[0], corpo,
+    [{texto:'Cancelar', valor:false}, {texto:'💾 Salvar', valor:true, classe:'rosa', antes:() => {
+      if (!f.inicio || !f.fim) { toast('Informe o primeiro e o último dia'); return false; }
+      if (f.fim < f.inicio) { toast('O último dia precisa ser depois do primeiro'); return false; }
+      const choque = (u.ausencias || []).find(a => a.id !== f.id && a.inicio <= f.fim && (a.fim || a.inicio) >= f.inicio);
+      if (choque) { toast(`Já existe ${choque.tipo} nesse período`); return false; } }}]);
+  if (!ok) return;
+  f.obs = String(f.obs || '').trim();
+  u.ausencias = (u.ausencias || []).filter(a => a.id !== f.id).concat(f);
+  await salvarUsuario(u); toast(f.tipo + ' lançado(a)'); ir('ponto');
+}
+async function limparDadosPonto(u, mes){
+  const [ano, m] = mes.split('-').map(Number);
+  const nm = MESES[m - 1] + ' de ' + ano;
+  const regsMes = (estado.ponto || []).filter(r => r.uid === u.id && (r.data || '').startsWith(mes));
+  const regsTodos = (estado.ponto || []).filter(r => r.uid === u.id);
+  const op = {mesPonto:false, mesSalario:false, ausencias:false, tudo:false};
+  const ck = (k, txt) => h('label', {class:'ck', style:'align-items:flex-start;margin:6px 0'}, h('input', {type:'checkbox', onchange:e => { op[k] = e.target.checked; }}), ' ', txt);
+  const conf = {txt:''};
+  const corpo = h('div', null,
+    h('p', {class:'meta', style:'margin:0 0 8px'}, `Escolha o que apagar de ${u.nome}. Isso não pode ser desfeito.`),
+    ck('mesPonto', `Registros de ponto de ${nm} (${regsMes.length})`),
+    ck('mesSalario', `Salário de ${nm}: pagamento, bônus, descontos e abonos (o pagamento também sai do Financeiro)`),
+    ck('ausencias', `Todas as férias e atestados cadastrados (${(u.ausencias || []).length})`),
+    ck('tudo', `TODO o histórico: ponto de todos os meses (${regsTodos.length}), salários e férias/atestados`),
+    h('div', {class:'grade', style:'margin-top:10px'}, campo(conf, 'txt', 'Para confirmar, digite APAGAR', {cheio:true})));
+  const ok = await modal('🧹 Limpar informações do ponto', corpo,
+    [{texto:'Cancelar', valor:false}, {texto:'🧹 Apagar', valor:true, classe:'perigo', antes:() => {
+      if (!Object.values(op).some(Boolean)) { toast('Marque o que deseja apagar'); return false; }
+      if (String(conf.txt).trim().toUpperCase() !== 'APAGAR') { toast('Digite APAGAR para confirmar'); return false; } }}]);
+  if (!ok) return;
+  const apagarRegs = op.tudo ? regsTodos : op.mesPonto ? regsMes : [];
+  let falhas = 0;
+  for (const r of apagarRegs) { try { await apagar('ponto', r.id); } catch (e) { falhas++; } }
+  const ids = new Set(apagarRegs.map(r => r.id));
+  estado.ponto = (estado.ponto || []).filter(r => !ids.has(r.id));
+  const tirarSalario = async ms => { const fl = (u.folhas || {})[ms]; if (fl && fl.lancId) { try { await apagar('financeiro', fl.lancId); } catch (e) {} estado.financeiro = estado.financeiro.filter(x => x.id !== fl.lancId); } if (u.folhas) delete u.folhas[ms]; };
+  if (op.tudo) { for (const ms of Object.keys(u.folhas || {})) await tirarSalario(ms); u.folhas = {}; u.ausencias = []; }
+  else { if (op.mesSalario) await tirarSalario(mes); if (op.ausencias) u.ausencias = []; }
+  if (op.tudo || op.mesSalario || op.ausencias) await salvarUsuario(u);
+  toast(falhas ? `Apagado, mas ${falhas} registro(s) não puderam ser excluídos (internet?)` : 'Informações apagadas');
+  ir('ponto');
+}
 async function salvarUsuario(u){
   await gravar('usuarios', u);
   const i = (estado.usuarios || []).findIndex(x => x.id === u.id);
@@ -4795,6 +4960,7 @@ function telaPonto(area){
     h('div', {class:'numero'}, h('b', null, `${r.diasTrab}/${r.previstos}`), h('span', null, 'Dias trabalhados / previstos')),
     h('div', {class:'numero'}, h('b', {style:'color:#2e7d4f'}, fmtHoras(r.extra)), h('span', null, 'Horas extras')),
     h('div', {class:'numero'}, h('b', {style:r.faltas ? 'color:#b3261e' : ''}, String(r.faltas)), h('span', null, `Falta(s)${r.deficit ? ' · ' + fmtHoras(r.deficit) + ' a menos' : ''}`))));
+  if (r.ferias || r.atestados) area.appendChild(h('div', {class:'aviso-ok'}, [r.ferias ? `🏖️ ${r.ferias} dia(s) de férias` : '', r.atestados ? `🩺 ${r.atestados} dia(s) de atestado` : ''].filter(Boolean).join(' · ') + ' neste mês (sem desconto).'));
   if (r.semSaida) area.appendChild(h('div', {class:'alerta'}, `⚠️ ${r.semSaida} dia(s) sem registro de saída. ${adm ? 'Use ✏️ Ajustar para corrigir.' : 'Avise a Kárita para ajustar.'}`));
   const abas = adm ? [['dias', '📅 Dia a dia'], ['salario', '💰 Salário'], ['docs', '📄 Relatórios'], ['contrato', '⚙️ Contrato']]
     : [['dias', '📅 Dia a dia'], ['salario', '💰 Meu salário'], ['docs', '📄 Relatórios']];
@@ -4804,12 +4970,15 @@ function telaPonto(area){
   if (f.aba === 'docs') return area.appendChild(abaDocs(u, f.mes, r, adm));
   if (f.aba === 'contrato' && adm) return area.appendChild(abaContrato(u));
   /* dia a dia */
+  if (!adm && f.mes === hojeISO().slice(0, 7)) area.appendChild(cartaoMeuPonto());
+  area.appendChild(cartaoAusencias(u, f.mes));
   const lista = h('div', {class:'cartao'}, h('h2', null, `Dia a dia — ${u.nome.split(' ')[0]}`),
     h('div', {class:'meta', style:'margin:-6px 0 10px'}, `Jornada combinada: ${r.c.entrada} às ${r.c.saida}, intervalo ${r.c.intervalo} min = ${fmtHoras(r.jd)} por dia (${(r.c.dias || []).map(d => DIAS_SEM[d]).join(', ')})`),
-    adm ? h('div', {class:'acoes', style:'margin:0 0 10px'}, h('button', {class:'btn ouro peq', onclick:() => lancarPontoManual(u)}, '＋ Lançar ponto manual')) : null);
-  const ROT = {aberto:['⏳ Sem saída', 'vermelho'], ok:['✔ Normal', 'verde'], extra:['⏫ Hora extra', 'verde'], deficit:['⏬ Faltou tempo', ''], falta:['❌ Falta', 'vermelho'], abono:['🟦 Abonado', ''], folga:['Folga', ''], previsto:['Previsto', '']};
+    adm ? h('div', {class:'acoes', style:'margin:0 0 10px'}, h('button', {class:'btn ouro peq', onclick:() => lancarPontoManual(u)}, '＋ Lançar ponto manual'),
+      h('button', {class:'btn peq perigo', onclick:() => limparDadosPonto(u, f.mes)}, '🧹 Limpar informações')) : null);
+  const ROT = {ausencia:['🏖️ Afastada', ''], aberto:['⏳ Sem saída', 'vermelho'], ok:['✔ Normal', 'verde'], extra:['⏫ Hora extra', 'verde'], deficit:['⏬ Faltou tempo', ''], falta:['❌ Falta', 'vermelho'], abono:['🟦 Abonado', ''], folga:['Folga', ''], previsto:['Previsto', '']};
   r.dias.slice().reverse().forEach(d => {
-    if (d.st === 'folga' && !d.regs.length) return;
+    if ((d.st === 'folga' || d.st === 'ausencia') && !d.regs.length && !(d.st === 'ausencia' && d.previsto)) return;
     if (d.st === 'previsto' && !d.regs.length) return;
     const [rot, cor] = ROT[d.st] || ['', ''];
     lista.appendChild(h('div', {class:'dia-ponto ' + d.st},
@@ -4820,13 +4989,14 @@ function telaPonto(area){
           d.regs.length ? h('b', {style:'margin-left:6px'}, fmtHoras(d.min)) : null,
           d.ex ? h('span', {class:'meta', style:'margin-left:6px;color:#2e7d4f'}, '+' + fmtHoras(d.ex)) : null,
           d.df ? h('span', {class:'meta', style:'margin-left:6px;color:#b3261e'}, '−' + fmtHoras(d.df)) : null,
-          d.abono ? h('div', {class:'meta'}, 'Motivo: ' + d.abono) : null,
+          d.abono ? h('div', {class:'meta'}, (d.st === 'ausencia' ? '' : 'Motivo: ') + d.abono) : null,
           d.almoco ? h('div', {class:'meta'}, `já descontado ${d.almoco} min de almoço`) : null),
         adm && !d.regs.length && d.st === 'falta' ? h('button', {class:'btn peq', onclick:() => abonarDia(u, d.iso)}, 'Abonar') : null,
         adm && d.abono ? h('button', {class:'btn peq', onclick:() => abonarDia(u, d.iso, true)}, 'Tirar abono') : null),
       d.regs.map(rg => h('div', {class:'dp-reg'},
         h('div', {style:'flex:1;min-width:0'},
           h('div', null, `🟢 ${hhmm(horaEntrada(rg))}  →  ${rg.saida ? '🔴 ' + hhmm(horaSaida(rg)) : '— sem saída'}`, rg.saida ? h('span', {class:'meta'}, '  (' + fmtHoras(minutosPonto(rg)) + ')') : null),
+          horaAlmSaida(rg) ? h('div', {class:'meta'}, `🍽️ Almoço ${hhmm(horaAlmSaida(rg))} → ${horaAlmRetorno(rg) ? hhmm(horaAlmRetorno(rg)) + ' (' + minutosAlmoco(rg) + ' min)' : 'sem retorno'}`) : null,
           rg.ajustado ? h('div', {class:'meta'}, (rg.manual ? '✍️ Lançado manualmente' : '✏️ Ajustado') + (rg.obs ? ': ' + rg.obs : '')) : null,
           rg.local ? h('div', {class:'meta'}, `📍 ${rg.local.distancia} m do consultório`) : null),
         adm ? h('div', {class:'acoes', style:'margin:0;gap:6px'},
@@ -4860,6 +5030,7 @@ function abaSalario(u, mes, r, adm){
     linhaValor('Atrasos / saídas antes', r.vAtrasos, '-', `${fmtHoras(r.deficit)}${r.apAtrasos ? '' : ' · não descontados'}`),
     toggle('aplicarAtrasos', 'Descontar atrasos neste mês', r.apAtrasos),
     r.vVale ? linhaValor('Vale-transporte', r.vVale, '+', `${r.diasTrab} dia(s) × ${moeda(c.valeDia)}`) : null,
+    r.ferias || r.atestados ? h('div', {class:'meta', style:'padding:6px 0'}, `Férias: ${r.ferias} dia(s) · Atestado: ${r.atestados} dia(s) — não descontados. Adicional de 1/3 de férias, se houver, lance em “＋ Bônus”.`) : null,
     (fl.ajustes || []).map((a, i) => h('div', null, linhaValor(a.descricao, a.valor, a.valor < 0 ? '-' : '+'),
       adm && !fl.pago ? h('button', {class:'btn peq perigo', style:'margin:-4px 0 6px', onclick: async () => { const nf = copia(fl); nf.ajustes.splice(i, 1); await salvarFolha(u, mes, nf); ir('ponto'); }}, 'Remover') : null)),
     h('div', {class:'linha-sal total'}, h('span', null, 'Total calculado'), h('b', null, moeda(r.total))),
@@ -4936,9 +5107,13 @@ async function excluirPonto(id){
   toast('Registro excluído'); ir('ponto');
 }
 async function lancarPontoManual(u){
-  const f = {data:hojeISO(), entrada:contratoDe(u).entrada, saida:contratoDe(u).saida, obs:''};
+  const cc = contratoDe(u), ini = minDeHora(cc.entrada) + Math.round((minDeHora(cc.saida) - minDeHora(cc.entrada)) / 2) - 30;
+  const hm = x => String(Math.floor(x / 60)).padStart(2, '0') + ':' + String(x % 60).padStart(2, '0');
+  const f = {data:hojeISO(), entrada:cc.entrada, almocoSaida:cc.intervalo ? hm(ini) : '', almocoRetorno:cc.intervalo ? hm(ini + Number(cc.intervalo)) : '', saida:cc.saida, obs:''};
   const ok = await modal('＋ Lançar ponto — ' + u.nome, h('div', {class:'grade'},
-    campo(f, 'data', 'Dia', {tipo:'date'}), campo(f, 'entrada', 'Entrada', {tipo:'time'}), campo(f, 'saida', 'Saída', {tipo:'time'}),
+    campo(f, 'data', 'Dia', {tipo:'date'}), campo(f, 'entrada', 'Entrada', {tipo:'time'}),
+    campo(f, 'almocoSaida', 'Saída para almoço', {tipo:'time'}), campo(f, 'almocoRetorno', 'Retorno do almoço', {tipo:'time'}),
+    campo(f, 'saida', 'Saída final', {tipo:'time'}),
     campo(f, 'obs', 'Motivo', {cheio:true, dica:'Ex.: esqueceu o celular, trabalhou fora do consultório'})),
     [{texto:'Cancelar', valor:false}, {texto:'💾 Lançar', valor:true, classe:'rosa', antes:() => {
       if (!f.data || !f.entrada) { toast('Informe o dia e a entrada'); return false; }
@@ -4946,7 +5121,8 @@ async function lancarPontoManual(u){
       if (!f.obs.trim()) { toast('Informe o motivo'); return false; } }}]);
   if (!ok) return;
   const reg = {id:uid(), uid:u.id, nome:u.nome, login:u.login || '', data:f.data, entrada:new Date(f.data + 'T' + f.entrada).toISOString(),
-    saida:f.saida ? new Date(f.data + 'T' + f.saida).toISOString() : '', obs:f.obs.trim(), ajustado:true, manual:true, ajustadoEm:new Date().toISOString(), local:null};
+    saida:f.saida ? new Date(f.data + 'T' + f.saida).toISOString() : '', almocoSaida:f.almocoSaida ? new Date(f.data + 'T' + f.almocoSaida).toISOString() : '',
+    almocoRetorno:f.almocoSaida && f.almocoRetorno ? new Date(f.data + 'T' + f.almocoRetorno).toISOString() : '', obs:f.obs.trim(), ajustado:true, manual:true, ajustadoEm:new Date().toISOString(), local:null};
   try { await gravar('ponto', reg); }
   catch (e) { await aviso('Não foi possível lançar. Se usa a nuvem, atualize as regras do Firebase (⚙️ Ajustes › Nuvem › Copiar regras) e tente de novo.', 'Ponto'); return; }
   estado.ponto = (estado.ponto || []).concat(reg);
@@ -5025,19 +5201,21 @@ function imprimirPonto(mes, uidFiltro){
     h('div', {class:'rel-tit'}, 'FOLHA DE PONTO — ' + MESES[m - 1].toUpperCase() + ' DE ' + ano),
     pessoas.length ? pessoas.map(u => {
       const r = calcularMes(u, mes);
-      const linhas = r.dias.filter(d => d.regs.length || d.st === 'falta' || d.abono);
+      const linhas = r.dias.filter(d => d.regs.length || d.st === 'falta' || (d.abono && (d.previsto || d.st !== 'ausencia')));
       return h('div', {class:'rel-sec', style:'page-break-inside:avoid'}, h('h3', null, `${u.nome} — ${r.c.cargo}`),
         h('div', {style:'font-size:11.5px;margin:0 0 6px;color:#55534f'}, `Jornada: ${r.c.entrada} às ${r.c.saida}, intervalo ${r.c.intervalo} min (${fmtHoras(r.jd)}/dia) · ${(r.c.dias || []).map(d => DIAS_SEM[d]).join(', ')}`),
         h('div', {class:'rel-box', style:'padding:0'}, h('table', {class:'rel-tab', style:'margin:0'},
-          h('tr', null, h('th', null, 'Data'), h('th', null, 'Entrada'), h('th', null, 'Saída'), h('th', null, 'Total'), h('th', null, 'Extra'), h('th', null, 'Falta / menos'), h('th', null, 'Observação')),
+          h('tr', null, h('th', null, 'Data'), h('th', null, 'Entrada'), h('th', null, 'Saída almoço'), h('th', null, 'Retorno'), h('th', null, 'Saída'), h('th', null, 'Total'), h('th', null, 'Extra'), h('th', null, 'Falta / menos'), h('th', null, 'Observação')),
           linhas.map(d => h('tr', null, h('td', null, `${DIAS_SEM[d.ds]} ${fmtData(d.iso).slice(0, 5)}`),
             h('td', null, d.regs.map(x => hhmm(horaEntrada(x))).join(' / ') || '—'),
+            h('td', null, d.regs.map(x => horaAlmSaida(x) ? hhmm(horaAlmSaida(x)) : '').filter(Boolean).join(' / ') || (d.regs.length ? '—' : '')),
+            h('td', null, d.regs.map(x => horaAlmRetorno(x) ? hhmm(horaAlmRetorno(x)) : '').filter(Boolean).join(' / ') || (d.regs.length ? '—' : '')),
             h('td', null, d.regs.map(x => x.saida ? hhmm(horaSaida(x)) : '—').join(' / ') || '—'),
             h('td', null, d.regs.length ? fmtHoras(d.min) : '—'), h('td', null, d.ex ? fmtHoras(d.ex) : ''),
             h('td', null, d.st === 'falta' ? 'FALTA' : d.df ? fmtHoras(d.df) : ''),
             h('td', null, [d.abono ? 'Abonado: ' + d.abono : '', ...d.regs.filter(x => x.ajustado).map(x => (x.manual ? 'Lançado: ' : 'Ajustado: ') + (x.obs || ''))].filter(Boolean).join(' · ')))),
-          h('tr', null, h('td', {colspan:'3', style:'font-weight:700'}, 'Totais do mês'), h('td', {style:'font-weight:700'}, fmtHoras(r.trab)),
-            h('td', {style:'font-weight:700'}, fmtHoras(r.extra)), h('td', {style:'font-weight:700'}, `${r.faltas} falta(s)${r.deficit ? ' · ' + fmtHoras(r.deficit) : ''}`), h('td', null, `${r.diasTrab} dia(s) trabalhado(s) · ${r.abonos} abonado(s)`)))),
+          h('tr', null, h('td', {colspan:'5', style:'font-weight:700'}, 'Totais do mês'), h('td', {style:'font-weight:700'}, fmtHoras(r.trab)),
+            h('td', {style:'font-weight:700'}, fmtHoras(r.extra)), h('td', {style:'font-weight:700'}, `${r.faltas} falta(s)${r.deficit ? ' · ' + fmtHoras(r.deficit) : ''}`), h('td', null, [`${r.diasTrab} dia(s) trabalhado(s)`, r.abonos ? `${r.abonos} abonado(s)` : '', r.ferias ? `${r.ferias} de férias` : '', r.atestados ? `${r.atestados} de atestado` : ''].filter(Boolean).join(' · '))))),
         h('p', {style:'font-size:11.5px;margin:12px 0 0'}, 'Declaro que os horários acima conferem com os dias e horários que trabalhei no período.'),
         assinaturas(u.nome));
     }) : h('p', null, 'Nenhuma secretária no período.'),

@@ -1,9 +1,9 @@
 /* Revitta Enfermagem 360° — funciona como aplicativo e abre mesmo com internet fraca.
    Desenvolvido por Wendel Emílio de Souza Matias — oficial.respostas@gmail.com */
-const CACHE = 'kt-app-v2.8';
+const CACHE = 'kt-app-v2.8.1';
 const ARQUIVOS = ['./', 'index.html', 'relatorio-atendimento.html', 'site.webmanifest', 'painel.webmanifest',
   'icones/icon-192.png', 'icones/icon-512.png', 'icones/icon-maskable-512.png', 'icones/apple-touch-icon.png', 'icones/favicon-64.png',
-  'img/logo-revitta.webp', 'img/emblema-revitta.webp', 'img/karita-teodoro.webp'];
+  'img/logo-revitta.png', 'img/emblema-revitta.png', 'img/karita-teodoro.jpg'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ARQUIVOS)).then(() => self.skipWaiting()));
 });

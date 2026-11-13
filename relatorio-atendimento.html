@@ -541,6 +541,16 @@ h1,h2,h3,.cartao h2{font-family:Georgia,"Times New Roman",serif;color:var(--vinh
 .modal h2,.modal-cab h2{color:var(--vinho)!important;font-weight:500}
 .rodape-app{color:var(--cinza)}
 .rodape-app b{color:var(--ouro-esc)}
+
+.dia-ponto{border:1px solid var(--borda);border-radius:12px;padding:8px 10px;margin-bottom:8px;background:#fff}
+.dia-ponto.falta,.dia-ponto.aberto{border-color:#e9b3ae;background:#fff8f7}.dia-ponto.abono{border-color:#b9cde6;background:#f6f9fd}.dia-ponto.extra{border-left:4px solid #5fae7b}.dia-ponto.deficit{border-left:4px solid #d99a3d}
+.dp-cab{display:flex;gap:10px;align-items:center}
+.dp-reg{display:flex;gap:8px;align-items:center;border-top:1px dashed var(--borda);margin-top:8px;padding-top:8px;font-size:14px}
+.quadro-sal{border:1px solid var(--borda);border-radius:12px;padding:6px 14px;background:#fff}
+.linha-sal{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:9px 0;border-bottom:1px dashed var(--borda)}
+.linha-sal span small{display:block;color:var(--cinza);font-size:12px}
+.linha-sal.total{border-bottom:none;border-top:2px solid var(--ouro);margin-top:4px;font-size:17px}.linha-sal.total b{color:var(--ouro-esc);font-size:20px}
+.selo.vermelho{background:#fdecea;color:#b3261e;border-color:#f3c3be}
 </style>
 </head>
 <body class="bloqueado">
@@ -725,8 +735,8 @@ function operar(store, modo, fn){
    ========================================================= */
 /* >>> Preenchido pelo botão "Baixar painel configurado" (Ajustes › Trabalho em equipe) <<< */
 const NUVEM = {projectId:'', apiKey:'', adminEmail:''};
-const VERSAO = '2.8.2';
-const VERSAO_DATA = '12/11/2026';
+const VERSAO = '2.10';
+const VERSAO_DATA = '13/11/2026';
 const DOMINIO_EQUIPE = 'equipe.karitateodoro.app';
 const emNuvem = () => !!(NUVEM.projectId && NUVEM.apiKey && NUVEM.adminEmail);
 const SO_LOCAL = new Set(['midias', 'fotos']);
@@ -903,7 +913,7 @@ async function nuvemLerTodos(store){
     return ag;
   }
   if (store === 'financeiro') return (await nuvemListar(COLECOES.financeiro, adm ? null : ['tipo', 'receita'])).map(doJson).map(o => marcar(store, o));
-  if (store === 'usuarios') return adm ? (await nuvemListar(COLECOES.usuarios)).map(doJson) : [];
+  if (store === 'usuarios') { if (adm) return (await nuvemListar(COLECOES.usuarios)).map(doJson); try { const d = await nuvemGet(COLECOES.usuarios, sessaoNuvem.uid); return d ? [doJson(d)] : []; } catch (e) { return []; } }
   if (store === 'bloqueios') return (await nuvemListar(COLECOES.bloqueios)).map(doJson);
   if (store === 'ponto') return (await nuvemListar(COLECOES.ponto, adm ? null : ['uid', sessaoNuvem.uid])).map(x => Object.assign(doJson(x), {servEntrada:x.horaServidorEntrada || '', servSaida:x.horaServidorSaida || ''}));
   return [];
@@ -4402,15 +4412,23 @@ async function carregarExemplo(silencioso){
   ];
   for (const l of lancs) await gravar('financeiro', l);
   if (!emNuvem() && !(estado.usuarios || []).some(u => u.login === 'bruna')) {
-    const sec = {id:uid(), nome:'Bruna Costa (teste)', login:'bruna', senhaHash:resumoSenha('bruna123'), papel:'secretaria', ativo:true, criadoEm:Date.now(), teste:true};
-    await gravar('usuarios', sec);
-    for (let i = 1; i <= 6; i++) {
+    const sec = {id:uid(), nome:'Bruna Costa (teste)', login:'bruna', senhaHash:resumoSenha('bruna123'), papel:'secretaria', ativo:true, criadoEm:Date.now(), teste:true,
+      contrato:Object.assign({}, CONTRATO_PADRAO, {salario:1800, inicio:somarDias(hj, -90), valeDia:9, pix:'bruna@exemplo.com'})};
+    const mesAnt = isoDe(new Date(dataDe(hj).getFullYear(), dataDe(hj).getMonth() - 1, 1, 12)).slice(0, 7);
+    sec.folhas = {[hj.slice(0, 7)]:{ajustes:[{descricao:'Adiantamento (vale) do dia 05', tipo:'Adiantamento (vale)', valor:-300}], abonos:{}},
+      [mesAnt]:{ajustes:[], abonos:{}, pago:true, pagoEm:mesAnt + '-05', forma:'Pix', valorPago:1872.40}};
+    for (let i = 1; i <= 45; i++) {
       const dia = somarDias(hj, -i), dd = dataDe(dia);
-      if (dd.getDay() === 0) continue;
-      const ent = new Date(dd.getFullYear(), dd.getMonth(), dd.getDate(), 7 + (i % 2), 50 + (i % 3) * 3);
-      const sai = new Date(ent.getTime() + (9 * 60 + (i * 7) % 40) * 60000);
-      await gravar('ponto', {id:uid(), uid:sec.id, nome:sec.nome, login:sec.login, data:dia, entrada:ent.toISOString(), saida: i === 3 ? '' : sai.toISOString(), obs:'', teste:true});
+      if (dd.getDay() === 0 || dd.getDay() === 6) continue;
+      if (i === 9) continue;   /* falta sem aviso */
+      if (i === 16) { const m2 = dia.slice(0, 7); sec.folhas[m2] = sec.folhas[m2] || {ajustes:[], abonos:{}}; sec.folhas[m2].abonos[dia] = 'Atestado médico'; continue; }
+      const ent = new Date(dd.getFullYear(), dd.getMonth(), dd.getDate(), 7, 52 + (i * 7) % 16);
+      const extraMin = i === 5 ? 75 : i === 12 ? 40 : i === 7 ? -50 : (i % 4) * 3;
+      const sai = new Date(dd.getFullYear(), dd.getMonth(), dd.getDate(), 17, 0 + Math.max(0, extraMin));
+      const saiF = extraMin < 0 ? new Date(sai.getTime() + extraMin * 60000) : sai;
+      await gravar('ponto', {id:uid(), uid:sec.id, nome:sec.nome, login:sec.login, data:dia, entrada:ent.toISOString(), saida: i === 3 ? '' : saiF.toISOString(), obs:'', teste:true});
     }
+    await gravar('usuarios', sec);
   }
   if (!(estado.bloqueios || []).some(b => b.teste)) {
     await gravar('bloqueios', {id:uid(), inicio:somarDias(hj, 10), fim:somarDias(hj, 11), diaInteiro:true, horaIni:'08:00', horaFim:'12:00', motivo:'Congresso / curso', obs:'Congresso em Goiânia (teste)', criadoPor:'teste', criadoEm:Date.now(), teste:true});
@@ -4641,42 +4659,6 @@ async function sairDoPainel(){
   try { sessionStorage.removeItem('kt_sessao'); sessionStorage.removeItem('kt_nuvem'); sessionStorage.removeItem('kt_ponto'); } catch (e) {}
   setTimeout(() => { location.href = 'index.html'; }, 600);
 }
-function telaPonto(area){
-  const adm = ehAdmin();
-  const f = estado.pontoFiltro || (estado.pontoFiltro = {mes:hojeISO().slice(0, 7), uid:''});
-  const [ano, m] = f.mes.split('-').map(Number);
-  const nomeMes = MESES[m - 1].charAt(0).toUpperCase() + MESES[m - 1].slice(1) + ' de ' + ano;
-  const mover = n => { f.mes = isoDe(new Date(ano, m - 1 + n, 1, 12)).slice(0, 7); ir('ponto'); };
-  area.appendChild(h('div', {class:'titulo-pag'}, h('h2', null, adm ? '🕐 Ponto da equipe' : '🕐 Meu ponto'),
-    h('button', {class:'btn ouro', onclick:() => imprimirPonto(f.mes, adm ? f.uid : estado.usuario.uid)}, '🖨️ Imprimir')));
-  const selU = h('select', null, h('option', {value:''}, 'Todas as secretárias'), (estado.usuarios || []).map(u => h('option', {value:u.id}, u.nome)));
-  selU.value = f.uid;
-  selU.addEventListener('change', () => { f.uid = selU.value; ir('ponto'); });
-  area.appendChild(h('div', {class:'cartao'},
-    h('div', {class:'ag-topo'}, h('button', {class:'btn peq', onclick:() => mover(-1)}, '◀'), h('div', {class:'rotulo'}, nomeMes), h('button', {class:'btn peq', onclick:() => mover(1)}, '▶')),
-    adm ? h('div', {class:'busca', style:'margin:10px 0 0'}, selU) : null));
-  const regs = (estado.ponto || []).filter(r => (r.data || '').startsWith(f.mes) && (adm ? (!f.uid || r.uid === f.uid) : r.uid === estado.usuario.uid))
-    .sort((a, b) => (b.entrada || '').localeCompare(a.entrada || ''));
-  const porPessoa = {};
-  regs.forEach(r => { porPessoa[r.nome] = (porPessoa[r.nome] || 0) + minutosPonto(r); });
-  area.appendChild(h('div', {class:'numeros g3'},
-    Object.keys(porPessoa).length ? Object.entries(porPessoa).map(([n, min]) => h('div', {class:'numero'}, h('b', null, fmtHoras(min)), h('span', null, n.split(' ')[0] + ' no mês')))
-      : h('div', {class:'numero'}, h('b', null, '0h00'), h('span', null, 'Horas no mês'))));
-  const lista = h('div', {class:'cartao'}, h('h2', null, `Registros (${regs.length})`));
-  if (!regs.length) lista.appendChild(h('div', {class:'vazio'}, h('span', {class:'ico'}, '🕐'), 'Nenhum registro de ponto neste mês.'));
-  regs.forEach(r => {
-    const d = dataDe(r.data);
-    lista.appendChild(h('div', {class:'parc' + (!r.saida ? ' atr' : '')},
-      h('div', {class:'pn', style:'min-width:58px'}, DIAS_SEM[d.getDay()], h('br'), fmtData(r.data).slice(0, 5)),
-      h('div', {style:'flex:1;min-width:0'},
-        adm ? h('b', null, r.nome) : null,
-        h('div', null, `Entrada ${hhmm(horaEntrada(r))}  ·  Saída ${r.saida ? hhmm(horaSaida(r)) : '— sem saída'}`),
-        h('div', {class:'meta'}, r.saida ? 'Total: ' + fmtHoras(minutosPonto(r)) : 'Saída não registrada', r.ajustado ? ' · ✏️ ajustado' + (r.obs ? ': ' + r.obs : '') : ''),
-        r.local ? h('div', {class:'meta'}, `📍 Entrou a ${r.local.distancia} m do consultório (GPS ±${r.local.precisao} m)`) : null),
-      adm ? h('button', {class:'btn peq', onclick:() => ajustarPonto(r.id)}, '✏️ Ajustar') : null));
-  });
-  area.appendChild(lista);
-}
 async function ajustarPonto(id){
   const r = (estado.ponto || []).find(x => x.id === id);
   if (!r) return;
@@ -4693,26 +4675,431 @@ async function ajustarPonto(id){
   await gravar('ponto', r);
   toast('Ponto ajustado'); ir('ponto');
 }
+
+/* =========================================================
+   PONTO ELETRÔNICO + SALÁRIO DA SECRETÁRIA (v2.10)
+   ========================================================= */
+const CONTRATO_PADRAO = {cargo:'Secretária', salario:0, inicio:'', dias:[1, 2, 3, 4, 5], entrada:'08:00', saida:'17:00', intervalo:60,
+  tolerancia:10, extraPct:50, contarExtras:true, descontarFaltas:true, descontarAtrasos:false, valeDia:0, pix:'', obs:''};
+const minDeHora = s => { const [a, b] = String(s || '0:0').split(':').map(Number); return (a || 0) * 60 + (b || 0); };
+function contratoDe(u){ return Object.assign({}, CONTRATO_PADRAO, (u && u.contrato) || {}); }
+function jornadaDia(c){ return Math.max(0, minDeHora(c.saida) - minDeHora(c.entrada) - (Number(c.intervalo) || 0)); }
+function valorHora(c){
+  const semanal = jornadaDia(c) * (c.dias || []).length / 60;
+  const divisor = semanal ? semanal * 5 : 220;
+  return (Number(c.salario) || 0) / divisor;
+}
+function folhaDe(u, mes){
+  if (!u.folhas) u.folhas = {};
+  return Object.assign({ajustes:[], abonos:{}, aplicarExtras:null, aplicarFaltas:null, aplicarAtrasos:null, pago:false}, u.folhas[mes] || {});
+}
+function secretarias(){ return (estado.usuarios || []).filter(u => u.papel !== 'admin').sort((a, b) => (a.nome || '').localeCompare(b.nome || '')); }
+function usuarioPonto(id){ return (estado.usuarios || []).find(u => u.id === id) || (estado.usuario && estado.usuario.uid === id ? {id, nome:estado.usuario.nome, login:estado.usuario.login, papel:'secretaria'} : null); }
+
+/* cálculo do mês: dia a dia + valores */
+function calcularMes(u, mes){
+  const c = contratoDe(u), fl = folhaDe(u, mes);
+  const [ano, m] = mes.split('-').map(Number);
+  const ultimo = new Date(ano, m, 0).getDate();
+  const hoje = hojeISO();
+  const regs = (estado.ponto || []).filter(r => r.uid === u.id && (r.data || '').startsWith(mes));
+  const jd = jornadaDia(c), tol = Number(c.tolerancia) || 0;
+  const dias = [];
+  let trab = 0, diasTrab = 0, extra = 0, deficit = 0, faltas = 0, abonos = 0, previstos = 0, semSaida = 0;
+  for (let d = 1; d <= ultimo; d++) {
+    const iso = `${mes}-${String(d).padStart(2, '0')}`;
+    const ds = dataDe(iso).getDay();
+    const previsto = (c.dias || []).includes(ds) && (!c.inicio || iso >= c.inicio);
+    const rs = regs.filter(r => r.data === iso).sort((a, b) => (horaEntrada(a) || '').localeCompare(horaEntrada(b) || ''));
+    const bruto = rs.reduce((s, r) => s + minutosPonto(r), 0);
+    const almoco = rs.length === 1 && bruto > 360 ? (Number(c.intervalo) || 0) : 0;   /* entrada e saída únicas: desconta o almoço */
+    const min = Math.max(0, bruto - almoco);
+    const abono = fl.abonos[iso];
+    const futuro = iso > hoje;
+    let st = '', ex = 0, df = 0;
+    if (rs.some(r => !r.saida) && iso < hoje) { semSaida++; }
+    const aberto = rs.some(r => !r.saida);
+    if (abono) { st = 'abono'; abonos++; }
+    else if (aberto && iso < hoje) { st = 'aberto'; diasTrab++; }
+    else if (rs.length) {
+      diasTrab++;
+      if (previsto) { const dif = min - jd; if (dif > tol) ex = dif; else if (dif < -tol && !rs.some(r => !r.saida)) df = -dif; st = ex ? 'extra' : df ? 'deficit' : 'ok'; }
+      else { ex = min; st = 'extra'; }
+    } else if (previsto && !futuro && iso !== hoje) { st = 'falta'; faltas++; }
+    else if (previsto) st = 'previsto';
+    else st = 'folga';
+    if (previsto) previstos++;
+    trab += min; extra += ex; deficit += df;
+    dias.push({iso, ds, previsto, regs:rs, min, almoco, st, ex, df, abono});
+  }
+  const vh = valorHora(c);
+  const apExtras = fl.aplicarExtras === null || fl.aplicarExtras === undefined ? c.contarExtras : fl.aplicarExtras;
+  const apFaltas = fl.aplicarFaltas === null || fl.aplicarFaltas === undefined ? c.descontarFaltas : fl.aplicarFaltas;
+  const apAtrasos = fl.aplicarAtrasos === null || fl.aplicarAtrasos === undefined ? c.descontarAtrasos : fl.aplicarAtrasos;
+  const salario = Number(c.salario) || 0;
+  const vExtras = apExtras ? Math.round(extra / 60 * vh * (1 + (Number(c.extraPct) || 0) / 100) * 100) / 100 : 0;
+  const vFaltas = apFaltas ? Math.round(faltas * salario / 30 * 100) / 100 : 0;
+  const vAtrasos = apAtrasos ? Math.round(deficit / 60 * vh * 100) / 100 : 0;
+  const vVale = Math.round(diasTrab * (Number(c.valeDia) || 0) * 100) / 100;
+  const vAjustes = (fl.ajustes || []).reduce((s, a) => s + (Number(a.valor) || 0), 0);
+  const total = Math.round((salario + vExtras - vFaltas - vAtrasos + vVale + vAjustes) * 100) / 100;
+  return {c, fl, dias, trab, diasTrab, extra, deficit, faltas, abonos, previstos, semSaida, jd, vh, salario, vExtras, vFaltas, vAtrasos, vVale, vAjustes, total, apExtras, apFaltas, apAtrasos, regs};
+}
+
+async function salvarUsuario(u){
+  await gravar('usuarios', u);
+  const i = (estado.usuarios || []).findIndex(x => x.id === u.id);
+  if (i >= 0) estado.usuarios[i] = u; else estado.usuarios = (estado.usuarios || []).concat(u);
+}
+async function salvarFolha(u, mes, fl){ u.folhas = Object.assign({}, u.folhas || {}); u.folhas[mes] = fl; await salvarUsuario(u); }
+
+/* ---------------- TELA ---------------- */
+function telaPonto(area){
+  const adm = ehAdmin();
+  const f = estado.pontoFiltro || (estado.pontoFiltro = {mes:hojeISO().slice(0, 7), uid:''});
+  if (!f.aba) f.aba = 'dias';
+  const secs = secretarias();
+  if (adm && !f.uid && secs.length === 1) f.uid = secs[0].id;
+  if (!adm) f.uid = estado.usuario.uid;
+  const [ano, m] = f.mes.split('-').map(Number);
+  const nomeMes = MESES[m - 1].charAt(0).toUpperCase() + MESES[m - 1].slice(1) + ' de ' + ano;
+  const mover = n => { f.mes = isoDe(new Date(ano, m - 1 + n, 1, 12)).slice(0, 7); ir('ponto'); };
+  area.appendChild(h('div', {class:'titulo-pag'}, h('h2', null, adm ? '🕐 Ponto e salário' : '🕐 Meu ponto')));
+  const selU = h('select', null, h('option', {value:''}, '— Todas as secretárias —'), secs.map(u => h('option', {value:u.id}, u.nome + (u.ativo === false ? ' (desativada)' : ''))));
+  selU.value = f.uid;
+  selU.addEventListener('change', () => { f.uid = selU.value; ir('ponto'); });
+  area.appendChild(h('div', {class:'cartao'},
+    h('div', {class:'ag-topo'}, h('button', {class:'btn peq', onclick:() => mover(-1)}, '◀'), h('div', {class:'rotulo'}, nomeMes), h('button', {class:'btn peq', onclick:() => mover(1)}, '▶')),
+    adm ? h('div', {class:'busca', style:'margin:10px 0 0'}, selU) : null));
+
+  /* todas: resumo por secretária */
+  if (adm && !f.uid) {
+    if (!secs.length) { area.appendChild(h('div', {class:'cartao'}, h('div', {class:'vazio'}, h('span', {class:'ico'}, '👥'), 'Nenhuma secretária cadastrada. Cadastre em ⚙️ Ajustes › Equipe.'))); return; }
+    area.appendChild(h('div', {class:'cartao'}, h('h2', null, 'Resumo do mês'), secs.map(u => {
+      const r = calcularMes(u, f.mes);
+      return h('div', {class:'parc', style:'cursor:pointer', onclick:() => { f.uid = u.id; ir('ponto'); }},
+        h('div', {class:'pn', style:'min-width:46px'}, (u.nome || '?').charAt(0)),
+        h('div', {style:'flex:1;min-width:0'}, h('b', null, u.nome),
+          h('div', {class:'meta'}, `${fmtHoras(r.trab)} trabalhadas · ${r.diasTrab} dia(s) · ${r.faltas} falta(s)`),
+          h('div', {class:'meta'}, r.salario ? `A pagar: ${moeda(r.total)}` : 'Salário não cadastrado')),
+        r.fl.pago ? h('span', {class:'selo verde'}, '✔ Pago') : h('span', {class:'selo'}, 'Em aberto'));
+    })));
+    return;
+  }
+  const u = usuarioPonto(f.uid);
+  if (!u) { area.appendChild(h('div', {class:'cartao'}, h('div', {class:'vazio'}, 'Secretária não encontrada.'))); return; }
+  const r = calcularMes(u, f.mes);
+  const semContrato = !(Number(r.c.salario) > 0);
+  area.appendChild(h('div', {class:'numeros'},
+    h('div', {class:'numero'}, h('b', null, fmtHoras(r.trab)), h('span', null, 'Horas trabalhadas')),
+    h('div', {class:'numero'}, h('b', null, `${r.diasTrab}/${r.previstos}`), h('span', null, 'Dias trabalhados / previstos')),
+    h('div', {class:'numero'}, h('b', {style:'color:#2e7d4f'}, fmtHoras(r.extra)), h('span', null, 'Horas extras')),
+    h('div', {class:'numero'}, h('b', {style:r.faltas ? 'color:#b3261e' : ''}, String(r.faltas)), h('span', null, `Falta(s)${r.deficit ? ' · ' + fmtHoras(r.deficit) + ' a menos' : ''}`))));
+  if (r.semSaida) area.appendChild(h('div', {class:'alerta'}, `⚠️ ${r.semSaida} dia(s) sem registro de saída. ${adm ? 'Use ✏️ Ajustar para corrigir.' : 'Avise a Kárita para ajustar.'}`));
+  const abas = adm ? [['dias', '📅 Dia a dia'], ['salario', '💰 Salário'], ['docs', '📄 Relatórios'], ['contrato', '⚙️ Contrato']]
+    : [['dias', '📅 Dia a dia'], ['salario', '💰 Meu salário'], ['docs', '📄 Relatórios']];
+  area.appendChild(h('div', {class:'modos', style:'margin:0 0 12px;flex-wrap:wrap'}, abas.map(([k, t]) =>
+    h('button', {class:f.aba === k ? 'ativo' : '', onclick:() => { f.aba = k; ir('ponto'); }}, t))));
+  if (f.aba === 'salario') return area.appendChild(abaSalario(u, f.mes, r, adm));
+  if (f.aba === 'docs') return area.appendChild(abaDocs(u, f.mes, r, adm));
+  if (f.aba === 'contrato' && adm) return area.appendChild(abaContrato(u));
+  /* dia a dia */
+  const lista = h('div', {class:'cartao'}, h('h2', null, `Dia a dia — ${u.nome.split(' ')[0]}`),
+    h('div', {class:'meta', style:'margin:-6px 0 10px'}, `Jornada combinada: ${r.c.entrada} às ${r.c.saida}, intervalo ${r.c.intervalo} min = ${fmtHoras(r.jd)} por dia (${(r.c.dias || []).map(d => DIAS_SEM[d]).join(', ')})`),
+    adm ? h('div', {class:'acoes', style:'margin:0 0 10px'}, h('button', {class:'btn ouro peq', onclick:() => lancarPontoManual(u)}, '＋ Lançar ponto manual')) : null);
+  const ROT = {aberto:['⏳ Sem saída', 'vermelho'], ok:['✔ Normal', 'verde'], extra:['⏫ Hora extra', 'verde'], deficit:['⏬ Faltou tempo', ''], falta:['❌ Falta', 'vermelho'], abono:['🟦 Abonado', ''], folga:['Folga', ''], previsto:['Previsto', '']};
+  r.dias.slice().reverse().forEach(d => {
+    if (d.st === 'folga' && !d.regs.length) return;
+    if (d.st === 'previsto' && !d.regs.length) return;
+    const [rot, cor] = ROT[d.st] || ['', ''];
+    lista.appendChild(h('div', {class:'dia-ponto ' + d.st},
+      h('div', {class:'dp-cab'},
+        h('div', {class:'pn', style:'min-width:52px'}, DIAS_SEM[d.ds], h('br'), fmtData(d.iso).slice(0, 5)),
+        h('div', {style:'flex:1;min-width:0'},
+          h('span', {class:'selo ' + cor}, rot),
+          d.regs.length ? h('b', {style:'margin-left:6px'}, fmtHoras(d.min)) : null,
+          d.ex ? h('span', {class:'meta', style:'margin-left:6px;color:#2e7d4f'}, '+' + fmtHoras(d.ex)) : null,
+          d.df ? h('span', {class:'meta', style:'margin-left:6px;color:#b3261e'}, '−' + fmtHoras(d.df)) : null,
+          d.abono ? h('div', {class:'meta'}, 'Motivo: ' + d.abono) : null,
+          d.almoco ? h('div', {class:'meta'}, `já descontado ${d.almoco} min de almoço`) : null),
+        adm && !d.regs.length && d.st === 'falta' ? h('button', {class:'btn peq', onclick:() => abonarDia(u, d.iso)}, 'Abonar') : null,
+        adm && d.abono ? h('button', {class:'btn peq', onclick:() => abonarDia(u, d.iso, true)}, 'Tirar abono') : null),
+      d.regs.map(rg => h('div', {class:'dp-reg'},
+        h('div', {style:'flex:1;min-width:0'},
+          h('div', null, `🟢 ${hhmm(horaEntrada(rg))}  →  ${rg.saida ? '🔴 ' + hhmm(horaSaida(rg)) : '— sem saída'}`, rg.saida ? h('span', {class:'meta'}, '  (' + fmtHoras(minutosPonto(rg)) + ')') : null),
+          rg.ajustado ? h('div', {class:'meta'}, (rg.manual ? '✍️ Lançado manualmente' : '✏️ Ajustado') + (rg.obs ? ': ' + rg.obs : '')) : null,
+          rg.local ? h('div', {class:'meta'}, `📍 ${rg.local.distancia} m do consultório`) : null),
+        adm ? h('div', {class:'acoes', style:'margin:0;gap:6px'},
+          h('button', {class:'btn peq', onclick:() => ajustarPonto(rg.id)}, '✏️'),
+          h('button', {class:'btn peq perigo', title:'Excluir', onclick:() => excluirPonto(rg.id)}, '🗑️')) : null))));
+  });
+  if (!r.regs.length && !r.faltas) lista.appendChild(h('div', {class:'vazio'}, h('span', {class:'ico'}, '🕐'), 'Nenhum registro de ponto neste mês.'));
+  area.appendChild(lista);
+}
+
+function linhaValor(rot, v, sinal, obs){
+  return h('div', {class:'linha-sal'}, h('span', null, rot, obs ? h('small', null, obs) : null),
+    h('b', {style:sinal === '-' ? 'color:#b3261e' : sinal === '+' ? 'color:#2e7d4f' : ''}, (sinal === '-' ? '− ' : sinal === '+' ? '+ ' : '') + moeda(Math.abs(v))));
+}
+function abaSalario(u, mes, r, adm){
+  const c = r.c, fl = r.fl;
+  const card = h('div', {class:'cartao'}, h('h2', null, '💰 Salário do mês'));
+  if (!(Number(c.salario) > 0)) {
+    card.appendChild(h('div', {class:'vazio'}, h('span', {class:'ico'}, '💼'), adm ? 'Cadastre o salário e a jornada na aba ⚙️ Contrato.' : 'O salário ainda não foi cadastrado pela Kárita.'));
+    if (adm) card.appendChild(h('div', {class:'acoes'}, h('button', {class:'btn rosa', onclick:() => { estado.pontoFiltro.aba = 'contrato'; ir('ponto'); }}, '⚙️ Cadastrar contrato')));
+    return card;
+  }
+  const toggle = (chave, rot, valAtual) => adm && !fl.pago ? h('label', {class:'ck', style:'font-size:13.5px;margin-top:2px'},
+    h('input', {type:'checkbox', checked:valAtual, onchange: async e => { const nf = copia(fl); nf[chave] = e.target.checked; await salvarFolha(u, mes, nf); ir('ponto'); }}), ' ' + rot) : null;
+  card.appendChild(h('div', {class:'quadro-sal'},
+    linhaValor('Salário base', r.salario, '', c.cargo),
+    linhaValor('Horas extras', r.vExtras, '+', `${fmtHoras(r.extra)} com acréscimo de ${c.extraPct}%${r.apExtras ? '' : ' · não incluídas'}`),
+    toggle('aplicarExtras', 'Pagar horas extras neste mês', r.apExtras),
+    linhaValor('Faltas', r.vFaltas, '-', `${r.faltas} dia(s) × 1/30 do salário${r.apFaltas ? '' : ' · não descontadas'}`),
+    toggle('aplicarFaltas', 'Descontar faltas neste mês', r.apFaltas),
+    linhaValor('Atrasos / saídas antes', r.vAtrasos, '-', `${fmtHoras(r.deficit)}${r.apAtrasos ? '' : ' · não descontados'}`),
+    toggle('aplicarAtrasos', 'Descontar atrasos neste mês', r.apAtrasos),
+    r.vVale ? linhaValor('Vale-transporte', r.vVale, '+', `${r.diasTrab} dia(s) × ${moeda(c.valeDia)}`) : null,
+    (fl.ajustes || []).map((a, i) => h('div', null, linhaValor(a.descricao, a.valor, a.valor < 0 ? '-' : '+'),
+      adm && !fl.pago ? h('button', {class:'btn peq perigo', style:'margin:-4px 0 6px', onclick: async () => { const nf = copia(fl); nf.ajustes.splice(i, 1); await salvarFolha(u, mes, nf); ir('ponto'); }}, 'Remover') : null)),
+    h('div', {class:'linha-sal total'}, h('span', null, 'Total calculado'), h('b', null, moeda(r.total))),
+    fl.pago && Math.abs((fl.valorPago || 0) - r.total) > 0.009 ? h('div', {class:'meta', style:'padding-bottom:8px;color:#b3261e'}, `Atenção: o valor pago (${moeda(fl.valorPago)}) é diferente do cálculo atual. Houve mudança no ponto depois do pagamento.`) : null));
+  card.appendChild(h('div', {class:'meta', style:'margin-top:6px'}, `Valor da hora: ${moeda(r.vh)} · Jornada ${fmtHoras(r.jd)} por dia`));
+  if (fl.pago) card.appendChild(h('div', {class:'aviso-ok', style:'margin-top:12px'}, `✔ Pago em ${fmtData(fl.pagoEm)} · ${fl.forma || ''} · ${moeda(fl.valorPago)}`));
+  if (adm) card.appendChild(h('div', {class:'acoes'},
+    !fl.pago ? h('button', {class:'btn ouro', onclick:() => adicionarAjusteFolha(u, mes)}, '＋ Bônus / desconto / adiantamento') : null,
+    !fl.pago ? h('button', {class:'btn rosa', onclick:() => pagarSalario(u, mes)}, '💸 Registrar pagamento') : h('button', {class:'btn', onclick:() => desfazerPagamento(u, mes)}, '↩ Desfazer pagamento'),
+    h('button', {class:'btn ouro', onclick:() => imprimirRecibo(u, mes)}, '🧾 Recibo para assinar')));
+  else card.appendChild(h('div', {class:'acoes'}, h('button', {class:'btn ouro', onclick:() => imprimirRecibo(u, mes)}, '🧾 Ver recibo')));
+  /* histórico */
+  const hist = Object.entries(u.folhas || {}).filter(([, v]) => v && v.pago).sort((a, b) => b[0].localeCompare(a[0]));
+  const ch = h('div', {class:'cartao'}, h('h2', null, '📚 Pagamentos anteriores'));
+  if (!hist.length) ch.appendChild(h('div', {class:'meta', style:'color:var(--cinza)'}, 'Nenhum pagamento registrado ainda.'));
+  hist.slice(0, 12).forEach(([ms, v]) => { const [a2, m2] = ms.split('-').map(Number);
+    ch.appendChild(h('div', {class:'parc'}, h('div', {style:'flex:1'}, h('b', null, MESES[m2 - 1] + ' de ' + a2), h('div', {class:'meta'}, `Pago em ${fmtData(v.pagoEm)} · ${v.forma || ''}`)),
+      h('b', null, moeda(v.valorPago)), h('button', {class:'btn peq', onclick:() => imprimirRecibo(u, ms)}, '🧾'))); });
+  return h('div', null, card, ch);
+}
+function abaDocs(u, mes, r, adm){
+  return h('div', {class:'cartao'}, h('h2', null, '📄 Relatórios para assinar'),
+    h('p', {class:'meta', style:'margin:0 0 12px'}, 'Abra, imprima ou salve em PDF. Cada documento tem espaço para a assinatura da secretária e da responsável.'),
+    h('div', {class:'acoes-ag'},
+      h('button', {type:'button', class:'tile-ag rosa', onclick:() => imprimirPonto(mes, u.id)}, h('span', {class:'tile-ico'}, '🗓️'), h('b', null, 'Folha de ponto'), h('small', null, 'Dia a dia do mês, com totais')),
+      h('button', {type:'button', class:'tile-ag ouro', onclick:() => imprimirRecibo(u, mes)}, h('span', {class:'tile-ico'}, '🧾'), h('b', null, 'Recibo de salário'), h('small', null, 'Valores do mês e assinatura')),
+      h('button', {type:'button', class:'tile-ag ouro', onclick:() => imprimirResumoAnual(u, mes.slice(0, 4))}, h('span', {class:'tile-ico'}, '📊'), h('b', null, 'Resumo do ano'), h('small', null, 'Horas e pagamentos de ' + mes.slice(0, 4)))));
+}
+function abaContrato(u){
+  const c = contratoDe(u);
+  const txt = {salario:valorTexto(c.salario), valeDia:valorTexto(c.valeDia)};
+  const diasSel = new Set(c.dias || []);
+  const chips = h('div', {class:'chips-motivo'});
+  const desenharDias = () => { limpar(chips); [1, 2, 3, 4, 5, 6, 0].forEach(d => chips.appendChild(h('button', {type:'button', class:'chip-mot' + (diasSel.has(d) ? ' sel' : ''), onclick:() => { diasSel.has(d) ? diasSel.delete(d) : diasSel.add(d); desenharDias(); }}, DIAS_SEM[d]))); };
+  desenharDias();
+  return h('div', {class:'cartao'}, h('h2', null, '⚙️ Contrato de ' + u.nome.split(' ')[0]),
+    h('div', {class:'grade'},
+      campo(c, 'cargo', 'Cargo / função'),
+      campo(c, 'inicio', 'Data de início', {tipo:'date'}),
+      campo(txt, 'salario', 'Salário mensal (R$)', {im:'decimal', dica:'Ex.: 1.800,00'}),
+      campo(c, 'pix', 'Chave Pix para pagamento (opcional)')),
+    h('h4', {class:'sub-form'}, 'Jornada combinada'),
+    h('div', {class:'meta', style:'margin-bottom:6px'}, 'Dias de trabalho:'), chips,
+    h('div', {class:'grade', style:'margin-top:10px'},
+      campo(c, 'entrada', 'Entrada', {tipo:'time'}), campo(c, 'saida', 'Saída', {tipo:'time'}),
+      campo(c, 'intervalo', 'Intervalo de almoço (minutos)', {im:'numeric'}), campo(c, 'tolerancia', 'Tolerância de atraso (minutos)', {im:'numeric', dica:'Diferenças menores que isso não contam'})),
+    h('h4', {class:'sub-form'}, 'Regras de pagamento'),
+    h('div', {class:'grade'},
+      campo(c, 'extraPct', 'Acréscimo da hora extra (%)', {im:'numeric', dica:'Normalmente 50%'}),
+      campo(txt, 'valeDia', 'Vale-transporte por dia (R$, opcional)', {im:'decimal'})),
+    h('div', {style:'display:grid;gap:6px;margin-top:8px'},
+      h('label', {class:'ck'}, h('input', {type:'checkbox', checked:c.contarExtras, onchange:e => { c.contarExtras = e.target.checked; }}), ' Pagar horas extras'),
+      h('label', {class:'ck'}, h('input', {type:'checkbox', checked:c.descontarFaltas, onchange:e => { c.descontarFaltas = e.target.checked; }}), ' Descontar faltas sem abono (1/30 do salário por dia)'),
+      h('label', {class:'ck'}, h('input', {type:'checkbox', checked:c.descontarAtrasos, onchange:e => { c.descontarAtrasos = e.target.checked; }}), ' Descontar atrasos e saídas antes do horário')),
+    h('div', {class:'grade', style:'margin-top:10px'}, campo(c, 'obs', 'Observações do contrato', {tipo:'textarea', cheio:true, linhas:2})),
+    h('p', {class:'meta', style:'margin-top:8px'}, 'Os cálculos são uma ajuda para o controle da clínica. Para carteira assinada, INSS, FGTS e férias, confirme os valores com o contador.'),
+    h('div', {class:'acoes'}, h('button', {class:'btn rosa', onclick: async () => {
+      c.salario = lerValor(txt.salario); c.valeDia = lerValor(txt.valeDia); c.dias = [...diasSel].sort();
+      ['intervalo', 'tolerancia', 'extraPct'].forEach(k => { c[k] = Math.max(0, parseInt(c[k], 10) || 0); });
+      if (!c.dias.length) { await aviso('Escolha pelo menos um dia de trabalho.', 'Contrato'); return; }
+      if (minDeHora(c.saida) <= minDeHora(c.entrada)) { await aviso('A saída precisa ser depois da entrada.', 'Contrato'); return; }
+      u.contrato = c; await salvarUsuario(u); toast('Contrato salvo'); estado.pontoFiltro.aba = 'salario'; ir('ponto');
+    }}, '💾 Salvar contrato')));
+}
+
+/* ---------------- AÇÕES ---------------- */
+async function excluirPonto(id){
+  const r = (estado.ponto || []).find(x => x.id === id);
+  if (!r) return;
+  if (!await confirmar(`Excluir o registro de ponto de ${r.nome} do dia ${fmtData(r.data)} (entrada ${hhmm(horaEntrada(r))}${r.saida ? ', saída ' + hhmm(horaSaida(r)) : ''})?\n\nIsso não pode ser desfeito.`, 'Excluir ponto', '🗑️ Excluir', true)) return;
+  try { await apagar('ponto', id); }
+  catch (e) { await aviso('Não foi possível excluir agora. Verifique a internet e tente de novo.', 'Ponto'); return; }
+  estado.ponto = estado.ponto.filter(x => x.id !== id);
+  toast('Registro excluído'); ir('ponto');
+}
+async function lancarPontoManual(u){
+  const f = {data:hojeISO(), entrada:contratoDe(u).entrada, saida:contratoDe(u).saida, obs:''};
+  const ok = await modal('＋ Lançar ponto — ' + u.nome, h('div', {class:'grade'},
+    campo(f, 'data', 'Dia', {tipo:'date'}), campo(f, 'entrada', 'Entrada', {tipo:'time'}), campo(f, 'saida', 'Saída', {tipo:'time'}),
+    campo(f, 'obs', 'Motivo', {cheio:true, dica:'Ex.: esqueceu o celular, trabalhou fora do consultório'})),
+    [{texto:'Cancelar', valor:false}, {texto:'💾 Lançar', valor:true, classe:'rosa', antes:() => {
+      if (!f.data || !f.entrada) { toast('Informe o dia e a entrada'); return false; }
+      if (f.saida && minDeHora(f.saida) <= minDeHora(f.entrada)) { toast('A saída precisa ser depois da entrada'); return false; }
+      if (!f.obs.trim()) { toast('Informe o motivo'); return false; } }}]);
+  if (!ok) return;
+  const reg = {id:uid(), uid:u.id, nome:u.nome, login:u.login || '', data:f.data, entrada:new Date(f.data + 'T' + f.entrada).toISOString(),
+    saida:f.saida ? new Date(f.data + 'T' + f.saida).toISOString() : '', obs:f.obs.trim(), ajustado:true, manual:true, ajustadoEm:new Date().toISOString(), local:null};
+  try { await gravar('ponto', reg); }
+  catch (e) { await aviso('Não foi possível lançar. Se usa a nuvem, atualize as regras do Firebase (⚙️ Ajustes › Nuvem › Copiar regras) e tente de novo.', 'Ponto'); return; }
+  estado.ponto = (estado.ponto || []).concat(reg);
+  toast('Ponto lançado'); ir('ponto');
+}
+async function abonarDia(u, iso, tirar){
+  const mes = iso.slice(0, 7), fl = copia(folhaDe(u, mes));
+  if (tirar) { delete fl.abonos[iso]; await salvarFolha(u, mes, fl); toast('Abono retirado'); ir('ponto'); return; }
+  const f = {motivo:''};
+  const ok = await modal('Abonar ' + fmtData(iso), h('div', null,
+    h('p', {class:'meta'}, 'O dia abonado não conta como falta nem gera desconto.'),
+    escolhaMotivo(f, ['Atestado médico', 'Feriado', 'Folga combinada', 'Clínica fechada', 'Férias', 'Outro motivo'])),
+    [{texto:'Cancelar', valor:false}, {texto:'✔ Abonar', valor:true, classe:'rosa', antes:() => { if (!f.motivo) { toast('Escolha o motivo'); return false; } }}]);
+  if (!ok) return;
+  fl.abonos[iso] = f.motivo; await salvarFolha(u, mes, fl); toast('Dia abonado'); ir('ponto');
+}
+async function adicionarAjusteFolha(u, mes){
+  const f = {tipo:'Desconto', descricao:'', valor:''};
+  const ok = await modal('＋ Bônus, desconto ou adiantamento', h('div', {class:'grade'},
+    campo(f, 'tipo', 'Tipo', {tipo:'select', opcoes:['Desconto', 'Adiantamento (vale)', 'Bônus / gratificação', 'Outro acréscimo']}),
+    campo(f, 'valor', 'Valor (R$)', {im:'decimal'}),
+    campo(f, 'descricao', 'Descrição', {cheio:true, dica:'Ex.: adiantamento do dia 15'})),
+    [{texto:'Cancelar', valor:false}, {texto:'Adicionar', valor:true, classe:'rosa', antes:() => { if (!(lerValor(f.valor) > 0)) { toast('Informe o valor'); return false; } }}]);
+  if (!ok) return;
+  const neg = /Desconto|Adiantamento/.test(f.tipo);
+  const fl = copia(folhaDe(u, mes));
+  fl.ajustes = (fl.ajustes || []).concat({descricao:(f.descricao.trim() || f.tipo), tipo:f.tipo, valor:(neg ? -1 : 1) * lerValor(f.valor)});
+  await salvarFolha(u, mes, fl); toast('Adicionado'); ir('ponto');
+}
+async function pagarSalario(u, mes){
+  const r = calcularMes(u, mes);
+  const [ano, m] = mes.split('-').map(Number);
+  const f = {valor:valorTexto(r.total), data:hojeISO(), forma:'Pix'};
+  const ok = await modal('💸 Pagamento — ' + u.nome, h('div', null,
+    h('div', {class:'resumo-pac'}, `${MESES[m - 1]} de ${ano}`, h('br'), 'Total calculado: ', h('b', null, moeda(r.total))),
+    r.c.pix ? h('p', {class:'meta'}, 'Chave Pix: ' + r.c.pix) : null,
+    h('div', {class:'grade'},
+      campo(f, 'valor', 'Valor pago (R$)', {im:'decimal'}), campo(f, 'data', 'Data do pagamento', {tipo:'date'}),
+      campo(f, 'forma', 'Forma de pagamento', {tipo:'select', opcoes:['Pix', 'Dinheiro', 'Transferência', 'Cheque', 'Outro']})),
+    h('p', {class:'meta'}, 'O pagamento entra no Financeiro como despesa paga, na categoria "Salários e pró-labore".')),
+    [{texto:'Cancelar', valor:false}, {texto:'✔ Confirmar pagamento', valor:true, classe:'rosa', antes:() => { if (!(lerValor(f.valor) > 0)) { toast('Informe o valor'); return false; } }}]);
+  if (!ok) return;
+  const valor = lerValor(f.valor);
+  const fl = copia(r.fl);
+  const l = {id:fl.lancId || uid(), tipo:'despesa', pacienteId:'', atendimentoId:'', descricao:`Salário ${MESES[m - 1]}/${ano} — ${u.nome}`, categoria:'Salários e pró-labore',
+    fornecedor:u.nome, data:f.data, valor, desconto:0, forma:f.forma, nParcelas:'1', primeiroVenc:f.data, taxa:0,
+    parcelas:[{n:1, vencimento:f.data, valor, pago:true, dataPagamento:f.data}], comprovantes:[], obs:'Lançado pelo ponto da equipe', criadoEm:Date.now(), funcionarioId:u.id, competencia:mes, teste:!!u.teste};
+  try { await gravar('financeiro', l); } catch (e) { await aviso('Não foi possível lançar no Financeiro agora. Tente de novo.', 'Pagamento'); return; }
+  const i = estado.financeiro.findIndex(x => x.id === l.id); if (i >= 0) estado.financeiro[i] = l; else estado.financeiro.push(l);
+  Object.assign(fl, {pago:true, pagoEm:f.data, forma:f.forma, valorPago:valor, lancId:l.id,
+    fechamento:{salario:r.salario, vExtras:r.vExtras, vFaltas:r.vFaltas, vAtrasos:r.vAtrasos, vVale:r.vVale, extra:r.extra, deficit:r.deficit, faltas:r.faltas, trab:r.trab, diasTrab:r.diasTrab, total:r.total}});
+  await salvarFolha(u, mes, fl);
+  toast('Pagamento registrado');
+  if (await confirmar('Pagamento registrado e lançado no Financeiro. Abrir o recibo para a secretária assinar?', 'Recibo', '🧾 Abrir recibo')) imprimirRecibo(u, mes);
+  ir('ponto');
+}
+async function desfazerPagamento(u, mes){
+  if (!await confirmar('Desfazer o pagamento deste mês? O lançamento de despesa também será apagado do Financeiro.', 'Pagamento', 'Desfazer', true)) return;
+  const fl = copia(folhaDe(u, mes));
+  if (fl.lancId) { try { await apagar('financeiro', fl.lancId); } catch (e) {} estado.financeiro = estado.financeiro.filter(x => x.id !== fl.lancId); }
+  ['pago', 'pagoEm', 'forma', 'valorPago', 'lancId', 'fechamento'].forEach(k => delete fl[k]);
+  await salvarFolha(u, mes, fl); toast('Pagamento desfeito'); ir('ponto');
+}
+
+/* ---------------- DOCUMENTOS ---------------- */
+function assinaturas(nome){
+  return h('div', {class:'rel-assin', style:'margin-top:34px;display:flex;gap:30px;justify-content:center'},
+    h('div', {style:'flex:1;text-align:center'}, h('div', {class:'linha'}, nome), h('small', null, 'Funcionária')),
+    h('div', {style:'flex:1;text-align:center'}, h('div', {class:'linha'}, estado.config.profissional || estado.config.nome || 'Responsável'), h('small', null, 'Responsável · ' + (estado.config.nome || ''))));
+}
 function imprimirPonto(mes, uidFiltro){
   const [ano, m] = mes.split('-').map(Number);
-  const regs = (estado.ponto || []).filter(r => (r.data || '').startsWith(mes) && (!uidFiltro || r.uid === uidFiltro)).sort((a, b) => (a.entrada || '').localeCompare(b.entrada || ''));
-  const nomes = [...new Set(regs.map(r => r.nome))];
+  const pessoas = uidFiltro ? [usuarioPonto(uidFiltro)].filter(Boolean) : secretarias();
   const folha = h('div', {class:'folha'},
     cabecalhoDoc('Período', MESES[m - 1].toUpperCase(), String(ano)),
     h('div', {class:'rel-tit'}, 'FOLHA DE PONTO — ' + MESES[m - 1].toUpperCase() + ' DE ' + ano),
-    nomes.length ? nomes.map(n => {
-      const meus = regs.filter(r => r.nome === n);
-      const tot = meus.reduce((s, r) => s + minutosPonto(r), 0);
-      return h('div', {class:'rel-sec'}, h('h3', null, n),
+    pessoas.length ? pessoas.map(u => {
+      const r = calcularMes(u, mes);
+      const linhas = r.dias.filter(d => d.regs.length || d.st === 'falta' || d.abono);
+      return h('div', {class:'rel-sec', style:'page-break-inside:avoid'}, h('h3', null, `${u.nome} — ${r.c.cargo}`),
+        h('div', {style:'font-size:11.5px;margin:0 0 6px;color:#55534f'}, `Jornada: ${r.c.entrada} às ${r.c.saida}, intervalo ${r.c.intervalo} min (${fmtHoras(r.jd)}/dia) · ${(r.c.dias || []).map(d => DIAS_SEM[d]).join(', ')}`),
         h('div', {class:'rel-box', style:'padding:0'}, h('table', {class:'rel-tab', style:'margin:0'},
-          h('tr', null, h('th', null, 'Data'), h('th', null, 'Entrada'), h('th', null, 'Saída'), h('th', null, 'Total'), h('th', null, 'Observação')),
-          meus.map(r => h('tr', null, h('td', null, `${DIAS_SEM[dataDe(r.data).getDay()]} ${fmtData(r.data)}`), h('td', null, hhmm(horaEntrada(r))),
-            h('td', null, r.saida ? hhmm(horaSaida(r)) : '—'), h('td', null, r.saida ? fmtHoras(minutosPonto(r)) : '—'), h('td', null, [r.ajustado ? 'Ajustado: ' + (r.obs || '') : '', r.local ? `📍 ${r.local.distancia} m` : ''].filter(Boolean).join(' · ')))),
-          h('tr', null, h('td', {colspan:'3', style:'font-weight:700'}, 'Total no mês'), h('td', {style:'font-weight:700'}, fmtHoras(tot)), h('td', null, '')))),
-        h('div', {class:'rel-assin', style:'margin-top:26px;display:flex;gap:30px;justify-content:center'},
-          h('div', {style:'flex:1'}, h('div', {class:'linha'}, n), h('small', null, 'Funcionária')),
-          h('div', {style:'flex:1'}, h('div', {class:'linha'}, estado.config.nome || 'Responsável'), h('small', null, 'Responsável'))));
-    }) : h('p', null, 'Nenhum registro no período.'),
+          h('tr', null, h('th', null, 'Data'), h('th', null, 'Entrada'), h('th', null, 'Saída'), h('th', null, 'Total'), h('th', null, 'Extra'), h('th', null, 'Falta / menos'), h('th', null, 'Observação')),
+          linhas.map(d => h('tr', null, h('td', null, `${DIAS_SEM[d.ds]} ${fmtData(d.iso).slice(0, 5)}`),
+            h('td', null, d.regs.map(x => hhmm(horaEntrada(x))).join(' / ') || '—'),
+            h('td', null, d.regs.map(x => x.saida ? hhmm(horaSaida(x)) : '—').join(' / ') || '—'),
+            h('td', null, d.regs.length ? fmtHoras(d.min) : '—'), h('td', null, d.ex ? fmtHoras(d.ex) : ''),
+            h('td', null, d.st === 'falta' ? 'FALTA' : d.df ? fmtHoras(d.df) : ''),
+            h('td', null, [d.abono ? 'Abonado: ' + d.abono : '', ...d.regs.filter(x => x.ajustado).map(x => (x.manual ? 'Lançado: ' : 'Ajustado: ') + (x.obs || ''))].filter(Boolean).join(' · ')))),
+          h('tr', null, h('td', {colspan:'3', style:'font-weight:700'}, 'Totais do mês'), h('td', {style:'font-weight:700'}, fmtHoras(r.trab)),
+            h('td', {style:'font-weight:700'}, fmtHoras(r.extra)), h('td', {style:'font-weight:700'}, `${r.faltas} falta(s)${r.deficit ? ' · ' + fmtHoras(r.deficit) : ''}`), h('td', null, `${r.diasTrab} dia(s) trabalhado(s) · ${r.abonos} abonado(s)`)))),
+        h('p', {style:'font-size:11.5px;margin:12px 0 0'}, 'Declaro que os horários acima conferem com os dias e horários que trabalhei no período.'),
+        assinaturas(u.nome));
+    }) : h('p', null, 'Nenhuma secretária no período.'),
+    h('div', {class:'rel-rod'}, h('span', null, estado.config.nome || ''), h('span', null, 'Emitido em ' + new Date().toLocaleString('pt-BR'))));
+  mostrarDocumento(folha);
+}
+function extenso(v){
+  const u = ['', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez', 'onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove'];
+  const d = ['', '', 'vinte', 'trinta', 'quarenta', 'cinquenta', 'sessenta', 'setenta', 'oitenta', 'noventa'];
+  const c = ['', 'cento', 'duzentos', 'trezentos', 'quatrocentos', 'quinhentos', 'seiscentos', 'setecentos', 'oitocentos', 'novecentos'];
+  const ate999 = n => { if (n === 100) return 'cem'; const p = []; if (n >= 100) { p.push(c[Math.floor(n / 100)]); n %= 100; } if (n >= 20) { p.push(d[Math.floor(n / 10)]); n %= 10; } if (n) p.push(u[n]); return p.join(' e '); };
+  const inteiro = Math.floor(v), cent = Math.round((v - inteiro) * 100);
+  const partes = [];
+  const mil = Math.floor(inteiro / 1000), resto = inteiro % 1000;
+  if (mil) partes.push(mil === 1 ? 'mil' : ate999(mil) + ' mil');
+  if (resto) partes.push(ate999(resto));
+  let txt = partes.join(resto && (resto < 100 || resto % 100 === 0) ? ' e ' : ' ');
+  if (inteiro) txt += inteiro === 1 ? ' real' : ' reais';
+  if (cent) txt += (inteiro ? ' e ' : '') + ate999(cent) + (cent === 1 ? ' centavo' : ' centavos');
+  return txt || 'zero real';
+}
+function imprimirRecibo(u, mes){
+  const r = calcularMes(u, mes), fl = r.fl, fe = fl.fechamento || {};
+  const [ano, m] = mes.split('-').map(Number);
+  const v = k => fl.pago && fe[k] !== undefined ? fe[k] : r[k];
+  const total = fl.pago ? fl.valorPago : r.total;
+  const linhas = [['Salário base — ' + r.c.cargo, v('salario'), ''], ['Horas extras (' + fmtHoras(v('extra')) + ')', v('vExtras'), '+'], ['Faltas (' + v('faltas') + ' dia(s))', v('vFaltas'), '-'],
+    ['Atrasos / saídas antes (' + fmtHoras(v('deficit')) + ')', v('vAtrasos'), '-'], ['Vale-transporte', v('vVale'), '+']].filter(x => x[2] === '' || x[1])
+    .concat((fl.ajustes || []).map(a => [a.descricao, Math.abs(a.valor), a.valor < 0 ? '-' : '+']));
+  const folha = h('div', {class:'folha'},
+    cabecalhoDoc('Competência', MESES[m - 1].toUpperCase(), String(ano)),
+    h('div', {class:'rel-tit'}, 'RECIBO DE PAGAMENTO DE SALÁRIO'),
+    h('div', {class:'rel-sec'}, h('h3', null, 'Funcionária'), h('div', {class:'rel-box rel-pares'},
+      h('div', {class:'l2'}, h('small', null, 'Nome'), u.nome), h('div', null, h('small', null, 'Cargo'), r.c.cargo),
+      h('div', null, h('small', null, 'Competência'), `${MESES[m - 1]} de ${ano}`), h('div', null, h('small', null, 'Horas trabalhadas'), fmtHoras(v('trab'))),
+      h('div', null, h('small', null, 'Dias trabalhados'), String(v('diasTrab'))))),
+    h('div', {class:'rel-sec'}, h('h3', null, 'Valores'), h('div', {class:'rel-box', style:'padding:0'}, h('table', {class:'rel-tab', style:'margin:0'},
+      h('tr', null, h('th', null, 'Descrição'), h('th', {style:'text-align:right'}, 'Proventos'), h('th', {style:'text-align:right'}, 'Descontos')),
+      linhas.map(([d, val, s]) => h('tr', null, h('td', null, d), h('td', {style:'text-align:right'}, s !== '-' ? moeda(val) : ''), h('td', {style:'text-align:right'}, s === '-' ? moeda(val) : ''))),
+      h('tr', null, h('td', {style:'font-weight:700'}, fl.pago ? 'VALOR PAGO' : 'TOTAL A PAGAR'), h('td', {colspan:'2', style:'text-align:right;font-weight:700;font-size:14px'}, moeda(total)))))),
+    h('p', {style:'margin:16px 0 0;font-size:13px;line-height:1.6'}, `Recebi de ${estado.config.nome || 'a empresa'} a importância de `, h('b', null, moeda(total)), ` (${extenso(total)}), referente ao meu salário de ${MESES[m - 1]} de ${ano}`,
+      fl.pago ? `, pago em ${fmtData(fl.pagoEm)} por ${String(fl.forma || '').toLowerCase()}` : '', ', dando plena quitação dos valores acima discriminados.'),
+    h('p', {style:'margin:18px 0 0;font-size:13px'}, `${(estado.config.endereco || 'Goiás').split(',').pop().trim()}, ${fl.pago ? fmtData(fl.pagoEm) : '____/____/________'}.`),
+    assinaturas(u.nome),
+    !fl.pago ? h('p', {style:'font-size:10.5px;color:#888;text-align:center;margin-top:14px'}, 'Prévia — o pagamento deste mês ainda não foi registrado.') : null,
+    h('div', {class:'rel-rod'}, h('span', null, estado.config.nome || ''), h('span', null, 'Emitido em ' + new Date().toLocaleString('pt-BR'))));
+  mostrarDocumento(folha);
+}
+function imprimirResumoAnual(u, ano){
+  const meses = [];
+  for (let i = 1; i <= 12; i++) { const ms = `${ano}-${String(i).padStart(2, '0')}`; if (ms > hojeISO().slice(0, 7)) break; const r = calcularMes(u, ms); meses.push([i, r]); }
+  const tot = meses.reduce((s, [, r]) => ({trab:s.trab + r.trab, extra:s.extra + r.extra, faltas:s.faltas + r.faltas, pago:s.pago + (r.fl.pago ? r.fl.valorPago : 0)}), {trab:0, extra:0, faltas:0, pago:0});
+  const folha = h('div', {class:'folha'},
+    cabecalhoDoc('Ano', String(ano), ''),
+    h('div', {class:'rel-tit'}, 'RESUMO ANUAL — ' + u.nome.toUpperCase()),
+    h('div', {class:'rel-box', style:'padding:0'}, h('table', {class:'rel-tab', style:'margin:0'},
+      h('tr', null, h('th', null, 'Mês'), h('th', null, 'Horas'), h('th', null, 'Extras'), h('th', null, 'Faltas'), h('th', null, 'Situação'), h('th', {style:'text-align:right'}, 'Pago')),
+      meses.map(([i, r]) => h('tr', null, h('td', null, MESES[i - 1]), h('td', null, fmtHoras(r.trab)), h('td', null, fmtHoras(r.extra)), h('td', null, String(r.faltas)),
+        h('td', null, r.fl.pago ? 'Pago em ' + fmtData(r.fl.pagoEm) : 'Em aberto'), h('td', {style:'text-align:right'}, r.fl.pago ? moeda(r.fl.valorPago) : '—'))),
+      h('tr', null, h('td', {style:'font-weight:700'}, 'Total'), h('td', {style:'font-weight:700'}, fmtHoras(tot.trab)), h('td', {style:'font-weight:700'}, fmtHoras(tot.extra)),
+        h('td', {style:'font-weight:700'}, String(tot.faltas)), h('td', null, ''), h('td', {style:'text-align:right;font-weight:700'}, moeda(tot.pago))))),
+    assinaturas(u.nome),
     h('div', {class:'rel-rod'}, h('span', null, estado.config.nome || ''), h('span', null, 'Emitido em ' + new Date().toLocaleString('pt-BR'))));
   mostrarDocumento(folha);
 }
@@ -4787,7 +5174,8 @@ function cartaoEquipe(){
     lista.length ? lista.map(u => h('div', {class:'parc' + (u.ativo === false ? ' atr' : '')},
       h('div', {style:'flex:1;min-width:0'}, h('b', null, u.nome), h('div', {class:'meta'}, 'Usuário: ' + u.login + (u.ativo === false ? ' · DESATIVADO' : ''))),
       h('div', {class:'acoes', style:'margin:0'},
-        h('button', {class:'btn peq', onclick:() => { estado.pontoFiltro = {mes:hojeISO().slice(0, 7), uid:u.id}; ir('ponto'); }}, '🕐 Ponto'),
+        h('button', {class:'btn peq', onclick:() => { estado.pontoFiltro = {mes:hojeISO().slice(0, 7), uid:u.id, aba:'dias'}; ir('ponto'); }}, '🕐 Ponto'),
+        h('button', {class:'btn peq', onclick:() => { estado.pontoFiltro = {mes:hojeISO().slice(0, 7), uid:u.id, aba:(u.contrato && u.contrato.salario) ? 'salario' : 'contrato'}; ir('ponto'); }}, '💼 Salário'),
         !emNuvem() ? h('button', {class:'btn peq', onclick:() => trocarSenhaSecretariaLocal(u.id)}, '🔑 Senha') : null,
         h('button', {class:'btn peq ' + (u.ativo === false ? '' : 'perigo'), onclick: async () => {
           if (!await confirmar(u.ativo === false ? `Reativar o acesso de ${u.nome}?` : `Desativar o acesso de ${u.nome}? Ela não conseguirá mais entrar. O histórico de ponto continua guardado.`, 'Acesso', u.ativo === false ? 'Reativar' : 'Desativar', u.ativo !== false)) return;
@@ -4815,7 +5203,7 @@ function cartaoEquipe(){
       await aviso(`Acesso criado!\n\nUsuário: ${login}\nSenha: a que você digitou.\n\nEla entra pelo site, em "Área da equipe".`, 'Secretária cadastrada');
       ir('config');
     }}, '＋ Criar acesso'),
-      h('button', {class:'btn ouro', onclick:() => { estado.pontoFiltro = {mes:hojeISO().slice(0, 7), uid:''}; ir('ponto'); }}, '🕐 Ver ponto da equipe')));
+      h('button', {class:'btn ouro', onclick:() => { estado.pontoFiltro = {mes:hojeISO().slice(0, 7), uid:''}; ir('ponto'); }}, '🕐 Ponto e salário da equipe')));
 }
 async function trocarSenhaSecretariaLocal(id){
   const u = (estado.usuarios || []).find(x => x.id === id);
@@ -4888,7 +5276,7 @@ service cloud.firestore {
     }
     match /karita_ponto/{id} {
       allow read: if admin() || (logado() && resource.data.uid == request.auth.uid);
-      allow create: if equipe() && request.resource.data.uid == request.auth.uid;
+      allow create: if admin() || (equipe() && request.resource.data.uid == request.auth.uid);
       allow update: if admin() || (equipe() && resource.data.uid == request.auth.uid && resource.data.saida == '');
       allow delete: if admin();
     }

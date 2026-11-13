@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#FFFFFF">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
 <meta name="author" content="Wendel Emílio de Souza Matias — oficial.respostas@gmail.com">
 <link rel="manifest" href="painel.webmanifest">
 <link rel="icon" type="image/png" href="icones/favicon-64.png">
@@ -742,7 +744,7 @@ function operar(store, modo, fn){
    ========================================================= */
 /* >>> Preenchido pelo botão "Baixar painel configurado" (Ajustes › Trabalho em equipe) <<< */
 const NUVEM = {projectId:'', apiKey:'', adminEmail:''};
-const VERSAO = '2.11';
+const VERSAO = '2.12';
 const VERSAO_DATA = '13/11/2026';
 const DOMINIO_EQUIPE = 'equipe.karitateodoro.app';
 const emNuvem = () => !!(NUVEM.projectId && NUVEM.apiKey && NUVEM.adminEmail);
@@ -4227,12 +4229,12 @@ function telaConfig(area){
     h('p', {style:'margin:0 0 10px;font-size:14px'}, 'Usuário da Kárita para entrar: ', h('b', null, loginAdminLocal())),
     h('div', {class:'grade'},
       campo(sen, 'atual', 'Senha atual', {tipo:'password', cheio:true}),
-      campo(sen, 'nova', 'Nova senha (mínimo 6 caracteres)', {tipo:'password'}),
+      campo(sen, 'nova', 'Nova senha (mínimo 8, com letras e números)', {tipo:'password'}),
       campo(sen, 'conf', 'Repita a nova senha', {tipo:'password'})),
     h('div', {class:'acoes'},
       h('button', {class:'btn rosa', onclick: async () => {
         if (resumoSenha(sen.atual) !== hashAtual()) { await aviso('A senha atual está errada.', 'Senha'); return; }
-        if ((sen.nova || '').length < 6) { await aviso('A nova senha precisa ter pelo menos 6 caracteres.', 'Senha'); return; }
+        { const e = senhaForte(sen.nova); if (e) { await aviso(e, 'Senha'); return; } }
         if (sen.nova !== sen.conf) { await aviso('As duas novas senhas não estão iguais.', 'Senha'); return; }
         if (!await confirmar('Trocar a senha? Anote a nova senha num lugar seguro: sem ela não é possível entrar no painel.', 'Trocar senha', 'Trocar')) return;
         estado.config.senhaHash = resumoSenha(sen.nova);
@@ -4249,7 +4251,14 @@ function telaConfig(area){
     const arq = inpImp.files[0]; inpImp.value = '';
     if (!arq) return;
     try {
-      const dados = JSON.parse(await arq.text());
+      let dados = JSON.parse(await arq.text());
+      if (dados && dados.cifrado) {
+        const f = {s:''};
+        const ok = await modal('🔒 Cópia protegida', h('div', {class:'grade'}, campo(f, 's', 'Senha da cópia', {tipo:'password', cheio:true})),
+          [{texto:'Cancelar', valor:false}, {texto:'Abrir', valor:true, classe:'rosa'}]);
+        if (!ok) return;
+        try { dados = await abrirBackup(dados, f.s); } catch (e) { await aviso('Senha errada. A cópia não foi aberta.', 'Cópia protegida'); return; }
+      }
       if (!Array.isArray(dados.pacientes) || !Array.isArray(dados.atendimentos)) throw new Error('formato');
       if (!await confirmar(`Restaurar a cópia com ${dados.pacientes.length} paciente(s) e ${dados.atendimentos.length} atendimento(s)? Os dados atuais serão substituídos.`, 'Restaurar cópia', 'Restaurar', true)) return;
       await esvaziar('pacientes'); await esvaziar('atendimentos');
@@ -4278,6 +4287,21 @@ function telaConfig(area){
       'Desenvolvido por ', h('b', null, 'Wendel Emílio de Souza Matias'), h('br'),
       'Contato: oficial.respostas@gmail.com')));
 }
+async function chaveBackup(senha, sal){
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode('kt-backup|' + senha), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2', salt:sal, iterations:250000, hash:'SHA-256'}, base, {name:'AES-GCM', length:256}, false, ['encrypt', 'decrypt']);
+}
+async function trancarBackup(obj, senha){
+  const sal = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+  const k = await chaveBackup(senha, sal);
+  const d = await crypto.subtle.encrypt({name:'AES-GCM', iv}, k, new TextEncoder().encode(JSON.stringify(obj)));
+  return {sistema:'relatorio-atendimento', cifrado:true, versao:2, geradoEm:new Date().toISOString(), iv:paraB64(iv), sal:paraB64(sal), dados:paraB64(d)};
+}
+async function abrirBackup(obj, senha){
+  const k = await chaveBackup(senha, deB64(obj.sal));
+  const txt = await crypto.subtle.decrypt({name:'AES-GCM', iv:deB64(obj.iv)}, k, deB64(obj.dados));
+  return JSON.parse(new TextDecoder().decode(txt));
+}
 async function exportarBackup(comVideos){
   if (emNuvem()) await garantirFotos(...estado.pacientes.map(p => p.docs || []), ...estado.atendimentos.map(a => a.fotos || []), ...estado.financeiro.map(l => l.comprovantes || []));
   const dados = {usuarios:emNuvem() ? [] : estado.usuarios, ponto:estado.ponto, sistema:'relatorio-atendimento', versao:1, geradoEm:new Date().toISOString(),
@@ -4290,8 +4314,15 @@ async function exportarBackup(comVideos){
       for (const r of regs) dados.midias.push({id:r.id, tipo:r.tipo, nome:r.nome, tamanho:r.tamanho, dados: await blobParaTexto(r.blob)});
     } catch (e) { await aviso('Os vídeos são grandes demais para caber numa única cópia neste aparelho. Baixe a cópia sem vídeos e guarde os vídeos pelo botão ⬇ do visualizador.', 'Cópia com vídeos'); return; }
   }
-  const blob = new Blob([JSON.stringify(dados)], {type:'application/json'});
-  const a = h('a', {href:URL.createObjectURL(blob), download:`backup-atendimentos-${comVideos ? 'completo-' : ''}${hojeISO()}.json`});
+  const f = {s1:'', s2:''};
+  const okS = await modal('🔒 Proteger a cópia com senha', h('div', null,
+    h('p', {class:'meta', style:'margin:0 0 8px'}, 'A cópia tem dados de saúde dos pacientes. Ela será trancada com uma senha: sem a senha ninguém consegue abrir o arquivo, nem você. Anote a senha em lugar seguro.'),
+    h('div', {class:'grade'}, campo(f, 's1', 'Senha da cópia (mínimo 8)', {tipo:'password', cheio:true}), campo(f, 's2', 'Repita a senha', {tipo:'password', cheio:true}))),
+    [{texto:'Cancelar', valor:false}, {texto:'🔒 Gerar cópia protegida', valor:true, classe:'rosa', antes:() => { if ((f.s1 || '').length < 8) { toast('Mínimo 8 caracteres'); return false; } if (f.s1 !== f.s2) { toast('As senhas não estão iguais'); return false; } }}]);
+  if (!okS) return;
+  toast('Trancando a cópia...');
+  const blob = new Blob([JSON.stringify(await trancarBackup(dados, f.s1))], {type:'application/json'});
+  const a = h('a', {href:URL.createObjectURL(blob), download:`backup-revitta-${comVideos ? 'completo-' : ''}${hojeISO()}.json`});
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 3000);
   toast('Cópia gerada');
@@ -4489,7 +4520,7 @@ async function apagarDadosTeste(){
   for (const id of new Set(estado.atendimentos.filter(a => a.portal && a.portal.liberado).map(a => a.pacienteId))) { try { await publicarPaciente(id); } catch (e) {} }
   toast('Dados de teste apagados');
   ir('inicio');
-  aviso('Pronto! Os dados fictícios foram apagados deste painel. Neste aparelho, o site também deixou de mostrar os pacientes de demonstração. Para tirá-los do site publicado, vá em ⚙️ Ajustes › Portal do paciente e toque em "Baixar site configurado", e envie o novo index.html ao Netlify.', 'Limpeza concluída');
+  aviso('Pronto! Os dados fictícios foram apagados deste painel. Neste aparelho, o site também deixou de mostrar os pacientes de demonstração. Para tirá-los do site publicado, vá em ⚙️ Ajustes › Portal do paciente e toque em "Baixar site configurado", e envie o novo index.html ao Netlify.', 'Limpeza concluída').then(exigirTrocaSenhaPadrao);
 }
 function faixaTeste(){
   if (!ehAdmin() || !temDadosTeste()) return null;
@@ -4574,9 +4605,14 @@ function telaBloqueio(msgErro){
   const erro = h('div', {class:'bq-erro'}, msgErro || '');
   const botao = h('button', {class:'btn rosa grande'}, 'Entrar →');
   const entrar = async () => {
+    const espera = esperaLogin();
+    if (espera > 0) { erro.textContent = `Muitas tentativas erradas. Aguarde ${Math.ceil(espera / 1000)} segundos para tentar de novo.`; return; }
     erro.textContent = ''; botao.disabled = true; botao.textContent = 'Entrando...';
     try {
-      const u = await fazerLogin(inpU.value, inp.value);
+      let u;
+      try { u = await fazerLogin(inpU.value, inp.value); }
+      catch (e1) { if (e1 && e1.message === 'credenciais') falhaLogin(); throw e1; }
+      zerarFalhasLogin();
       if (u.papel === 'secretaria') {
         if (emNuvem()) { try { const g = await nuvemGet(COLECOES.config, 'geral'); if (g) Object.assign(estado.config, doJson(g)); } catch (e) {} }
         botao.textContent = '📍 Verificando localização...';
@@ -4620,6 +4656,34 @@ function telaBloqueio(msgErro){
   setTimeout(() => (inpU.value ? inp : inpU).focus(), 60);
 }
 function bloquearPainel(msg){ telaBloqueio(msg || ''); }
+/* proteção contra quem tenta adivinhar a senha: 5 erros = espera crescente */
+function lerFalhas(){ try { return JSON.parse(localStorage.getItem('kt_falhas') || '{}'); } catch (e) { return {}; } }
+function esperaLogin(){ const f = lerFalhas(); return f.ate && f.ate > Date.now() ? f.ate - Date.now() : 0; }
+function falhaLogin(){
+  const f = lerFalhas(); f.n = (f.n || 0) + 1;
+  if (f.n >= 5) { const rodada = Math.floor(f.n / 5); f.ate = Date.now() + Math.min(30, 2 ** (rodada - 1)) * 60000; }
+  try { localStorage.setItem('kt_falhas', JSON.stringify(f)); } catch (e) {}
+}
+function zerarFalhasLogin(){ try { localStorage.removeItem('kt_falhas'); } catch (e) {} }
+/* senha padrão: obriga a troca quando o sistema passa a ser usado de verdade */
+const SENHAS_FRACAS = ['karitateodoro', '12345678', '123456789', 'senha123', 'revitta360', 'revitta'];
+function senhaForte(sen){
+  if ((sen || '').length < 8) return 'A senha precisa ter pelo menos 8 caracteres.';
+  if (SENHAS_FRACAS.includes(sen.toLowerCase())) return 'Essa senha é muito conhecida. Escolha outra.';
+  if (!/[0-9]/.test(sen) || !/[a-zA-Z]/.test(sen)) return 'Use letras e números na senha.';
+  return '';
+}
+async function exigirTrocaSenhaPadrao(){
+  if (emNuvem() || !ehAdmin() || hashAtual() !== SENHA_PADRAO || !estado.config.testeRemovido) return;
+  const f = {nova:'', conf:''};
+  const ok = await modal('🔒 Troque a senha padrão', h('div', null,
+    h('div', {class:'alerta'}, 'A senha "karitateodoro" é a senha de fábrica e outras pessoas podem conhecê-la. Para proteger os dados dos pacientes, crie uma senha só sua.'),
+    h('div', {class:'grade'}, campo(f, 'nova', 'Nova senha (mínimo 8, com letras e números)', {tipo:'password', cheio:true}), campo(f, 'conf', 'Repita a nova senha', {tipo:'password', cheio:true}))),
+    [{texto:'🔑 Salvar nova senha', valor:true, classe:'rosa', antes:() => { const e = senhaForte(f.nova); if (e) { toast(e); return false; } if (f.nova !== f.conf) { toast('As senhas não estão iguais'); return false; } }}]);
+  if (!ok) { setTimeout(exigirTrocaSenhaPadrao, 300); return; }
+  estado.config.senhaHash = resumoSenha(f.nova); await salvarConfig(); guardarSessaoLocal(estado.usuario);
+  await aviso('Senha trocada! Anote num lugar seguro: sem ela não é possível entrar no painel.', 'Senha');
+}
 ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(ev => document.addEventListener(ev, () => { ultimaAtividade = Date.now(); }, {passive:true, capture:true}));
 setInterval(() => {
   if (document.body.classList.contains('bloqueado') || !estado.iniciado) return;
@@ -5364,13 +5428,13 @@ function cartaoEquipe(){
     h('div', {class:'grade'},
       campo(n, 'nome', 'Nome completo', {cheio:true}),
       campo(n, 'login', 'Usuário para entrar (sem espaços)', {dica:'ex.: bruna'}),
-      campo(n, 'senha', 'Senha inicial (mínimo 6)', {tipo:'password'})),
+      campo(n, 'senha', 'Senha inicial (mínimo 8, letras e números)', {tipo:'password'})),
     h('div', {class:'acoes'}, h('button', {class:'btn rosa', onclick: async () => {
       const login = String(n.login || '').trim().toLowerCase();
       if (!n.nome.trim()) { await aviso('Informe o nome da secretária.', 'Equipe'); return; }
       if (!/^[a-z0-9._-]{3,30}$/.test(login)) { await aviso('O usuário deve ter de 3 a 30 letras minúsculas ou números, sem espaços e sem acento.', 'Equipe'); return; }
       if (login === loginAdminLocal() || (estado.usuarios || []).some(u => (u.login || '').toLowerCase() === login)) { await aviso('Esse usuário já existe. Escolha outro.', 'Equipe'); return; }
-      if ((n.senha || '').length < 6) { await aviso('A senha precisa ter pelo menos 6 caracteres.', 'Equipe'); return; }
+      { const e = senhaForte(n.senha); if (e) { await aviso(e, 'Equipe'); return; } }
       const u = {id:uid(), nome:n.nome.trim(), login, papel:'secretaria', ativo:true, criadoEm:Date.now()};
       if (emNuvem()) {
         try { const j = await chamarAuth('signUp', {email:emailDoLogin(login), password:n.senha, returnSecureToken:true}); u.id = j.localId; }
@@ -5386,8 +5450,8 @@ function cartaoEquipe(){
 async function trocarSenhaSecretariaLocal(id){
   const u = (estado.usuarios || []).find(x => x.id === id);
   const f = {senha:''};
-  const ok = await modal('🔑 Nova senha — ' + u.nome, campo(f, 'senha', 'Nova senha (mínimo 6)', {tipo:'password'}),
-    [{texto:'Cancelar', valor:false}, {texto:'Salvar', valor:true, classe:'rosa', antes:() => { if ((f.senha || '').length < 6) { toast('Mínimo 6 caracteres'); return false; } }}]);
+  const ok = await modal('🔑 Nova senha — ' + u.nome, campo(f, 'senha', 'Nova senha (mínimo 8, letras e números)', {tipo:'password'}),
+    [{texto:'Cancelar', valor:false}, {texto:'Salvar', valor:true, classe:'rosa', antes:() => { const e = senhaForte(f.senha); if (e) { toast(e); return false; } }}]);
   if (!ok) return;
   u.senhaHash = resumoSenha(f.senha); await gravar('usuarios', u); toast('Senha alterada');
 }
@@ -5397,11 +5461,11 @@ function cartaoMinhaConta(){
     h('p', {style:'margin:0 0 10px'}, h('b', null, u.nome), h('br'), h('span', {class:'meta'}, 'Usuário: ' + u.login + (u.papel === 'admin' ? ' · responsável pela clínica' : ' · secretária'))),
     h('div', {class:'grade'},
       campo(f, 'atual', 'Senha atual', {tipo:'password', cheio:true}),
-      campo(f, 'nova', 'Nova senha (mínimo 6)', {tipo:'password'}),
+      campo(f, 'nova', 'Nova senha (mínimo 8, letras e números)', {tipo:'password'}),
       campo(f, 'conf', 'Repita a nova senha', {tipo:'password'})),
     h('div', {class:'acoes'},
       h('button', {class:'btn rosa', onclick: async () => {
-        if ((f.nova || '').length < 6) { await aviso('A nova senha precisa ter pelo menos 6 caracteres.', 'Senha'); return; }
+        { const e = senhaForte(f.nova); if (e) { await aviso(e, 'Senha'); return; } }
         if (f.nova !== f.conf) { await aviso('As duas novas senhas não estão iguais.', 'Senha'); return; }
         try {
           if (emNuvem()) {
@@ -5564,6 +5628,7 @@ async function iniciarApp(novoLogin){
     }
     limparVideosSoltos();
     revisarPortalVencidos();
+    exigirTrocaSenhaPadrao();
   } else {
     let id = null; try { id = sessionStorage.getItem('kt_ponto'); } catch (e) {}
     const abertos = (estado.ponto || []).filter(p => p.uid === estado.usuario.uid && !p.saida && p.id !== id);

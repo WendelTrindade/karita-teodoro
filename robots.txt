@@ -1,0 +1,3 @@
+User-agent: *
+Disallow: /relatorio-atendimento.html
+Allow: /

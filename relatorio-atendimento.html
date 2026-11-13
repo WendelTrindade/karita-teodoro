@@ -744,7 +744,7 @@ function operar(store, modo, fn){
    ========================================================= */
 /* >>> Preenchido pelo botão "Baixar painel configurado" (Ajustes › Trabalho em equipe) <<< */
 const NUVEM = {projectId:'', apiKey:'', adminEmail:''};
-const VERSAO = '2.12';
+const VERSAO = '2.12.1';
 const VERSAO_DATA = '13/11/2026';
 const DOMINIO_EQUIPE = 'equipe.karitateodoro.app';
 const emNuvem = () => !!(NUVEM.projectId && NUVEM.apiKey && NUVEM.adminEmail);
@@ -4860,12 +4860,17 @@ function calcularMes(u, mes){
   const hoje = hojeISO();
   const regs = (estado.ponto || []).filter(r => r.uid === u.id && (r.data || '').startsWith(mes));
   const jd = jornadaDia(c), tol = Number(c.tolerancia) || 0;
+  /* faltas só contam a partir do início do contrato (ou do cadastro) e depois da última limpeza */
+  const cad = u.criadoEm ? isoDe(new Date(u.criadoEm)) : '';
+  let desde = c.inicio || cad || '';
+  if (u.pontoDesde && u.pontoDesde > desde) desde = u.pontoDesde;
+  const zerado = fl.zeradoAte || '';
   const dias = [];
   let trab = 0, diasTrab = 0, extra = 0, deficit = 0, faltas = 0, abonos = 0, previstos = 0, semSaida = 0, ferias = 0, atestados = 0;
   for (let d = 1; d <= ultimo; d++) {
     const iso = `${mes}-${String(d).padStart(2, '0')}`;
     const ds = dataDe(iso).getDay();
-    const previsto = (c.dias || []).includes(ds) && (!c.inicio || iso >= c.inicio);
+    const previsto = (c.dias || []).includes(ds) && iso >= desde && iso > zerado;
     const rs = regs.filter(r => r.data === iso).sort((a, b) => (horaEntrada(a) || '').localeCompare(horaEntrada(b) || ''));
     const bruto = rs.reduce((s, r) => s + minutosPonto(r), 0);
     const almoco = rs.length === 1 && bruto > 360 && !minutosAlmoco(rs[0]) ? (Number(c.intervalo) || 0) : 0;   /* sem registro de almoço: desconta o intervalo combinado */
@@ -4953,10 +4958,10 @@ async function limparDadosPonto(u, mes){
   const conf = {txt:''};
   const corpo = h('div', null,
     h('p', {class:'meta', style:'margin:0 0 8px'}, `Escolha o que apagar de ${u.nome}. Isso não pode ser desfeito.`),
-    ck('mesPonto', `Registros de ponto de ${nm} (${regsMes.length})`),
+    ck('mesPonto', `Registros de ponto e faltas de ${nm} (${regsMes.length} registro(s)) — o mês fica zerado até hoje`),
     ck('mesSalario', `Salário de ${nm}: pagamento, bônus, descontos e abonos (o pagamento também sai do Financeiro)`),
     ck('ausencias', `Todas as férias e atestados cadastrados (${(u.ausencias || []).length})`),
-    ck('tudo', `TODO o histórico: ponto de todos os meses (${regsTodos.length}), salários e férias/atestados`),
+    ck('tudo', `TODO o histórico: ponto de todos os meses (${regsTodos.length}), faltas, salários e férias/atestados — a contagem recomeça hoje`),
     h('div', {class:'grade', style:'margin-top:10px'}, campo(conf, 'txt', 'Para confirmar, digite APAGAR', {cheio:true})));
   const ok = await modal('🧹 Limpar informações do ponto', corpo,
     [{texto:'Cancelar', valor:false}, {texto:'🧹 Apagar', valor:true, classe:'perigo', antes:() => {
@@ -4969,9 +4974,14 @@ async function limparDadosPonto(u, mes){
   const ids = new Set(apagarRegs.map(r => r.id));
   estado.ponto = (estado.ponto || []).filter(r => !ids.has(r.id));
   const tirarSalario = async ms => { const fl = (u.folhas || {})[ms]; if (fl && fl.lancId) { try { await apagar('financeiro', fl.lancId); } catch (e) {} estado.financeiro = estado.financeiro.filter(x => x.id !== fl.lancId); } if (u.folhas) delete u.folhas[ms]; };
-  if (op.tudo) { for (const ms of Object.keys(u.folhas || {})) await tirarSalario(ms); u.folhas = {}; u.ausencias = []; }
-  else { if (op.mesSalario) await tirarSalario(mes); if (op.ausencias) u.ausencias = []; }
-  if (op.tudo || op.mesSalario || op.ausencias) await salvarUsuario(u);
+  const hojeL = hojeISO(), fimMes = isoDe(new Date(ano, m, 0, 12));
+  if (op.tudo) { for (const ms of Object.keys(u.folhas || {})) await tirarSalario(ms); u.folhas = {}; u.ausencias = []; u.pontoDesde = hojeL; }
+  else {
+    if (op.mesSalario) await tirarSalario(mes);
+    if (op.ausencias) u.ausencias = [];
+    if (op.mesPonto) { u.folhas = Object.assign({}, u.folhas || {}); u.folhas[mes] = Object.assign({ajustes:[], abonos:{}}, u.folhas[mes] || {}, {zeradoAte: fimMes < hojeL ? fimMes : hojeL}); }   /* o mês fica zerado: sem faltas até hoje */
+  }
+  await salvarUsuario(u);
   toast(falhas ? `Apagado, mas ${falhas} registro(s) não puderam ser excluídos (internet?)` : 'Informações apagadas');
   ir('ponto');
 }
